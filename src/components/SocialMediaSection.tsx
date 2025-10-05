@@ -65,6 +65,13 @@ const SocialMediaSection = () => {
               <strong>¿Dudas o quieres apoyar más?</strong>
               <br />
               Escríbenos y con gusto te atenderemos
+              <br />
+              <a 
+                href="mailto:despiertatupoder74@gmail.com" 
+                className="text-primary hover:text-primary/80 font-semibold underline transition-smooth mt-2 inline-block"
+              >
+                despiertatupoder74@gmail.com
+              </a>
             </p>
           </div>
         </div>

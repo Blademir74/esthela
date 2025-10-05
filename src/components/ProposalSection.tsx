@@ -1,10 +1,10 @@
 import { CheckCircle } from "lucide-react";
-import claudiaImage from "@/assets/esthela-claudia.jpg";
+import claudiaImage from "@/assets/esthela-8.jpg";
 
 const ProposalSection = () => {
   const proposals = [
     "Más de 20 años de servicio, resultados y trabajo con la gente",
-    "De la Montaña a la transformación de Guerrero",
+    "Es momento de levantar la mano y ser escuchado",
     "Experiencia comprobada como diputada local y federal",
     "Comprometida con paz, justicia y crecimiento para nuestro estado"
   ];

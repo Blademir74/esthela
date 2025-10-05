@@ -10,7 +10,7 @@ const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Background with gradient overlay */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/85 to-primary/75 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/60 via-primary/50 to-primary/40 z-10" />
         <img
           src={heroImage}
           alt="Esthela Damián Peralta"
