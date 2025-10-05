@@ -4,13 +4,13 @@ const SocialMediaSection = () => {
   const socialLinks = [
     {
       name: "Facebook",
-      url: "https://www.facebook.com/estheladamian",
+      url: "https://www.facebook.com/estheladamian?locale=es_LA",
       icon: Facebook,
       color: "hover:text-[#1877F2]"
     },
     {
       name: "Instagram",
-      url: "https://www.instagram.com/estheladamian/reels/",
+      url: "https://www.instagram.com/estheladamian/?hl=es",
       icon: Instagram,
       color: "hover:text-[#E4405F]"
     },
