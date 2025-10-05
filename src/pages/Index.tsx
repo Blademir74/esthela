@@ -2,6 +2,7 @@ import HeroSection from "@/components/HeroSection";
 import ProposalSection from "@/components/ProposalSection";
 import RegistrationForm from "@/components/RegistrationForm";
 import TestimonialSection from "@/components/TestimonialSection";
+import ImpactGallery from "@/components/ImpactGallery";
 import SocialMediaSection from "@/components/SocialMediaSection";
 import Footer from "@/components/Footer";
 
@@ -19,6 +20,7 @@ const Index = () => {
       <ProposalSection />
       <RegistrationForm />
       <TestimonialSection />
+      <ImpactGallery />
       <SocialMediaSection />
       <Footer />
     </div>

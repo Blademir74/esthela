@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/hero-esthela.jpg";
+import heroImage from "@/assets/hero-esthela.webp";
 
 interface HeroSectionProps {
   onCtaClick: () => void;

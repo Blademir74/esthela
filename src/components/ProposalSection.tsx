@@ -1,4 +1,5 @@
 import { CheckCircle } from "lucide-react";
+import claudiaImage from "@/assets/esthela-claudia.jpg";
 
 const ProposalSection = () => {
   const proposals = [
@@ -11,7 +12,7 @@ const ProposalSection = () => {
   return (
     <section className="py-16 md:py-24 bg-gradient-to-b from-background to-secondary/30">
       <div className="container mx-auto px-4">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto space-y-12">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Bio */}
             <div className="space-y-6">
@@ -38,6 +39,20 @@ const ProposalSection = () => {
                 ))}
               </ul>
             </div>
+          </div>
+
+          {/* Imagen con la Presidenta Claudia */}
+          <div className="mt-12">
+            <div className="rounded-2xl overflow-hidden shadow-elegant">
+              <img
+                src={claudiaImage}
+                alt="Esthela Damián con la Presidenta Claudia Sheinbaum"
+                className="w-full h-auto"
+              />
+            </div>
+            <p className="text-center text-lg text-foreground/80 mt-4 font-semibold">
+              Junto a la Dra. Claudia Sheinbaum, trabajando por el futuro de México y Guerrero
+            </p>
           </div>
         </div>
       </div>
