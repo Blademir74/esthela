@@ -42,6 +42,23 @@ const RegistrationForm = () => {
     setIsSubmitting(true);
 
     try {
+      // Verificar si el nombre ya está registrado
+      const { data: existingRegistro } = await supabase
+        .from('registros' as any)
+        .select('nombre')
+        .eq('nombre', formData.nombre.trim())
+        .maybeSingle();
+
+      if (existingRegistro) {
+        toast({
+          title: "🔒 Registro ya completado",
+          description: "Tu nombre ya está registrado. ¡Gracias por tu apoyo!",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Guardar en Supabase
       const { error } = await supabase
         .from('registros' as any)
@@ -58,6 +75,7 @@ const RegistrationForm = () => {
       toast({
         title: "¡Gracias por sumarte!",
         description: "Pronto recibirás noticias. Juntos transformaremos Guerrero.",
+        className: "text-lg"
       });
 
       // Limpiar formulario
