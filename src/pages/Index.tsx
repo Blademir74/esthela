@@ -1,6 +1,7 @@
 import HeroSection from "@/components/HeroSection";
 import ProposalSection from "@/components/ProposalSection";
 import RegistrationForm from "@/components/RegistrationForm";
+import RegistrationProgress from "@/components/RegistrationProgress";
 import TestimonialSection from "@/components/TestimonialSection";
 import ImpactGallery from "@/components/ImpactGallery";
 import SocialMediaSection from "@/components/SocialMediaSection";
@@ -19,6 +20,7 @@ const Index = () => {
       <HeroSection onCtaClick={scrollToForm} />
       <ProposalSection />
       <RegistrationForm />
+      <RegistrationProgress />
       <TestimonialSection />
       <ImpactGallery />
       <SocialMediaSection />
