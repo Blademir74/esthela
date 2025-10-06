@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -41,9 +42,18 @@ const RegistrationForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Aquí se integraría con el backend (Lovable Cloud)
-      // Por ahora simulamos el envío
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Guardar en Supabase
+      const { error } = await supabase
+        .from('registros' as any)
+        .insert({
+          nombre: formData.nombre.trim(),
+          telefono: formData.telefono.trim(),
+          municipio: formData.municipio.trim()
+        });
+
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "¡Gracias por sumarte!",
@@ -57,6 +67,7 @@ const RegistrationForm = () => {
         municipio: ""
       });
     } catch (error) {
+      console.error('Error al registrar:', error);
       toast({
         title: "Error",
         description: "Hubo un problema al enviar tu información. Por favor intenta nuevamente.",
