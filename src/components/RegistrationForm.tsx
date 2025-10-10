@@ -77,6 +77,18 @@ const RegistrationForm = () => {
         throw error;
       }
       
+      // Track registration event
+      if (typeof window !== 'undefined') {
+        if ((window as any).gtag) {
+          (window as any).gtag('event', 'sign_up', {
+            method: 'Website Form'
+          });
+        }
+        if ((window as any).fbq) {
+          (window as any).fbq('track', 'CompleteRegistration');
+        }
+      }
+      
       toast({
         title: "¡Gracias por sumarte!",
         description: "Pronto recibirás noticias. Juntos transformaremos Guerrero.",
@@ -209,6 +221,20 @@ const RegistrationForm = () => {
               <a 
                 href="/kit-informativo.pdf" 
                 download
+                onClick={() => {
+                  // Track PDF download event
+                  if (typeof window !== 'undefined') {
+                    if ((window as any).gtag) {
+                      (window as any).gtag('event', 'file_download', {
+                        file_name: 'kit-informativo.pdf',
+                        file_extension: 'pdf'
+                      });
+                    }
+                    if ((window as any).fbq) {
+                      (window as any).fbq('track', 'Lead');
+                    }
+                  }
+                }}
                 className="flex items-center justify-center gap-2 text-primary hover:text-primary/80 font-semibold transition-colors"
               >
                 <Download className="w-5 h-5" />
