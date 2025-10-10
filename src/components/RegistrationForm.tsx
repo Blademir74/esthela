@@ -2,16 +2,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ShareButtons from "@/components/ShareButtons";
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     nombre: "",
     telefono: "",
-    municipio: ""
+    municipio: "",
+    intereses_politicos: ""
   });
+  const [showShareButtons, setShowShareButtons] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -65,7 +69,8 @@ const RegistrationForm = () => {
         .insert({
           nombre: formData.nombre.trim(),
           telefono: formData.telefono.trim(),
-          municipio: formData.municipio.trim()
+          municipio: formData.municipio.trim(),
+          intereses_politicos: formData.intereses_politicos.trim() || null
         });
 
       if (error) {
@@ -78,11 +83,15 @@ const RegistrationForm = () => {
         className: "text-lg"
       });
 
+      // Mostrar botones de compartir
+      setShowShareButtons(true);
+
       // Limpiar formulario
       setFormData({
         nombre: "",
         telefono: "",
-        municipio: ""
+        municipio: "",
+        intereses_politicos: ""
       });
     } catch (error) {
       console.error('Error al registrar:', error);
@@ -158,6 +167,23 @@ const RegistrationForm = () => {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="intereses_politicos" className="text-base font-semibold">
+                Intereses políticos (opcional)
+              </Label>
+              <Textarea
+                id="intereses_politicos"
+                placeholder="Ej: Educación, salud, seguridad, desarrollo económico, infraestructura..."
+                value={formData.intereses_politicos}
+                onChange={(e) => setFormData({ ...formData, intereses_politicos: e.target.value })}
+                className="min-h-[100px] text-base resize-none"
+                maxLength={500}
+              />
+              <p className="text-xs text-muted-foreground">
+                Cuéntanos en qué áreas te gustaría participar o contribuir
+              </p>
+            </div>
+
             <Button
               type="submit"
               size="lg"
@@ -177,6 +203,25 @@ const RegistrationForm = () => {
             <p className="text-sm text-muted-foreground text-center">
               Al registrarte, aceptas que tus datos serán utilizados únicamente para contacto político y no serán compartidos con terceros.
             </p>
+
+            {/* Kit informativo download */}
+            <div className="pt-4 border-t">
+              <a 
+                href="/kit-informativo.pdf" 
+                download
+                className="flex items-center justify-center gap-2 text-primary hover:text-primary/80 font-semibold transition-colors"
+              >
+                <Download className="w-5 h-5" />
+                Descargar Kit Informativo (PDF)
+              </a>
+            </div>
+
+            {/* Share buttons after successful registration */}
+            {showShareButtons && (
+              <div className="pt-6 border-t">
+                <ShareButtons />
+              </div>
+            )}
           </form>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-esthela.webp";
+import ShareButtons from "@/components/ShareButtons";
 
 interface HeroSectionProps {
   onCtaClick: () => void;
@@ -34,6 +35,11 @@ const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
           >
             Quiero unirme
           </Button>
+          
+          {/* Share buttons */}
+          <div className="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+            <ShareButtons />
+          </div>
         </div>
       </div>
 

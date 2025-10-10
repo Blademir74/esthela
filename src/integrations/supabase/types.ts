@@ -14,18 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
-      esthela: {
+      registros: {
         Row: {
           created_at: string
-          id: number
+          id: string
+          intereses_politicos: string | null
+          municipio: string
+          nombre: string
+          telefono: string
         }
         Insert: {
           created_at?: string
-          id?: number
+          id?: string
+          intereses_politicos?: string | null
+          municipio: string
+          nombre: string
+          telefono: string
         }
         Update: {
           created_at?: string
-          id?: number
+          id?: string
+          intereses_politicos?: string | null
+          municipio?: string
+          nombre?: string
+          telefono?: string
         }
         Relationships: []
       }
