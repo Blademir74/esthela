@@ -223,7 +223,5 @@ class PulsoDigital {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const loader = document.getElementById('initialLoader');
-    if (loader) loader.classList.add('hidden');
     new PulsoDigital();
 });
