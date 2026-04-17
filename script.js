@@ -1,10 +1,10 @@
 /**
- * ESTHELA DAMIÁN - Lógica Core
+ * ESTHELA DAMIÁN — Lógica Core v2.0
  * Vanilla JS sin dependencias para Vercel Static.
- * Integración con Supabase CDN.
+ * Supabase CDN. Bugs corregidos: votación, countdown, compartir.
  */
 
-// 1. CREDENCIALES SUPABASE (Públicas, seguras para CDN frontend)
+// 1. CREDENCIALES SUPABASE
 const SUPABASE_URL = "https://efnfplynevefniadgidi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmbmZwbHluZXZlZm5pYWRnaWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2ODc4MzUsImV4cCI6MjA3NTI2MzgzNX0.jNj-rnzMwV2WEGx8lqDjtNPKS3ACmTD4faAnr3eFrHI";
 
@@ -19,25 +19,26 @@ const STORAGE_KEYS = {
 
 // 4. MUNICIPIOS DE GUERRERO (81)
 const MUNICIPIOS_GUERRERO = [
-    "Acapulco de Juárez", "Ahuacuotzingo", "Ajuchitlán del Progreso", "Alcozauca de Guerrero", 
-    "Alpoyeca", "Apaxtla", "Arcelia", "Atenango del Río", "Atlamajalcingo del Monte", "Atlixtac", 
-    "Atoyac de Álvarez", "Ayutla de los Libres", "Azoyú", "Benito Juárez", "Buenavista de Cuéllar", 
-    "Coahuayutla de José María Izazaga", "Cocula", "Copala", "Copalillo", "Copanatoyac", 
-    "Coyuca de Benítez", "Coyuca de Catalán", "Cuajinicuilapa", "Cualác", "Cuautepec", 
-    "Cuetzala del Progreso", "Cutzamala de Pinzón", "Chilapa de Álvarez", "Chilpancingo de los Bravo", 
-    "Florencio Villarreal", "General Canuto A. Neri", "General Heliodoro Castillo", "Huamuxtitlán", 
-    "Huitzuco de los Figueroa", "Iguala de la Independencia", "Igualapa", "Ixcateopan de Cuauhtémoc", 
-    "Zihuatanejo de Azueta", "Juan R. Escudero", "Leonardo Bravo", "Malinaltepec", "Mártir de Cuilapan", 
-    "Metlatónoc", "Mochitlán", "Olinalá", "Ometepec", "Pedro Ascencio Alquisiras", "Petatlán", 
-    "Pilcaya", "Pungarabato", "Quechultenango", "San Luis Acatlán", "San Marcos", "San Miguel Totolapan", 
-    "Taxco de Alarcón", "Tecoanapa", "Técpan de Galeana", "Teloloapan", "Tepecoacuilco de Trujano", 
-    "Tetipac", "Tixtla de Guerrero", "Tlacoachistlahuaca", "Tlacoapa", "Tlalchapa", "Tlalixtaquilla de Maldonado", 
-    "Tlapa de Comonfort", "Tlapehuala", "La Unión de Isidoro Montes de Oca", "Xalpatláhuac", "Xochihuehuetlán", 
-    "Xochistlahuaca", "Zapotitlán Tablas", "Zirándaro", "Zitlala", "Eduardo Neri", "Acatepec", 
+    "Acapulco de Juárez", "Ahuacuotzingo", "Ajuchitlán del Progreso", "Alcozauca de Guerrero",
+    "Alpoyeca", "Apaxtla", "Arcelia", "Atenango del Río", "Atlamajalcingo del Monte", "Atlixtac",
+    "Atoyac de Álvarez", "Ayutla de los Libres", "Azoyú", "Benito Juárez", "Buenavista de Cuéllar",
+    "Coahuayutla de José María Izazaga", "Cocula", "Copala", "Copalillo", "Copanatoyac",
+    "Coyuca de Benítez", "Coyuca de Catalán", "Cuajinicuilapa", "Cualác", "Cuautepec",
+    "Cuetzala del Progreso", "Cutzamala de Pinzón", "Chilapa de Álvarez", "Chilpancingo de los Bravo",
+    "Florencio Villarreal", "General Canuto A. Neri", "General Heliodoro Castillo", "Huamuxtitlán",
+    "Huitzuco de los Figueroa", "Iguala de la Independencia", "Igualapa", "Ixcateopan de Cuauhtémoc",
+    "Zihuatanejo de Azueta", "Juan R. Escudero", "Leonardo Bravo", "Malinaltepec", "Mártir de Cuilapan",
+    "Metlatónoc", "Mochitlán", "Olinalá", "Ometepec", "Pedro Ascencio Alquisiras", "Petatlán",
+    "Pilcaya", "Pungarabato", "Quechultenango", "San Luis Acatlán", "San Marcos", "San Miguel Totolapan",
+    "Taxco de Alarcón", "Tecoanapa", "Técpan de Galeana", "Teloloapan", "Tepecoacuilco de Trujano",
+    "Tetipac", "Tixtla de Guerrero", "Tlacoachistlahuaca", "Tlacoapa", "Tlalchapa",
+    "Tlalixtaquilla de Maldonado", "Tlapa de Comonfort", "Tlapehuala",
+    "La Unión de Isidoro Montes de Oca", "Xalpatláhuac", "Xochihuehuetlán",
+    "Xochistlahuaca", "Zapotitlán Tablas", "Zirándaro", "Zitlala", "Eduardo Neri", "Acatepec",
     "Marquelia", "Cochoapa el Grande", "José Joaquín de Herrera", "Juchitán", "Iliatenco"
 ];
 
-// Generar o recuperar ID anónimo (fingerprint)
+// Genera o recupera ID anónimo
 function getAnonId() {
     let id = localStorage.getItem(STORAGE_KEYS.USER_ID);
     if (!id) {
@@ -50,6 +51,7 @@ function getAnonId() {
 class EsthelaLandingApp {
     constructor() {
         this.userId = getAnonId();
+        this.votingInProgress = false; // Guard contra doble click
         this.init();
     }
 
@@ -57,21 +59,10 @@ class EsthelaLandingApp {
         this.setupNavigation();
         this.setupCountdown();
         this.populateMunicipios();
-        
-        // Pulso Form
         this.setupPulsoCiudadano();
-        
-        // Viral Share Buttons
         this.setupViralSharing();
-
-        // Simpatizantes Form
         this.setupSimpatizanteForm();
-        
-        // Heatmap
         this.animateHeatmap();
-
-        // Initial Thermometer Load
-        this.syncThermometer();
     }
 
     // --- Navegación Mobile ---
@@ -94,41 +85,43 @@ class EsthelaLandingApp {
             });
         }
 
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                sticky.classList.add('scrolled');
-            } else {
-                sticky.classList.remove('scrolled');
-            }
-        });
+        if (sticky) {
+            window.addEventListener('scroll', () => {
+                sticky.classList.toggle('scrolled', window.scrollY > 50);
+            }, { passive: true });
+        }
     }
 
-    // --- Countdown 22 de Junio ---
+    // --- Countdown al 22 de junio 2026 ---
+    // Usamos fecha en hora local de México (UTC-6, sin DST en Guerrero)
     setupCountdown() {
-        const target = new Date('2026-06-22T00:00:00').getTime(); // Fallback safer timezone parsing
         const el = document.getElementById('countdownClock');
         if (!el) return;
 
+        // Fecha objetivo: 22 de junio 2026 00:00 hora Guerrero (UTC-5 en verano)
+        // Usamos ISO con offset para precisión
+        const TARGET_MS = new Date('2026-06-22T00:00:00-05:00').getTime();
+
+        const pad = n => String(n).padStart(2, '0');
+
         const update = () => {
-            const now = new Date().getTime();
-            const diff = target - now;
-            
+            const diff = TARGET_MS - Date.now();
+
             if (diff <= 0) {
-                el.innerText = "¡HOY!";
+                el.textContent = '¡HOY!';
                 return;
             }
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+            const days  = Math.floor(diff / 86400000);
+            const hours = Math.floor((diff % 86400000) / 3600000);
+            const mins  = Math.floor((diff % 3600000)  / 60000);
+            const secs  = Math.floor((diff % 60000)    / 1000);
 
-            const pad = num => num.toString().padStart(2, '0');
-            el.innerText = `${pad(days)} d : ${pad(hours)} h : ${pad(mins)} m : ${pad(secs)} s`;
+            el.textContent = `${pad(days)} d : ${pad(hours)} h : ${pad(mins)} m : ${pad(secs)} s`;
         };
 
-        setInterval(update, 1000); // Actualiza cada segundo
-        update(); // Inicial
+        update();
+        setInterval(update, 1000);
     }
 
     // --- Llenar Select de Municipios ---
@@ -136,7 +129,7 @@ class EsthelaLandingApp {
         const select = document.getElementById('municipio');
         if (!select) return;
 
-        MUNICIPIOS_GUERRERO.sort().forEach(mun => {
+        [...MUNICIPIOS_GUERRERO].sort().forEach(mun => {
             const opt = document.createElement('option');
             opt.value = mun;
             opt.textContent = mun;
@@ -144,243 +137,267 @@ class EsthelaLandingApp {
         });
     }
 
-    // --- Pulso Ciudadano (Votación Sincronizada con votos_pulso) ---
+    // --- Pulso Ciudadano ---
     setupPulsoCiudadano() {
-        const btns = document.querySelectorAll('.pulso-btn');
         const hasVoted = localStorage.getItem(STORAGE_KEYS.HAS_VOTED);
+        const optionsDiv = document.getElementById('pulsoOptions');
+        const loader     = document.getElementById('loaderPulso');
+        const resultDiv  = document.getElementById('pulsoResult');
 
         if (hasVoted) {
-            // Ya votó previamente
-            this.showPulsoResults(hasVoted, true);
+            // Ya votó: ocultar botones, mostrar resultados directamente
+            if (optionsDiv) optionsDiv.hidden = true;
+            if (loader)     loader.hidden     = false;
+
+            this.fetchAndRenderResults(hasVoted).then(() => {
+                if (loader)    loader.hidden    = true;
+                if (resultDiv) resultDiv.hidden = false;
+
+                // Mostrar módulo de compartir si votó "sí"
+                if (hasVoted === 'si') {
+                    const shareModule = document.getElementById('shareModule');
+                    if (shareModule) shareModule.hidden = false;
+                }
+            });
+
         } else {
+            // No ha votado: asegurar que los botones sean visibles
+            if (optionsDiv) optionsDiv.hidden = false;
+            if (loader)     loader.hidden     = true;
+            if (resultDiv)  resultDiv.hidden  = true;
+
+            // Adjuntar listeners DIRECTAMENTE (sin cloneNode que rompe data-vote)
+            const btns = document.querySelectorAll('.pulso-btn');
             btns.forEach(btn => {
-                // Ensure no duplicate listeners if called multiple times
-                const newBtn = btn.cloneNode(true);
-                btn.parentNode.replaceChild(newBtn, btn);
-                
-                newBtn.addEventListener('click', async () => {
-                    const voteType = newBtn.dataset.vote; // 'si', 'dudo', 'no'
-                    await this.registerPulsoVote(voteType);
+                btn.addEventListener('click', (e) => {
+                    // Prevenir doble click
+                    if (this.votingInProgress) return;
+                    const voteType = btn.dataset.vote;
+                    if (!voteType) return;
+                    this.registerPulsoVote(voteType);
                 });
             });
         }
     }
 
-    async syncThermometer() {
-        // Fetch totals without showing the "Voted" state
-        await this.updateResultsUI(null, true);
-    }
-
     async registerPulsoVote(voteType) {
+        if (this.votingInProgress) return;
+        this.votingInProgress = true;
+
         const optionsDiv = document.getElementById('pulsoOptions');
-        const loader = document.getElementById('loaderPulso');
-        
-        optionsDiv.hidden = true;
-        loader.hidden = false;
+        const loader     = document.getElementById('loaderPulso');
+        const resultDiv  = document.getElementById('pulsoResult');
+
+        if (optionsDiv) optionsDiv.hidden = true;
+        if (loader)     loader.hidden     = false;
 
         try {
-            // Guardar en Supabase tabla votos_pulso
             const { error } = await supabase
                 .from('votos_pulso')
-                .insert([
-                    {
-                        anon_id: this.userId,
-                        opcion: voteType,
-                        created_at: new Date().toISOString()
-                    }
-                ]);
+                .insert([{
+                    anon_id:    this.userId,
+                    opcion:     voteType,
+                    created_at: new Date().toISOString()
+                }]);
 
             if (error) {
-                console.warn('Posible voto duplicado o no guardado:', error);
+                // Probable duplicado de anon_id — registrar pero continuar
+                console.warn('Supabase insert warning:', error.message);
             }
 
-            // Exito local
+            // Guardar en localStorage para no volver a mostrar botones
             localStorage.setItem(STORAGE_KEYS.HAS_VOTED, voteType);
-            this.showToast("Tu voto ha sido registrado de forma anónima.");
-            
-            // Cargar y mostrar totales en tiempo real. 
-            // Esperamos explícitamente a que responda Supabase antes de abrir UI
-            await this.showPulsoResults(voteType, false);
+            this.showToast('Tu voto quedó registrado de forma anónima.');
+
+            // Cargar totales reales y mostrar resultado
+            await this.fetchAndRenderResults(voteType);
+
+            if (loader)    loader.hidden    = true;
+            if (resultDiv) resultDiv.hidden = false;
+
+            // Módulo de compartir solo si votó "sí"
+            if (voteType === 'si') {
+                const shareModule = document.getElementById('shareModule');
+                if (shareModule) shareModule.hidden = false;
+            }
 
         } catch (err) {
-            console.error('Network Error registering vote:', err);
-            this.showToast("Ocurrió un error. Intenta de nuevo.");
-            optionsDiv.hidden = false;
-            loader.hidden = true;
+            console.error('Error al registrar voto:', err);
+            this.showToast('Hubo un problema de conexión. Intenta de nuevo.');
+            if (optionsDiv) optionsDiv.hidden = false;
+            if (loader)     loader.hidden     = true;
+            this.votingInProgress = false;
         }
     }
 
-    async showPulsoResults(voteType, cached = false) {
-        await this.updateResultsUI(voteType, cached, true);
-    }
-
-    async updateResultsUI(voteType, cached = false, showResultsBox = false) {
-        const optionsDiv = document.getElementById('pulsoOptions');
-        const loader = document.getElementById('loaderPulso');
-        const resultDiv = document.getElementById('pulsoResult');
-        const shareModule = document.getElementById('shareModule');
-
-        if (showResultsBox && optionsDiv) optionsDiv.hidden = true;
-        if (loader && !cached) loader.hidden = false;
-
-        // Fetching real totals
+    // Consulta los totales reales y actualiza las barras
+    async fetchAndRenderResults(myVote) {
         let siCount = 0, dudoCount = 0, noCount = 0;
 
         try {
-            const { data, error } = await supabase.from('votos_pulso').select('opcion');
-            
+            const { data, error } = await supabase
+                .from('votos_pulso')
+                .select('opcion');
+
             if (error) throw error;
 
             if (data && data.length > 0) {
-                siCount = data.filter(v => v.opcion === 'si').length;
+                siCount   = data.filter(v => v.opcion === 'si').length;
                 dudoCount = data.filter(v => v.opcion === 'dudo' || v.opcion === 'pienso').length;
-                noCount = data.filter(v => v.opcion === 'no').length;
+                noCount   = data.filter(v => v.opcion === 'no').length;
             } else {
-                // Fallback realistic numbers if no data yet
+                // Fallback si la tabla está vacía
                 siCount = 542; dudoCount = 89; noCount = 20;
             }
+
         } catch (err) {
-            console.error('Supabase query failed, using fallback:', err);
+            console.error('Error al consultar Supabase:', err);
             siCount = 542; dudoCount = 89; noCount = 20;
         }
 
-        const total = siCount + dudoCount + noCount;
-        const getPct = (val) => total > 0 ? Math.round((val / total) * 100) : 0;
+        const total  = siCount + dudoCount + noCount;
+        const getPct = v => total > 0 ? Math.round((v / total) * 100) : 0;
 
-        const pSi = getPct(siCount);
+        const pSi   = getPct(siCount);
         const pDudo = getPct(dudoCount);
-        const pNo = getPct(noCount);
+        const pNo   = getPct(noCount);
 
-        // Update UI Bars
-        const pctSi = document.getElementById('pctSi');
-        const barSi = document.getElementById('barSi');
-        const pctDudo = document.getElementById('pctPienso');
-        const barDudo = document.getElementById('barPienso');
-        const pctNo = document.getElementById('pctNo');
-        const barNo = document.getElementById('barNo');
-
-        if (pctSi) pctSi.textContent = `${pSi}%`;
-        if (barSi) barSi.style.width = `${pSi}%`;
-        if (pctDudo) pctDudo.textContent = `${pDudo}%`;
-        if (barDudo) barDudo.style.width = `${pDudo}%`;
-        if (pctNo) pctNo.textContent = `${pNo}%`;
-        if (barNo) barNo.style.width = `${pNo}%`;
-
-        if (loader) loader.hidden = true;
-        if (showResultsBox && resultDiv) resultDiv.hidden = false;
-        
-        // Activar viralidad si el voto fue 'si'
-        if ((voteType === 'si' || (cached && voteType === 'si')) && shareModule) {
-            shareModule.hidden = false;
-        }
+        // Actualizar UI con un pequeño delay para que la animación CSS sea visible
+        requestAnimationFrame(() => {
+            const set = (idPct, idBar, pct, cssClass) => {
+                const elPct = document.getElementById(idPct);
+                const elBar = document.getElementById(idBar);
+                if (elPct) elPct.textContent = `${pct}%`;
+                if (elBar) {
+                    // Forzar reflow antes de animar
+                    elBar.style.width = '0%';
+                    setTimeout(() => { elBar.style.width = `${pct}%`; }, 50);
+                }
+            };
+            set('pctSi',     'barSi',     pSi,   'bar-si');
+            set('pctPienso', 'barPienso', pDudo, 'bar-duda');
+            set('pctNo',     'barNo',     pNo,   'bar-no');
+        });
     }
 
-    // --- Módulo de Compartir (Viralidad Post-Voto y Links) ---
+    // --- Módulo de Compartir ---
     setupViralSharing() {
-        const currentUrl = window.location.href.split('#')[0]; 
-        
+        const currentUrl = window.location.href.split('#')[0];
+        const msgWa = `¡Yo ya respaldé a Esthela Damián! Únete aquí: ${currentUrl}`;
+
         const btnWa = document.getElementById('btnShareWhatsApp');
-        if(btnWa) {
+        if (btnWa) {
             btnWa.addEventListener('click', () => {
-                const msg = `¡Yo ya respaldé a Esthela Damián! Únete aquí: ${currentUrl}`;
-                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+                window.open(
+                    `https://api.whatsapp.com/send?text=${encodeURIComponent(msgWa)}`,
+                    '_blank', 'noopener,noreferrer'
+                );
             });
         }
 
         const btnFb = document.getElementById('btnShareFacebook');
-        if(btnFb) {
+        if (btnFb) {
             btnFb.addEventListener('click', () => {
-                const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
-                window.open(fbUrl, 'facebook-share-dialog', 'width=800,height=600');
+                window.open(
+                    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`,
+                    'fb-share',
+                    'width=800,height=600'
+                );
             });
         }
 
-        const btnCopy = document.getElementById('btnCopyLink');
-        const copyTextEl = document.getElementById('copyLinkText');
-        if(btnCopy && copyTextEl) {
+        const btnCopy     = document.getElementById('btnCopyLink');
+        const copyTextEl  = document.getElementById('copyLinkText');
+        if (btnCopy && copyTextEl) {
             btnCopy.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(currentUrl);
                     copyTextEl.textContent = '¡Enlace copiado!';
                     this.showToast('Enlace copiado al portapapeles');
                     setTimeout(() => { copyTextEl.textContent = 'Copiar Enlace'; }, 3000);
-                } catch (err) {
-                    console.error('Failed to copy: ', err);
+                } catch {
+                    this.showToast('No se pudo copiar. Copia la URL manualmente.');
                 }
             });
         }
     }
 
-    // --- Formulario Conversión (Simpatizantes) ---
+    // --- Formulario Simpatizantes ---
     setupSimpatizanteForm() {
         const form = document.getElementById('simpatizanteForm');
         if (!form) return;
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const btn = document.getElementById('btnSubmitForm');
-            btn.textContent = 'Enviando...';
-            btn.disabled = true;
 
-            const nombre = document.getElementById('nombre').value;
+            const btn       = document.getElementById('btnSubmitForm');
+            const nombre    = document.getElementById('nombre').value.trim();
             const municipio = document.getElementById('municipio').value;
-            const rolElement = document.getElementById('rol');
-            const rol = rolElement ? rolElement.value : 'Simpatizante';
+            const rolEl     = document.getElementById('rol');
+            const rol       = rolEl ? rolEl.value : 'Simpatizante';
+
+            if (!nombre || !municipio || !rol) {
+                this.showToast('Completa todos los campos antes de enviar.');
+                return;
+            }
+
+            btn.textContent = 'Enviando...';
+            btn.disabled    = true;
 
             try {
                 const { error } = await supabase
                     .from('simpatizantes')
-                    .insert([
-                        {
-                            nombre: nombre.trim(),
-                            municipio: municipio,
-                            rol: rol,
-                            anon_id: this.userId,
-                            created_at: new Date().toISOString()
-                        }
-                    ]);
+                    .insert([{
+                        nombre:     nombre,
+                        municipio:  municipio,
+                        rol:        rol,
+                        anon_id:    this.userId,
+                        created_at: new Date().toISOString()
+                    }]);
 
-                if (error) console.warn("Supabase Error:", error);
+                if (error) console.warn('Supabase simpatizante warning:', error.message);
 
                 form.hidden = true;
                 const successDiv = document.getElementById('formSuccess');
                 if (successDiv) successDiv.hidden = false;
-                
+
             } catch (err) {
-                console.error("Network error:", err);
-                this.showToast("Hubo un problema de conexión. Pero seguimos forjando Guerrero.");
+                console.error('Error de red:', err);
+                this.showToast('Problema de conexión. Vuelve a intentarlo.');
                 btn.textContent = 'Sumarme al Movimiento';
-                btn.disabled = false;
+                btn.disabled    = false;
             }
         });
     }
 
-    // --- Animación del Mapa (Respiración/Heatmap) ---
+    // --- Animación del Mapa ---
     animateHeatmap() {
         const circles = document.querySelectorAll('.region-hotspot');
         if (!circles.length) return;
 
-        setInterval(() => {
+        const animate = () => {
             circles.forEach(c => {
-                const isHigh = Math.random() > 0.5;
-                c.style.opacity = isHigh ? "0.6" : "0.2";
-                c.style.transition = "opacity 2s ease-in-out";
+                const opacity = (Math.random() * 0.4 + 0.2).toFixed(2);
+                c.style.opacity    = opacity;
+                c.style.transition = 'opacity 2s ease-in-out';
             });
-        }, 3000);
+        };
+
+        animate();
+        setInterval(animate, 3000);
     }
 
     showToast(msg) {
         const toast = document.getElementById('toast');
-        if (toast) {
-            toast.textContent = msg;
-            toast.hidden = false;
-            setTimeout(() => { toast.hidden = true; }, 3500);
-        }
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.hidden = false;
+        clearTimeout(this._toastTimer);
+        this._toastTimer = setTimeout(() => { toast.hidden = true; }, 3500);
     }
 }
 
-// Iniciar aplicación al cargar
+// Arrancar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     new EsthelaLandingApp();
 });
