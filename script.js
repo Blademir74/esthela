@@ -14,7 +14,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // 3. KEYS LOCALSTORAGE
 const STORAGE_KEYS = {
     USER_ID: 'esthela_anon_id',
-    HAS_VOTED: 'esthela_pulso_voted'
+    HAS_VOTED: 'esthela_apoyo_voted'
 };
 
 // 4. MUNICIPIOS DE GUERRERO (81)
@@ -61,6 +61,9 @@ class EsthelaLandingApp {
         // Pulso Form
         this.setupPulsoCiudadano();
         
+        // Viral Share Buttons
+        this.setupViralSharing();
+
         // Simpatizantes Form
         this.setupSimpatizanteForm();
         
@@ -108,21 +111,20 @@ class EsthelaLandingApp {
             const diff = target - now;
             
             if (diff <= 0) {
-                el.innerText = "¡HOY ES EL DÍA!";
+                el.innerText = "¡HOY!";
                 return;
             }
 
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const secs = Math.floor((diff % (1000 * 60)) / 1000);
 
             const pad = num => num.toString().padStart(2, '0');
-            el.innerText = `${pad(days)}:${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+            el.innerText = `${pad(days)} d : ${pad(hours)} h : ${pad(mins)} m`;
         };
 
-        setInterval(update, 1000);
-        update();
+        setInterval(update, 60000);
+        update(); // Inicial
     }
 
     // --- Llenar Select de Municipios ---
@@ -138,13 +140,14 @@ class EsthelaLandingApp {
         });
     }
 
-    // --- Pulso Ciudadano (Votación) ---
+    // --- Pulso Ciudadano (Votación Sincronizada con apoyos_guerrero) ---
     setupPulsoCiudadano() {
         const btns = document.querySelectorAll('.pulso-btn');
         const hasVoted = localStorage.getItem(STORAGE_KEYS.HAS_VOTED);
 
         if (hasVoted) {
-            this.showPulsoResults(true); // Mostrar resultados sin loader
+            // Ya votó previamente
+            this.showPulsoResults(hasVoted, true);
         } else {
             btns.forEach(btn => {
                 btn.addEventListener('click', async () => {
@@ -156,18 +159,16 @@ class EsthelaLandingApp {
     }
 
     async registerPulsoVote(voteType) {
-        // Optimistic UI hiding
         const optionsDiv = document.getElementById('pulsoOptions');
         const loader = document.getElementById('loaderPulso');
-        const resultDiv = document.getElementById('pulsoResult');
         
         optionsDiv.hidden = true;
         loader.hidden = false;
 
         try {
-            // Guardar en Supabase
+            // Guardar en Supabase tabla nueva 'apoyos_guerrero'
             const { error } = await supabase
-                .from('votos_pulso')
+                .from('apoyos_guerrero')
                 .insert([
                     {
                         anon_id: this.userId,
@@ -177,7 +178,6 @@ class EsthelaLandingApp {
                 ]);
 
             if (error) {
-                // RLS error o duplicado
                 console.warn('Posible voto duplicado o no guardado:', error);
             }
 
@@ -185,8 +185,9 @@ class EsthelaLandingApp {
             localStorage.setItem(STORAGE_KEYS.HAS_VOTED, voteType);
             this.showToast("Tu voto ha sido registrado de forma anónima.");
             
-            // Cargar y mostrar totales en tiempo real
-            await this.showPulsoResults(false);
+            // Cargar y mostrar totales en tiempo real. 
+            // Esperamos explícitamente a que responda Supabase antes de abrir UI
+            await this.showPulsoResults(voteType, false);
 
         } catch (err) {
             console.error('Network Error registering vote:', err);
@@ -196,28 +197,27 @@ class EsthelaLandingApp {
         }
     }
 
-    async showPulsoResults(cached = false) {
+    async showPulsoResults(voteType, cached = false) {
         const optionsDiv = document.getElementById('pulsoOptions');
         const loader = document.getElementById('loaderPulso');
         const resultDiv = document.getElementById('pulsoResult');
+        const shareModule = document.getElementById('shareModule');
 
         if (optionsDiv) optionsDiv.hidden = true;
         if (loader && !cached) loader.hidden = false;
 
-        // Fetching totals
+        // Fetching real totals
         let siCount = 0, piensoCount = 0, noCount = 0;
 
         try {
-            // Realtime aggregate (usando Count en Supabase)
-            // Si las RLS no permiten lectura pública, usar fallback local
-            const { data } = await supabase.from('votos_pulso').select('opcion');
+            const { data } = await supabase.from('apoyos_guerrero').select('opcion');
             
             if (data && data.length > 0) {
                 siCount = data.filter(v => v.opcion === 'si').length;
                 piensoCount = data.filter(v => v.opcion === 'pienso').length;
                 noCount = data.filter(v => v.opcion === 'no').length;
             } else {
-                // Fallback Mock de alta participación (Evitar división por cero)
+                // Fallback Mock de alta participación
                 siCount = 5420; piensoCount = 890; noCount = 200;
             }
         } catch (err) {
@@ -227,7 +227,6 @@ class EsthelaLandingApp {
 
         const total = siCount + piensoCount + noCount;
         
-        // Asegurarse de no dividir por cero
         const getPct = (val) => total > 0 ? Math.round((val / total) * 100) : 0;
 
         const pSi = getPct(siCount);
@@ -246,6 +245,47 @@ class EsthelaLandingApp {
 
         if (loader) loader.hidden = true;
         if (resultDiv) resultDiv.hidden = false;
+        
+        // Activar viralidad si el voto fue 'si'
+        if (voteType === 'si' && shareModule) {
+            shareModule.hidden = false;
+        }
+    }
+
+    // --- Módulo de Compartir (Viralidad Post-Voto y Links) ---
+    setupViralSharing() {
+        const currentUrl = window.location.href.split('#')[0]; 
+        
+        const btnWa = document.getElementById('btnShareWhatsApp');
+        if(btnWa) {
+            btnWa.addEventListener('click', () => {
+                const msg = `¡Yo ya respaldé a Esthela Damián! Es de Guerrero y tiene la experiencia que necesitamos. Suma tu apoyo aquí: ${currentUrl}`;
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+            });
+        }
+
+        const btnFb = document.getElementById('btnShareFacebook');
+        if(btnFb) {
+            btnFb.addEventListener('click', () => {
+                const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
+                window.open(fbUrl, 'facebook-share-dialog', 'width=800,height=600');
+            });
+        }
+
+        const btnCopy = document.getElementById('btnCopyLink');
+        const copyTextEl = document.getElementById('copyLinkText');
+        if(btnCopy && copyTextEl) {
+            btnCopy.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(currentUrl);
+                    copyTextEl.textContent = '¡Enlace copiado!';
+                    this.showToast('Enlace copiado al portapapeles');
+                    setTimeout(() => { copyTextEl.textContent = 'Copiar Enlace'; }, 3000);
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                }
+            });
+        }
     }
 
     // --- Formulario Conversión (Simpatizantes) ---
@@ -277,7 +317,6 @@ class EsthelaLandingApp {
 
                 if (error) console.warn("Supabase Error:", error);
 
-                // Exito
                 form.hidden = true;
                 const successDiv = document.getElementById('formSuccess');
                 if (successDiv) successDiv.hidden = false;
@@ -296,7 +335,6 @@ class EsthelaLandingApp {
         const circles = document.querySelectorAll('.region-hotspot');
         if (!circles.length) return;
 
-        // Animar opacidad de manera pseudo-random para un look "vivo"
         setInterval(() => {
             circles.forEach(c => {
                 const isHigh = Math.random() > 0.5;

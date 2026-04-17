@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="theme-color" content="#6B1D3A">
-    <meta name="description" content="Esthela Damián Peralta - Aspirante a la Coordinación en Guerrero. Forjada desde joven en el trabajo comunitario. 25 años de territorio.">
+    <meta name="description" content="Esthela Damián Peralta - Aspirante a la Coordinación en Guerrero. Forjada desde joven en el trabajo comunitario. 25 años de resultados forjados en el servicio público.">
+    
+    <!-- OG Meta Tags for Viral Sharing -->
+    <meta property="og:title" content="Esthela Damián | Aspirante a la Coordinación de Guerrero">
+    <meta property="og:description" content="Forjada desde joven en el trabajo comunitario. 25 años de resultados forjados en el servicio público. Únete al movimiento para coordinar nuestro futuro.">
+    <meta property="og:image" content="https://esthela-guerrero.com/assets/img/hero-guerrero.jpg">
+    <meta property="og:url" content="https://esthela-guerrero.com">
+    <meta property="og:type" content="website">
     
     <title>Esthela Damián | Aspirante a la Coordinación de Guerrero</title>
     
@@ -44,7 +51,6 @@
     <section class="hero" id="hero">
         <div class="hero-bg">
             <video autoplay loop muted playsinline class="hero-video" poster="assets/img/hero-guerrero.jpg">
-                <!-- Fallback to a placeholder video URL if local doesn't exist -->
                 <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4" type="video/mp4">
             </video>
             <div class="hero-overlay"></div>
@@ -68,16 +74,22 @@
                 Acapulco · Centro · Costa Chica · Costa Grande · La Montaña · Norte · Tierra Caliente · La Sierra · <strong>Un solo Guerrero</strong>
             </p>
             
-            <div class="hero-cta">
-                <a href="#pulso" class="btn btn-primary">
-                    <span>Dar mi Pulso</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </a>
-                <a href="#historia" class="btn btn-ghost">Mi historia</a>
+            <div class="hero-countdown-container">
+                <p class="hero-countdown-label">Faltan <span id="countdownClock" class="countdown-highlight">00 d : 00 h : 00 m</span> para activar la esperanza</p>
+            </div>
+            
+            <div class="hero-cta-wrapper">
+                <div class="hero-cta-main">
+                    <a href="#pulso" class="btn btn-primary pulse-btn">
+                        <span>¡Súmate. Guerrero camina junto!</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                    <p class="hero-cta-subtext">Miles de guerrerenses ya dejaron su apoyo. ¿Y tú?</p>
+                </div>
+                <a href="#historia" class="btn btn-ghost hero-ghost-btn">Mi historia</a>
             </div>
         </div>
 
-        <!-- Scroll Indicator -->
         <div class="hero-scroll">
             <span>Conoce más</span>
             <div class="scroll-line"></div>
@@ -113,8 +125,8 @@
                 <div class="timeline-item">
                     <div class="timeline-icon">25+</div>
                     <div class="timeline-content">
-                        <h3>25 años en territorio</h3>
-                        <p>Más de dos décadas de organización, gestión social y recorrido permanente por la Montaña, las Costas y todas las regiones.</p>
+                        <h3>Experiencia Probada</h3>
+                        <p>25 años de resultados forjados en el servicio público. Del corazón de Guerrero a la Federación, hoy Esthela regresa con experiencia probada para coordinar nuestro futuro.</p>
                     </div>
                 </div>
             </div>
@@ -162,7 +174,7 @@
                     <div class="result-check">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="#D4A843" stroke-width="2"/><path d="M7 12l3.5 3.5L17 9" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </div>
-                    <h3>Voto Procesado</h3>
+                    <h3>¡Tu voz cuenta!</h3>
                     <p>Así está el Termómetro del Pueblo en tiempo real:</p>
                     
                     <div class="result-bars" id="resultBars">
@@ -177,6 +189,27 @@
                         <div class="bar-row" data-key="no">
                             <div class="bar-label"><span class="bar-name">No por ahora</span><span class="bar-pct" id="pctNo">0%</span></div>
                             <div class="bar-track"><div class="bar-fill bar-no" id="barNo"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Módulo de Viralidad Post-Voto (Oculto por defecto, se muestra si vota "Sí") -->
+                    <div id="shareModule" class="share-module" hidden>
+                        <h4>Comparte este movimiento</h4>
+                        <p>La fábrica de consignas está activa. Invita a más guerrerenses a sumarse al proyecto de transformación:</p>
+                        
+                        <div class="share-buttons">
+                            <button id="btnShareWhatsApp" class="btn-share btn-whatsapp">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> 
+                                WhatsApp
+                            </button>
+                            <button id="btnShareFacebook" class="btn-share btn-facebook">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>
+                                Facebook
+                            </button>
+                            <button id="btnCopyLink" class="btn-share btn-copy">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> 
+                                <span id="copyLinkText">Copiar Enlace</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -200,18 +233,17 @@
             <div class="section-header">
                 <span class="section-eyebrow">Cobertura en Territorio</span>
                 <h2 class="section-title">Mapa de <span class="accent">Participación</span></h2>
-                <p class="section-desc">El mapa se ilumina en guinda reflejando el volumen de registros reales activos en nuestra plataforma (Supabase).</p>
+                <p class="section-desc">El mapa se ilumina en guinda reflejando el volumen de apoyos reales activos en nuestra base de datos sincronizada.</p>
             </div>
 
             <div class="mapa-card">
                 <div class="mapa-wrapper" id="heatmapContainer">
                     <div class="mapa-svg-container">
                         <svg id="mapaGuerrero" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Basemap simplificado para demo -->
+                            <!-- Basemap simplificado -->
                             <path id="guerreroOutline" d="M 80 280 Q 90 240, 130 220 L 180 200 Q 220 195, 260 210 L 320 225 Q 380 220, 430 245 L 490 260 Q 550 275, 610 295 L 670 320 Q 710 340, 720 390 L 700 420 Q 650 445, 580 450 L 480 440 Q 380 435, 300 430 L 220 425 Q 160 415, 120 395 L 90 360 Q 75 325, 80 280 Z" 
                                   fill="rgba(255, 255, 255, 0.05)" stroke="var(--glass-border-strong)" stroke-width="2"/>
                             
-                            <!-- Regiones Dinámicas -->
                             <circle class="region-hotspot" data-region="Acapulco" cx="320" cy="275" r="30" fill="var(--guinda)" opacity="0.3" />
                             <circle class="region-hotspot" data-region="Centro" cx="430" cy="395" r="40" fill="var(--guinda)" opacity="0.3" />
                             <circle class="region-hotspot" data-region="Costa Chica" cx="180" cy="260" r="35" fill="var(--guinda)" opacity="0.3" />
@@ -232,11 +264,6 @@
                         </svg>
                     </div>
                 </div>
-            </div>
-            
-            <div class="countdown-strip">
-                <div class="countdown-text">Cuenta regresiva al <strong>22 de Junio</strong></div>
-                <div class="countdown-timer" id="countdownClock">00:00:00:00</div>
             </div>
         </div>
     </section>
@@ -273,7 +300,6 @@
                     </div>
                 </form>
 
-                <!-- Estado de Éxito -->
                 <div id="formSuccess" class="form-success" hidden>
                     <div class="success-icon">
                         <svg width="60" height="60" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="#D4A843" stroke-width="2"/><path d="M7 12l3.5 3.5L17 9" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
