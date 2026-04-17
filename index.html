@@ -4,31 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="theme-color" content="#6B1D3A">
-    <meta name="description" content="Esthela Damián Peralta - Coordinación de Morena en Guerrero. Forjada desde joven en el trabajo comunitario. Únete al movimiento rumbo al 22 de junio.">
-    <meta name="keywords" content="Esthela Damián, Morena Guerrero, Coordinación Morena, 22 junio, UAGro">
+    <meta name="description" content="Esthela Damián Peralta - Aspirante a la Coordinación en Guerrero. Forjada desde joven en el trabajo comunitario. 25 años de territorio.">
     
-    <!-- Open Graph -->
-    <meta property="og:title" content="Esthela Damián Peralta | Coordinación Morena Guerrero">
-    <meta property="og:description" content="Forjada desde joven en el trabajo comunitario. 25 años al servicio del territorio guerrerense.">
-    <meta property="og:image" content="hero.jpg">
-    <meta property="og:type" content="website">
+    <title>Esthela Damián | Aspirante a la Coordinación de Guerrero</title>
     
-    <title>Esthela Damián | Centro de Mando Digital · Morena Guerrero</title>
-    
-    <!-- Preconnect -->
+    <!-- Preconnect & Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    
-    <!-- Preload -->
-    <link rel="preload" as="image" href="assets/img/hero-guerrero.jpg">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
     
     <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
-    <link rel="apple-touch-icon" href="assets/icons/favicon.svg">
     <link rel="stylesheet" href="styles.css">
-    
-    <style>
-        body{margin:0;background:#1a0a14;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-    </style>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -43,11 +32,10 @@
                 <span></span><span></span><span></span>
             </button>
             <ul class="nav-menu" id="navMenu">
-                <li><a href="#identidad">Verdad vs. Mito</a></li>
-                <li><a href="#pulso">Pulso Digital</a></li>
-                <li><a href="#mapa">Mapa de Apoyo</a></li>
-                <li><a href="#movilizacion">Únete</a></li>
-                <li><a href="#countdown" class="nav-cta">22 de Junio</a></li>
+                <li><a href="#historia">Quién es Esthela</a></li>
+                <li><a href="#pulso">Pulso Ciudadano</a></li>
+                <li><a href="#mapa">Mapa de Participación</a></li>
+                <li><a href="#sumate" class="nav-cta">Acompáñanos</a></li>
             </ul>
         </div>
     </nav>
@@ -55,14 +43,17 @@
     <!-- ============ HERO SECTION ============ -->
     <section class="hero" id="hero">
         <div class="hero-bg">
-            <img src="assets/img/hero-guerrero.jpg" alt="Guerrero amanecer" class="hero-img" loading="eager" fetchpriority="high">
+            <video autoplay loop muted playsinline class="hero-video" poster="assets/img/hero-guerrero.jpg">
+                <!-- Fallback to a placeholder video URL if local doesn't exist -->
+                <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4" type="video/mp4">
+            </video>
             <div class="hero-overlay"></div>
         </div>
         
         <div class="hero-content">
             <div class="hero-badge">
                 <span class="badge-dot"></span>
-                <span>Rumbo al 22 de Junio · Morena Guerrero</span>
+                <span>Aspirante a la Coordinación de Guerrero</span>
             </div>
             
             <h1 class="hero-title">
@@ -71,168 +62,168 @@
             </h1>
             
             <p class="hero-subtitle">
-                Desde los <strong>15 años</strong>, mi historia comenzó en Guerrero.
-                Hoy, con <strong>25 años de experiencia</strong>, quiero escribir la siguiente etapa contigo.
+                "Mi historia comenzó en Guerrero a los <strong>15 años</strong>." 
+            </p>
+            <p class="hero-regions">
+                Acapulco · Centro · Costa Chica · Costa Grande · La Montaña · Norte · Tierra Caliente · La Sierra · <strong>Un solo Guerrero</strong>
             </p>
             
             <div class="hero-cta">
                 <a href="#pulso" class="btn btn-primary">
-                    <span>Dar mi Pulso Digital</span>
+                    <span>Dar mi Pulso</span>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </a>
-                <a href="#identidad" class="btn btn-ghost">Conocer mi historia</a>
+                <a href="#historia" class="btn btn-ghost">Mi historia</a>
             </div>
         </div>
 
+        <!-- Scroll Indicator -->
         <div class="hero-scroll">
-            <span>Descubre</span>
+            <span>Conoce más</span>
             <div class="scroll-line"></div>
         </div>
     </section>
 
-    <!-- ============ IDENTIDAD Y CONTRASTE ============ -->
-    <section class="section section-identidad" id="identidad">
+    <!-- ============ QUIÉN ES ESTHELA ============ -->
+    <section class="section section-historia" id="historia">
         <div class="container">
             <div class="section-header">
-                <span class="section-eyebrow">Lo que debes saber</span>
-                <h2 class="section-title">Verdad <span class="accent">vs.</span> Mito</h2>
-                <p class="section-desc">Desmentimos con hechos cada desinformación sobre la candidatura.</p>
+                <span class="section-eyebrow">Raíces y Trabajo</span>
+                <h2 class="section-title">¿Quién es <span class="accent">Esthela</span>?</h2>
+                <p class="section-desc">
+                    <em>"Soy una mujer guerrerense de convicciones firmes. Mi compromiso con nuestro estado no es nuevo; es una vida entera dedicada a construir comunidad."</em>
+                </p>
             </div>
 
-            <div class="vm-grid">
-                <!-- CARD MITO -->
-                <div class="vm-card vm-mito">
-                    <div class="vm-tag">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        MITO
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon">15</div>
+                    <div class="timeline-content">
+                        <h3>Inicios a los 15 años</h3>
+                        <p>Inicié mi trabajo comunitario desde muy joven en los barrios de Guerrero, entendiendo de primera mano las necesidades de nuestra gente.</p>
                     </div>
-                    <h3>"Es una aspirante impuesta"</h3>
-                    <p>Circula la idea de que Esthela llegó desde fuera o fue designada sin conocer el territorio guerrerense.</p>
                 </div>
-
-                <!-- CARD VERDAD -->
-                <div class="vm-card vm-verdad">
-                    <div class="vm-tag">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        FALSO · La verdad es:
+                <div class="timeline-item">
+                    <div class="timeline-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3L1 9L12 15L21 10.09V17H23V9L12 3Z" fill="currentColor"/><path d="M5 13.18V17C5 17 8.134 19 12 19C15.866 19 19 17 19 17V13.18L12 16.36L5 13.18Z" fill="currentColor"/></svg></div>
+                    <div class="timeline-content">
+                        <h3>Orgullo UAGro</h3>
+                        <p>Me formé en la Universidad Autónoma de Guerrero, forjando carácter y herramientas para defender las causas justas de mi estado.</p>
                     </div>
-                    <h3>"Esthela nació en Guerrero, se formó en la <span class="uagro">UAGro</span> y ha trabajado por el territorio durante más de 25 años"</h3>
-                    <ul class="verdad-list">
-                        <li><span class="check">✓</span> Nacida y criada en Guerrero</li>
-                        <li><span class="check">✓</span> Egresada de la Universidad Autónoma de Guerrero (UAGro)</li>
-                        <li><span class="check">✓</span> Trabajo comunitario iniciado a los 15 años</li>
-                        <li><span class="check">✓</span> 25+ años en territorio, organización y gestión social</li>
-                    </ul>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">25+</div>
+                    <div class="timeline-content">
+                        <h3>25 años en territorio</h3>
+                        <p>Más de dos décadas de organización, gestión social y recorrido permanente por la Montaña, las Costas y todas las regiones.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ============ PULSO DIGITAL (VOTACIÓN) ============ -->
+    <!-- ============ PULSO CIUDADANO (SUPABASE) ============ -->
     <section class="section section-pulso" id="pulso">
         <div class="container">
             <div class="section-header">
-                <span class="section-eyebrow">Tecnología Pulso Digital</span>
-                <h2 class="section-title">¿Le damos la coordinación de<br>Morena a <span class="accent">Esthela</span>?</h2>
-                <p class="section-desc">Un solo clic. Cero datos personales. 100% anónimo. Así medimos el pulso rumbo al 22 de junio.</p>
+                <span class="section-eyebrow" style="color:var(--guinda); background:rgba(255,255,255,0.95);">Pulso Ciudadano en Vivo</span>
+                <h2 class="section-title">¿Apoyas a Esthela para que sea nuestra Coordinadora en Guerrero?</h2>
+                <p class="section-desc">Tu voto es anónimo. El "Termómetro del Pueblo" se actualiza en tiempo real mediante registros encriptados en nuestra base de datos.</p>
             </div>
 
             <div class="pulso-card" id="pulsoCard">
                 <div class="pulso-options" id="pulsoOptions">
                     <button class="pulso-btn pulso-si" data-vote="si">
                         <div class="pulso-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M7 11v10H4a1 1 0 01-1-1v-8a1 1 0 011-1h3zm4-8l4 6h5a2 2 0 012 2v2l-3 8H7V9l4-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </div>
-                        <span class="pulso-label">Sí, la quiero al frente</span>
+                        <span class="pulso-label">Sí</span>
                         <span class="pulso-sub">Apoyo total</span>
                     </button>
 
-                    <button class="pulso-btn pulso-duda" data-vote="duda">
+                    <button class="pulso-btn pulso-duda" data-vote="pienso">
                         <div class="pulso-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                         </div>
-                        <span class="pulso-label">Aún lo dudo</span>
-                        <span class="pulso-sub">Quiero saber más</span>
+                        <span class="pulso-label">Aún lo pienso</span>
+                        <span class="pulso-sub">Quiero escucharla</span>
                     </button>
 
                     <button class="pulso-btn pulso-no" data-vote="no">
                         <div class="pulso-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M17 13V3H4a1 1 0 00-1 1v8a1 1 0 001 1h3zm4 8l-4-6V3h5a2 2 0 012 2v2l-3 8H7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </div>
-                        <span class="pulso-label">Por ahora no</span>
-                        <span class="pulso-sub">Tengo dudas</span>
+                        <span class="pulso-label">No por ahora</span>
+                        <span class="pulso-sub">Quizá más adelante</span>
                     </button>
                 </div>
 
-                <!-- Resultado tras votar -->
+                <!-- Resultado tras votar (Termómetro del Pueblo) -->
                 <div class="pulso-result" id="pulsoResult" hidden>
                     <div class="result-check">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="#D4A843" stroke-width="2"/><path d="M7 12l3.5 3.5L17 9" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </div>
-                    <h3>Tu pulso ha sido registrado</h3>
-                    <p id="resultMessage">Gracias por participar. Así se ve el pulso en tiempo real:</p>
+                    <h3>Voto Procesado</h3>
+                    <p>Así está el Termómetro del Pueblo en tiempo real:</p>
                     
                     <div class="result-bars" id="resultBars">
                         <div class="bar-row" data-key="si">
-                            <div class="bar-label"><span class="bar-name">Sí, al frente</span><span class="bar-pct" id="pctSi">0%</span></div>
+                            <div class="bar-label"><span class="bar-name">Sí</span><span class="bar-pct" id="pctSi">0%</span></div>
                             <div class="bar-track"><div class="bar-fill bar-si" id="barSi"></div></div>
                         </div>
-                        <div class="bar-row" data-key="duda">
-                            <div class="bar-label"><span class="bar-name">Aún dudo</span><span class="bar-pct" id="pctDuda">0%</span></div>
-                            <div class="bar-track"><div class="bar-fill bar-duda" id="barDuda"></div></div>
+                        <div class="bar-row" data-key="pienso">
+                            <div class="bar-label"><span class="bar-name">Aún lo pienso</span><span class="bar-pct" id="pctPienso">0%</span></div>
+                            <div class="bar-track"><div class="bar-fill bar-duda" id="barPienso"></div></div>
                         </div>
                         <div class="bar-row" data-key="no">
-                            <div class="bar-label"><span class="bar-name">Por ahora no</span><span class="bar-pct" id="pctNo">0%</span></div>
+                            <div class="bar-label"><span class="bar-name">No por ahora</span><span class="bar-pct" id="pctNo">0%</span></div>
                             <div class="bar-track"><div class="bar-fill bar-no" id="barNo"></div></div>
-                        </div>
-                    </div>
-
-                    <div class="result-total">
-                        <span id="totalVotes">0</span> pulsos registrados
-                    </div>
-
-                    <div id="postVoteCTA" class="post-vote-cta" hidden>
-                        <div class="cta-card">
-                            <div class="cta-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L15 8L21 9L16.5 13.5L18 20L12 17L6 20L7.5 13.5L3 9L9 8L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-                            </div>
-                            <div class="cta-content">
-                                <h4>¿Quieres sumarte al cambio?</h4>
-                                <p>Tu pulso es anónimo, pero puedes dar el siguiente paso y elegir un rol en el movimiento.</p>
-                                <a href="#movilizacion" class="btn btn-primary btn-small">Ver roles disponibles</a>
-                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="pulso-privacy">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1 3-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-                    <span>Sin registro · Sin WhatsApp · Sin nombre · Solo tu pulso</span>
+                    <span>Datos cifrados y anónimos · Sincronización en vivo con Supabase</span>
                 </div>
+            </div>
+            
+            <div id="loaderPulso" class="loader-container" hidden>
+                <div class="spinner"></div>
+                <p>Sincronizando con base de datos...</p>
             </div>
         </div>
     </section>
 
-    <!-- ============ HEATMAP DE GUERRERO ============ -->
+    <!-- ============ MAPA DE PARTICIPACIÓN ============ -->
     <section class="section section-mapa" id="mapa">
         <div class="container">
             <div class="section-header">
-                <span class="section-eyebrow">Dashboard de Visualización</span>
-                <h2 class="section-title">Mapa del <span class="accent">Apoyo Digital</span></h2>
-                <p class="section-desc">Así se enciende Guerrero, región por región. Geolocalización anónima por IP.</p>
+                <span class="section-eyebrow">Cobertura en Territorio</span>
+                <h2 class="section-title">Mapa de <span class="accent">Participación</span></h2>
+                <p class="section-desc">El mapa se ilumina en guinda reflejando el volumen de registros reales activos en nuestra plataforma (Supabase).</p>
             </div>
 
             <div class="mapa-card">
-                <div class="mapa-wrapper">
-                    <div class="mapa-svg-container" id="mapaContainer">
-                        <!-- SVG de Guerrero -->
+                <div class="mapa-wrapper" id="heatmapContainer">
+                    <div class="mapa-svg-container">
                         <svg id="mapaGuerrero" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Basemap simplificado para demo -->
                             <path id="guerreroOutline" d="M 80 280 Q 90 240, 130 220 L 180 200 Q 220 195, 260 210 L 320 225 Q 380 220, 430 245 L 490 260 Q 550 275, 610 295 L 670 320 Q 710 340, 720 390 L 700 420 Q 650 445, 580 450 L 480 440 Q 380 435, 300 430 L 220 425 Q 160 415, 120 395 L 90 360 Q 75 325, 80 280 Z" 
-                                  fill="rgba(212, 168, 67, 0.08)" stroke="#D4A843" stroke-width="2" stroke-dasharray="4 3"/>
+                                  fill="rgba(255, 255, 255, 0.05)" stroke="var(--glass-border-strong)" stroke-width="2"/>
+                            
+                            <!-- Regiones Dinámicas -->
+                            <circle class="region-hotspot" data-region="Acapulco" cx="320" cy="275" r="30" fill="var(--guinda)" opacity="0.3" />
+                            <circle class="region-hotspot" data-region="Centro" cx="430" cy="395" r="40" fill="var(--guinda)" opacity="0.3" />
+                            <circle class="region-hotspot" data-region="Costa Chica" cx="180" cy="260" r="35" fill="var(--guinda)" opacity="0.3" />
+                            <circle class="region-hotspot" data-region="Costa Grande" cx="250" cy="380" r="45" fill="var(--guinda)" opacity="0.3" />
+                            <circle class="region-hotspot" data-region="Montaña" cx="480" cy="300" r="38" fill="var(--guinda)" opacity="0.3" />
+                            <circle class="region-hotspot" data-region="Norte" cx="600" cy="420" r="28" fill="var(--guinda)" opacity="0.3" />
+                            <circle class="region-hotspot" data-region="Tierra Caliente" cx="620" cy="340" r="42" fill="var(--guinda)" opacity="0.3" />
+
                             <g id="regionesLabels" style="pointer-events:none">
                                 <text x="180" y="260" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Costa Chica</text>
                                 <text x="320" y="275" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Acapulco</text>
-                                <text x="480" y="300" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Montaña</text>
+                                <text x="480" y="300" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">La Montaña</text>
                                 <text x="620" y="340" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Tierra Caliente</text>
                                 <text x="250" y="380" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Costa Grande</text>
                                 <text x="430" y="395" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Centro</text>
@@ -241,64 +232,54 @@
                         </svg>
                     </div>
                 </div>
-                <div class="mapa-ranking">
-                    <h4>🔥 Top regiones encendidas</h4>
-                    <ol class="ranking-list" id="rankingList"></ol>
-                </div>
+            </div>
+            
+            <div class="countdown-strip">
+                <div class="countdown-text">Cuenta regresiva al <strong>22 de Junio</strong></div>
+                <div class="countdown-timer" id="countdownClock">00:00:00:00</div>
             </div>
         </div>
     </section>
 
-    <!-- ============ COUNTDOWN + REPORTING ============ -->
-    <section class="section section-countdown" id="countdown">
+    <!-- ============ CONVERSIÓN HUMANISTA (FORMULARIO) ============ -->
+    <section class="section section-sumate" id="sumate">
         <div class="container">
-            <div class="countdown-card">
-                <div class="countdown-left">
-                    <span class="section-eyebrow light">Día decisivo</span>
-                    <h2 class="countdown-title">22 de Junio</h2>
-                    <div class="countdown-clock" id="countdownClock">
-                        <div class="clock-unit"><div class="clock-num" id="cdDays">00</div><div class="clock-lbl">Días</div></div>
-                        <div class="clock-sep">:</div>
-                        <div class="clock-unit"><div class="clock-num" id="cdHours">00</div><div class="clock-lbl">Horas</div></div>
-                        <div class="clock-sep">:</div>
-                        <div class="clock-unit"><div class="clock-num" id="cdMins">00</div><div class="clock-lbl">Min</div></div>
-                    </div>
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Conversión Humanista</h2>
+                    <p>¿Quieres ser parte de este camino? Si crees que Guerrero necesita una coordinadora forjada aquí, acompáñanos.</p>
                 </div>
-                <div class="countdown-right">
-                    <h3 class="report-title">📊 Informe Digital</h3>
-                    <div class="report-metric">
-                        <div class="metric-label">Pulsos registrados HOY</div>
-                        <div class="metric-value" id="pulsosHoy">0</div>
-                        <div class="metric-trend trend-up"><span id="trendToday">+0%</span> vs ayer</div>
+                
+                <form id="simpatizanteForm" class="simpatizante-form">
+                    <div class="form-group">
+                        <label for="nombre">Nombre (o apodo)</label>
+                        <input type="text" id="nombre" name="nombre" placeholder="Ejem. Juan Pérez" required>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                    
+                    <div class="form-group">
+                        <label for="municipio">Municipio</label>
+                        <select id="municipio" name="municipio" required>
+                            <option value="" disabled selected>Selecciona tu municipio...</option>
+                            <!-- Se rellenarán dinámicamente con JS (81 municipios) -->
+                        </select>
+                    </div>
 
-    <!-- ============ MOVILIZACIÓN - ROLES ============ -->
-    <section class="section section-movilizacion" id="movilizacion">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-eyebrow">Únete al Movimiento</span>
-                <h2 class="section-title">Elige tu <span class="accent">rol</span> en la estructura</h2>
-            </div>
-            <div class="roles-grid">
-                <div class="rol-card" data-rol="promotor">
-                    <h3>Promotor Digital</h3>
-                    <p>Difunde el movimiento en tus redes y amplifica el mensaje.</p>
-                    <a href="https://wa.me/527474795833?text=Hola,%20quiero%20sumarme%20como%20Promotor" target="_blank" rel="noopener" class="btn btn-rol">Contactar por WhatsApp</a>
-                </div>
-                <div class="rol-card rol-featured" data-rol="enlace">
-                    <div class="rol-badge">Más solicitado</div>
-                    <h3>Enlace de Sección</h3>
-                    <p>Coordina a tus vecinos y lidera tu sección electoral.</p>
-                    <a href="https://wa.me/527474795833?text=Hola,%20quiero%20sumarme%20como%20Enlace" target="_blank" rel="noopener" class="btn btn-rol btn-rol-featured">Contactar por WhatsApp</a>
-                </div>
-                <div class="rol-card" data-rol="contenido">
-                    <h3>Creador de Contenido</h3>
-                    <p>Genera videos, memes y gráficos oficiales para el movimiento.</p>
-                    <a href="https://wa.me/527474795833?text=Hola,%20quiero%20sumarme%20como%20Creador" target="_blank" rel="noopener" class="btn btn-rol">Contactar por WhatsApp</a>
+                    <button type="submit" class="btn btn-primary btn-block" id="btnSubmitForm">
+                        Sumarme al Movimiento
+                    </button>
+                    
+                    <div class="form-privacy">
+                        Solo recabamos información esencial para organizar el territorio.
+                    </div>
+                </form>
+
+                <!-- Estado de Éxito -->
+                <div id="formSuccess" class="form-success" hidden>
+                    <div class="success-icon">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="#D4A843" stroke-width="2"/><path d="M7 12l3.5 3.5L17 9" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3>¡Gracias por sumarte!</h3>
+                    <p>Tu registro nos fortalece. Un agradecimiento muy cálido de parte de Esthela y todo el equipo por unirte a este gran camino forjado en Guerrero.</p>
                 </div>
             </div>
         </div>
@@ -307,19 +288,20 @@
     <!-- ============ FOOTER ============ -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-bottom">
-                <span>© <span id="footerYear"></span> Esthela Damián · Guerrero</span>
+            <div class="footer-content">
+                <span>© 2026 Aspirante Esthela Damián · Guerrero</span>
                 <span>"Forjada desde joven en el trabajo comunitario."</span>
             </div>
         </div>
     </footer>
 
     <!-- ============ WHATSAPP FLOTANTE ============ -->
-    <a href="https://wa.me/527474795833" class="fab-whatsapp" id="fabWhatsapp" target="_blank" rel="noopener">
+    <a href="https://wa.me/527474795833" class="fab-whatsapp" target="_blank" rel="noopener" aria-label="Contacto por WhatsApp">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
     </a>
 
     <div class="toast" id="toast" hidden></div>
+    
     <script src="script.js" defer></script>
 </body>
 </html>
