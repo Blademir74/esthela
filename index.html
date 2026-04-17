@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#6B1D3A">
     <meta name="description" content="Esthela Damián Peralta — Aspirante a la Coordinación en Guerrero. 25 años de servicio público.">
     <meta property="og:title"       content="Esthela Damián | Aspirante a la Coordinación de Guerrero">
-    <meta property="og:description" content="Forjada desde joven en el trabajo comunitario. 25 años. 81 municipios. Un solo Guerrero.">
+    <meta property="og:description" content="Forjada desde joven en el trabajo comunitario. 25 años. 85 municipios. Un solo Guerrero.">
     <meta property="og:image"       content="https://esthela-guerrero.com/assets/img/hero-guerrero.jpg">
     <meta property="og:url"         content="https://esthela-guerrero.com">
     <meta property="og:type"        content="website">
@@ -45,37 +45,27 @@
         </div>
     </nav>
 
-    <!-- HERO -->
+    <!-- ============ HERO SECTION ============ -->
     <section class="hero" id="hero">
         <div class="hero-bg">
-            <video autoplay loop muted playsinline class="hero-video" poster="assets/img/hero-guerrero.jpg">
-                <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4" type="video/mp4">
-            </video>
+            <img src="assets/img/esthela.jpg" alt="Esthela Damián en Guerrero" class="hero-img">
             <div class="hero-overlay"></div>
         </div>
-
+        
         <div class="hero-content">
             <div class="hero-badge">
                 <span class="badge-dot"></span>
-                <span>Aspirante a la Coordinación de Guerrero</span>
+                <span>Aspirante · Morena Guerrero · Rumbo al 22 de Junio</span>
             </div>
-
+            
             <h1 class="hero-title">
                 Forjada desde joven<br>
-                <em class="title-accent">en el trabajo comunitario</em>
+                <span class="title-accent">en el trabajo comunitario</span>
             </h1>
-
-            <p class="hero-subtitle">"Mi historia comenzó en Guerrero a los <strong>15 años</strong>."</p>
-
-            <p class="hero-regions">
-                Acapulco · Centro · Costa Chica · Costa Grande<br class="region-br">
-                La Montaña · Norte · Tierra Caliente · La Sierra<br>
-                <strong class="region-highlight">Un solo Guerrero</strong>
+            
+            <p class="hero-subtitle">
+                "Mi historia comenzó en Guerrero a los <strong>15 años</strong>." 
             </p>
-
-            <!-- CRONÓMETRO CORREGIDO -->
-            <!-- Cada parte en su propio span para que el JS lo actualice por ID -->
-            <div class="hero-countdown-wrap">
                 <p class="cd-top-label">Faltan</p>
                 <div class="cd-row" id="countdownClock">
                     <div class="cd-block">
@@ -98,20 +88,20 @@
                         <span class="cd-lbl">seg</span>
                     </div>
                 </div>
-                <p class="cd-bottom-label">para el día de la elección · 22 jun 2026</p>
+                <p class="cd-bottom-label">para la definición interna de Morena · 22 jun 2026</p>
             </div>
 
             <div class="hero-cta-wrapper">
                 <div class="cta-stack">
                     <a href="#pulso" class="btn btn-primary pulse-btn">
-                        <span>Dar mi Pulso Digital</span>
+                        <span>Sumar mi apoyo</span>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </a>
-                    <p class="cta-subtext">Miles de guerrerenses ya dejaron su apoyo</p>
+                    <p class="cta-subtext">Miles de guerrerenses ya se han sumado</p>
                 </div>
-                <a href="#historia" class="btn btn-ghost">Conocer más</a>
+                <a href="#historia" class="btn btn-ghost">Conocer mi historia</a>
             </div>
 
             <!-- ESTADÍSTICAS (diseño de foto referencia) -->
@@ -123,16 +113,16 @@
                     </svg>
                     <span class="stat-num">25</span>
                     <span class="stat-unit">años</span>
-                    <span class="stat-desc">de trayectoria</span>
+                    <span class="stat-desc">SIRVIENDO A GUERRERO</span>
                 </div>
                 <div class="stat-card">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="2"/>
                         <circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="2"/>
                     </svg>
-                    <span class="stat-num">81</span>
-                    <span class="stat-unit">municipios</span>
-                    <span class="stat-desc">visitados y escuchados</span>
+                    <span class="stat-num">7</span>
+                    <span class="stat-unit">regiones</span>
+                    <span class="stat-desc">UN SOLO GUERRERO</span>
                 </div>
                 <div class="stat-card">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -140,9 +130,9 @@
                         <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
-                    <span class="stat-num">1</span>
-                    <span class="stat-unit">movimiento</span>
-                    <span class="stat-desc">por Guerrero</span>
+                    <span class="stat-num" id="kpiVoces">+5,400</span>
+                    <span class="stat-unit">voces</span>
+                    <span class="stat-desc">Y CONTANDO</span>
                 </div>
             </div>
         </div>

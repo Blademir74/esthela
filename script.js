@@ -107,7 +107,7 @@ function initCountdown() {
         if (s) s.textContent = pad(secs);
     };
 
-    update(); // renderiza inmediatamente, sin esperar 1 segundo
+    update();
     setInterval(update, 1000);
 }
 
@@ -169,6 +169,10 @@ function renderBars(counts) {
     setPct('pctSi',     pSi);
     setPct('pctPienso', pDudo);
     setPct('pctNo',     pNo);
+
+    // Actualizar KPI Voces (+5400 base)
+    const kpiVoces = document.getElementById('kpiVoces');
+    if (kpiVoces) kpiVoces.textContent = '+' + (total + 5400).toLocaleString('en-US');
 
     // Animar barras (forzar reflow primero)
     const setBar = (id, val) => {

@@ -188,15 +188,18 @@ body::before {
     overflow: hidden;
 }
 .hero-bg { position: absolute; inset: 0; z-index: 0; }
-.hero-video { width: 100%; height: 100%; object-fit: cover; filter: saturate(1.15) contrast(1.05); }
+.hero-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center 50%;
+}
+@media (max-width: 600px) {
+    .hero-img { object-position: center 30%; }
+}
 .hero-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(
-        0deg,
-        var(--dark-bg) 0%,
-        rgba(20,5,11,.65) 45%,
-        rgba(107,29,58,.35) 100%
-    );
+    /* OVERLAY SOLICITADO */
+    background: linear-gradient(180deg, rgba(20, 5, 11, 0.3) 0%, rgba(107, 29, 58, 0.5) 40%, rgba(20, 5, 11, 0.92) 100%);
 }
 
 .hero-content {
@@ -237,17 +240,12 @@ body::before {
 
 .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 9vw, 4.5rem);
-    font-weight: 900;
-    line-height: 1.08;
-    letter-spacing: .02em;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-    text-shadow: 0 4px 24px rgba(0,0,0,.7);
-    /* evita que el texto se salga del viewport en móvil */
-    word-break: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
+    font-size: clamp(28px, 7vw, 72px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    text-transform: none;
 }
 .title-accent {
     display: block;
@@ -355,10 +353,13 @@ body::before {
 .cta-subtext {
     font-size: .75rem; opacity: .75; margin: 0; color: var(--dorado-light); font-weight: 600;
 }
-@media (max-width: 480px) {
-    .hero-cta-wrapper { flex-direction: column; align-items: stretch; }
-    .cta-stack .btn { width: 100%; }
-    .btn-ghost { width: 100%; justify-content: center; }
+@media (max-width: 600px) {
+    .cd-block:last-child, .cd-colon:last-of-type { display: none; }
+    .cd-num { font-size: clamp(28px, 8vw, 42px); }
+    .hero-cta-wrapper { flex-direction: column; width: 100%; }
+    .hero-cta-wrapper .cta-stack { width: 100%; }
+    .hero-ghost-btn { width: 100%; text-align: center; justify-content: center; min-height: 54px; }
+    .btn-primary { width: 100%; }
 }
 
 /* ─── ESTADÍSTICAS HERO ──────────────────── */
@@ -452,9 +453,10 @@ body::before {
 .btn-primary:hover    { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(212,168,67,.6); }
 .btn-primary:disabled { opacity: .55; pointer-events: none; }
 .btn-ghost {
-    background: rgba(255,255,255,.06);
-    border: 1px solid var(--dorado);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(212, 168, 67, 0.6);
     color: var(--white);
+    backdrop-filter: blur(10px);
 }
 .btn-ghost:hover { background: rgba(212,168,67,.15); }
 .btn-block { width: 100%; }
