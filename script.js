@@ -167,9 +167,9 @@ class EsthelaLandingApp {
         loader.hidden = false;
 
         try {
-            // Guardar en Supabase tabla nueva 'apoyos_guerrero'
+            // Guardar en Supabase tabla votos_pulso
             const { error } = await supabase
-                .from('apoyos_guerrero')
+                .from('votos_pulso')
                 .insert([
                     {
                         anon_id: this.userId,
@@ -211,11 +211,11 @@ class EsthelaLandingApp {
         let siCount = 0, piensoCount = 0, noCount = 0;
 
         try {
-            const { data } = await supabase.from('apoyos_guerrero').select('opcion');
+            const { data } = await supabase.from('votos_pulso').select('opcion');
             
             if (data && data.length > 0) {
                 siCount = data.filter(v => v.opcion === 'si').length;
-                piensoCount = data.filter(v => v.opcion === 'pienso').length;
+                piensoCount = data.filter(v => v.opcion === 'pienso' || v.opcion === 'dudo').length;
                 noCount = data.filter(v => v.opcion === 'no').length;
             } else {
                 // Fallback Mock de alta participación
@@ -303,6 +303,8 @@ class EsthelaLandingApp {
 
             const nombre = document.getElementById('nombre').value;
             const municipio = document.getElementById('municipio').value;
+            const rolElement = document.getElementById('rol');
+            const rol = rolElement ? rolElement.value : 'Simpatizante';
 
             try {
                 const { error } = await supabase
@@ -311,6 +313,7 @@ class EsthelaLandingApp {
                         {
                             nombre: nombre.trim(),
                             municipio: municipio,
+                            rol: rol,
                             anon_id: this.userId,
                             created_at: new Date().toISOString()
                         }
