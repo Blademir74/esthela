@@ -63,30 +63,6 @@ class PulsoDigital {
                 navMenu.classList.toggle('active');
             });
         }
-
-        const rolForm = document.getElementById('rolForm');
-        if (rolForm) {
-            rolForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.handleRegistration();
-            });
-        }
-
-        const closeModals = document.querySelectorAll('[data-close-modal]');
-        closeModals.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const modal = document.getElementById('modalRol');
-                if (modal) modal.hidden = true;
-            });
-        });
-
-        const triggerBtns = document.querySelectorAll('[data-open-form]');
-        triggerBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const rol = btn.dataset.openForm;
-                this.openModal(rol);
-            });
-        });
     }
 
     handleVote(vote) {
@@ -181,30 +157,6 @@ class PulsoDigital {
         };
         setInterval(update, 60000);
         update();
-    }
-
-    handleRegistration() {
-        const success = document.getElementById('modalSuccess');
-        const form = document.getElementById('rolForm');
-        if (success && form) {
-            form.hidden = true;
-            success.hidden = false;
-        }
-    }
-
-    openModal(rol) {
-        const modal = document.getElementById('modalRol');
-        const title = document.getElementById('modalTitle');
-        if (modal && title) {
-            modal.hidden = false;
-            title.textContent = `Sumarme como ${rol.charAt(0).toUpperCase() + rol.slice(1)}`;
-            const form = document.getElementById('rolForm');
-            const success = document.getElementById('modalSuccess');
-            if (form && success) {
-                form.hidden = false;
-                success.hidden = true;
-            }
-        }
     }
 
     showToast(msg) {
