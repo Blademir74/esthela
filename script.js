@@ -13,8 +13,8 @@
 
 // ============= CONFIGURACIÓN SUPABASE =============
 // Reemplaza con tus credenciales. Si los dejas vacíos, funciona en modo local.
-const SUPABASE_URL    = ''; // Ej: 'https://iwqvrnnejiwadfxssumj.supabase.co'
-const SUPABASE_ANON_KEY = ''; // Ej: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3cXZybm5laml3YWRmeHNzdW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNzI2MTMsImV4cCI6MjA5MTk0ODYxM30.4pfmGh1haz59fWbdy_YR8Nra2Y_Tc5yNhFRScuw1mZw'
+const SUPABASE_URL    = 'https://efnfplynevefniadgidi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmbmZwbHluZXZlZm5pYWRnaWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2ODc4MzUsImV4cCI6MjA3NTI2MzgzNX0.jNj-rnzMwV2WEGx8lqDjtNPKS3ACmTD4faAnr3eFrHI';
 const SUPABASE_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 
 // ============= CONFIGURACIÓN DEL MOVIMIENTO =============
