@@ -293,9 +293,18 @@ class PulsoDigital {
         this.resultMessage.textContent = msgs[vote] || 'Tu pulso ha sido registrado.';
         
         setTimeout(() => {
-            this.optionsContainer.style.display = 'none';
-            this.result.hidden = false;
+            if (this.optionsContainer) this.optionsContainer.style.display = 'none';
+            if (this.result) this.result.hidden = false;
             this.renderStats();
+
+            // Mostrar CTA opcional de movilización tras voto positivo/duda
+            const postVote = $('#postVoteCTA');
+            if (postVote && (vote === 'si' || vote === 'duda')) {
+                setTimeout(() => {
+                    postVote.hidden = false;
+                    postVote.classList.add('fade-in');
+                }, silent ? 0 : 1000);
+            }
         }, silent ? 0 : 400);
     }
     

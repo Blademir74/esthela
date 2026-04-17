@@ -1373,3 +1373,44 @@ body::after {
     .hero-img { filter: none; }
     body::after { display: none; }
 }
+
+/* ========== POST-VOTE CTA ========== */
+.post-vote-cta {
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--glass-border);
+    animation: fadeInUp 0.8s ease-out;
+}
+.cta-card {
+    background: rgba(212, 168, 67, 0.1);
+    border: 1.5px solid var(--dorado);
+    border-radius: var(--radius);
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-align: left;
+}
+.cta-icon {
+    width: 48px; height: 48px;
+    background: var(--dorado);
+    color: var(--guinda-deep);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.cta-content h4 {
+    font-size: 18px;
+    margin-bottom: 4px;
+    color: var(--dorado-light);
+}
+.cta-content p {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 12px;
+}
+@media (max-width: 640px) {
+    .cta-card { flex-direction: column; text-align: center; }
+}
