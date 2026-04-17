@@ -254,7 +254,15 @@ body::before {
 
 /* CTA Wrapper */
 .hero-cta-wrapper {
-    display: flex; justify-content: center; align-items: stretch; gap: 16px; flex-wrap: wrap; margin-bottom: 40px;
+    display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 40px;
+}
+@media (max-width: 640px) {
+    .hero-cta-wrapper { flex-direction: column; gap: 12px; align-items: stretch; }
+    .hero-ghost-btn { height: auto; padding: 14px; }
+    .hero-cta-main .btn-primary { width: 100%; padding: 16px 20px; font-size: 16px; min-height: 54px; }
+    .hero-cta-subtext { text-align: center; margin-top: 4px; line-height: 1.3; }
+    .hero-countdown-label { font-size: 13px; }
+    .countdown-highlight { font-size: 16px; display: block; margin-top: 5px; }
 }
 .hero-cta-main {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -439,6 +447,11 @@ body::before {
 }
 .pulso-label { font-size: 18px; font-weight: 700; }
 .pulso-sub { font-size: 13px; opacity: 0.7; }
+@media (max-width: 600px) {
+    .pulso-btn { flex-direction: row; text-align: left; padding: 16px; gap: 15px; }
+    .pulso-icon { width: 48px; height: 48px; margin-bottom: 0; flex-shrink: 0; }
+    .pulso-label { font-size: 16px; display: block; }
+}
 .pulso-privacy {
     margin-top: 30px; display: flex; align-items: center; justify-content: center; gap: 8px;
     font-size: 12px; opacity: 0.6; text-align: center;
@@ -488,6 +501,10 @@ body::before {
 
 .share-buttons {
     display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+    .share-buttons { flex-direction: column; gap: 10px; }
+    .btn-share { width: 100%; min-width: unset; justify-content: center; }
 }
 .btn-share {
     display: flex; align-items: center; justify-content: center; gap: 8px;

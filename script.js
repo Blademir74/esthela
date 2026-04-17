@@ -102,7 +102,7 @@ class EsthelaLandingApp {
 
     // --- Countdown 22 de Junio ---
     setupCountdown() {
-        const target = new Date('2026-06-22T00:00:00-06:00').getTime();
+        const target = new Date('2026-06-22T00:00:00').getTime(); // Fallback safer timezone parsing
         const el = document.getElementById('countdownClock');
         if (!el) return;
 
@@ -118,12 +118,13 @@ class EsthelaLandingApp {
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
 
             const pad = num => num.toString().padStart(2, '0');
-            el.innerText = `${pad(days)} d : ${pad(hours)} h : ${pad(mins)} m`;
+            el.innerText = `${pad(days)} d : ${pad(hours)} h : ${pad(mins)} m : ${pad(secs)} s`;
         };
 
-        setInterval(update, 60000);
+        setInterval(update, 1000); // Actualiza cada segundo
         update(); // Inicial
     }
 
