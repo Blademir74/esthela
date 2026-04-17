@@ -260,7 +260,7 @@ class EsthelaLandingApp {
         const btnWa = document.getElementById('btnShareWhatsApp');
         if(btnWa) {
             btnWa.addEventListener('click', () => {
-                const msg = `¡Yo ya respaldé a Esthela Damián! Es de Guerrero y tiene la experiencia que necesitamos. Suma tu apoyo aquí: ${currentUrl}`;
+                const msg = `¡Yo ya respaldé a Esthela Damián! Únete aquí: ${currentUrl}`;
                 window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
             });
         }
