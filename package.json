@@ -5,7 +5,6 @@
   "main": "script.js",
   "scripts": {
     "start": "http-server",
-    "build": "mkdir -p dist && cp -r index.html script.js styles.css assets public dist/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
