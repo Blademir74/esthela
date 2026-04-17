@@ -49,14 +49,34 @@ const MUNICIPIOS = [
     "Marquelia","Cochoapa el Grande","José Joaquín de Herrera","Juchitán","Iliatenco"
 ];
 
-/* ─── 4. HELPERS ─────────────────────────── */
-function getAnonId() {
-    let id = localStorage.getItem(KEY_USER_ID);
-    if (!id) {
-        id = 'u_' + Math.random().toString(36).slice(2,11) + Date.now().toString(36);
-        localStorage.setItem(KEY_USER_ID, id);
+/* ─── 4. HELPERS (FINGERPRINTING) ───────── */
+async function generateFingerprint() {
+    const data = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        new Date().getTimezoneOffset(),
+        Intl.DateTimeFormat().resolvedOptions().timeZone
+    ].join('|');
+
+    const msgBuffer = new TextEncoder().encode(data);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+}
+
+let cachedAnonId = localStorage.getItem(KEY_USER_ID);
+
+async function getAnonId() {
+    if (cachedAnonId) return cachedAnonId;
+    try {
+        const fp = await generateFingerprint();
+        cachedAnonId = 'f_' + fp;
+    } catch {
+        cachedAnonId = 'u_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
     }
-    return id;
+    localStorage.setItem(KEY_USER_ID, cachedAnonId);
+    return cachedAnonId;
 }
 
 function pad(n) { return String(n).padStart(2, '0'); }
@@ -210,34 +230,48 @@ async function registerVote(voteType) {
     votingInProgress = true;
 
     const optionsDiv = document.getElementById('pulsoOptions');
-    const loader     = document.getElementById('loaderPulso');
+    const resultDiv  = document.getElementById('pulsoResult');
+    const shareMod   = document.getElementById('shareModule');
 
+    // 1. UI OPTIMISTA: Mostrar resultados AL INSTANTE
     if (optionsDiv) optionsDiv.hidden = true;
-    if (loader)     loader.hidden     = false;
+    if (resultDiv)  resultDiv.hidden  = false;
+    
+    // Simular un incremento local para que el usuario vea su impacto inmediato
+    const currentVoces = document.getElementById('kpiVoces');
+    if (currentVoces) {
+        const val = parseInt(currentVoces.textContent.replace(/[^0-9]/g, '')) || 5400;
+        currentVoces.textContent = '+' + (val + 1).toLocaleString('en-US');
+    }
 
+    // Cargar resultados previos para las barras mientras se sincroniza
+    fetchVoteCounts().then(counts => {
+        // Añadir el voto actual al conteo local
+        counts[voteType] = (counts[voteType] || 0) + 1;
+        renderBars(counts);
+        if (shareMod) shareMod.hidden = false;
+    });
+
+    // 2. SINCRONIZACIÓN EN SEGUNDO PLANO (Background Sync)
     try {
-        const { error } = await db.from('votos_pulso').insert([{
-            anon_id:    getAnonId(),
+        const anonId = await getAnonId();
+        localStorage.setItem(KEY_VOTED, voteType);
+
+        // Disparar insert sin esperar (no await)
+        db.from('votos_pulso').insert([{
+            anon_id:    anonId,
             opcion:     voteType,
             created_at: new Date().toISOString()
-        }]);
+        }]).then(({ error }) => {
+            if (error) console.warn('[Pulso Sync] Background warning:', error.message);
+            else console.log('[Pulso Sync] Voto sincronizado exitosamente.');
+        });
 
-        if (error) {
-            // No bloqueamos si es duplicado de anon_id — continuamos
-            console.warn('[Pulso] Insert warning:', error.message);
-        }
-
-        // Guardar en localStorage para no volver a mostrar botones
-        localStorage.setItem(KEY_VOTED, voteType);
-        showToast('Tu voto quedó registrado de forma anónima.');
-
-        await showPulsoResult(voteType);
+        showToast('¡Tu voz cuenta! Registrada al instante.');
 
     } catch (err) {
-        console.error('[Pulso] Error de red:', err);
-        showToast('Problema de conexión. Intenta de nuevo.');
-        if (optionsDiv) optionsDiv.hidden = false;
-        if (loader)     loader.hidden     = true;
+        console.error('[Pulso] Error crítico:', err);
+    } finally {
         votingInProgress = false;
     }
 }
@@ -329,10 +363,9 @@ function initForm() {
         const btn       = document.getElementById('btnSubmitForm');
         const nombre    = (document.getElementById('nombre')?.value || '').trim();
         const municipio = document.getElementById('municipio')?.value || '';
-        const rol       = document.getElementById('rol')?.value || '';
 
-        if (!nombre || !municipio || !rol) {
-            showToast('Completa todos los campos.');
+        if (!nombre || !municipio) {
+            showToast('Completa tu nombre y municipio.');
             return;
         }
 
@@ -340,11 +373,11 @@ function initForm() {
         btn.disabled    = true;
 
         try {
+            const anonId = await getAnonId();
             const { error } = await db.from('simpatizantes').insert([{
                 nombre,
                 municipio,
-                rol,
-                anon_id:    getAnonId(),
+                anon_id:    anonId,
                 created_at: new Date().toISOString()
             }]);
 
