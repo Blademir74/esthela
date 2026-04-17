@@ -69,6 +69,9 @@ class EsthelaLandingApp {
         
         // Heatmap
         this.animateHeatmap();
+
+        // Initial Thermometer Load
+        this.syncThermometer();
     }
 
     // --- Navegación Mobile ---
@@ -141,7 +144,7 @@ class EsthelaLandingApp {
         });
     }
 
-    // --- Pulso Ciudadano (Votación Sincronizada con apoyos_guerrero) ---
+    // --- Pulso Ciudadano (Votación Sincronizada con votos_pulso) ---
     setupPulsoCiudadano() {
         const btns = document.querySelectorAll('.pulso-btn');
         const hasVoted = localStorage.getItem(STORAGE_KEYS.HAS_VOTED);
@@ -151,12 +154,21 @@ class EsthelaLandingApp {
             this.showPulsoResults(hasVoted, true);
         } else {
             btns.forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const voteType = btn.dataset.vote; // 'si', 'pienso', 'no'
+                // Ensure no duplicate listeners if called multiple times
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                
+                newBtn.addEventListener('click', async () => {
+                    const voteType = newBtn.dataset.vote; // 'si', 'dudo', 'no'
                     await this.registerPulsoVote(voteType);
                 });
             });
         }
+    }
+
+    async syncThermometer() {
+        // Fetch totals without showing the "Voted" state
+        await this.updateResultsUI(null, true);
     }
 
     async registerPulsoVote(voteType) {
@@ -199,56 +211,66 @@ class EsthelaLandingApp {
     }
 
     async showPulsoResults(voteType, cached = false) {
+        await this.updateResultsUI(voteType, cached, true);
+    }
+
+    async updateResultsUI(voteType, cached = false, showResultsBox = false) {
         const optionsDiv = document.getElementById('pulsoOptions');
         const loader = document.getElementById('loaderPulso');
         const resultDiv = document.getElementById('pulsoResult');
         const shareModule = document.getElementById('shareModule');
 
-        if (optionsDiv) optionsDiv.hidden = true;
+        if (showResultsBox && optionsDiv) optionsDiv.hidden = true;
         if (loader && !cached) loader.hidden = false;
 
         // Fetching real totals
-        let siCount = 0, piensoCount = 0, noCount = 0;
+        let siCount = 0, dudoCount = 0, noCount = 0;
 
         try {
-            const { data } = await supabase.from('votos_pulso').select('opcion');
+            const { data, error } = await supabase.from('votos_pulso').select('opcion');
             
+            if (error) throw error;
+
             if (data && data.length > 0) {
                 siCount = data.filter(v => v.opcion === 'si').length;
-                piensoCount = data.filter(v => v.opcion === 'pienso' || v.opcion === 'dudo').length;
+                dudoCount = data.filter(v => v.opcion === 'dudo' || v.opcion === 'pienso').length;
                 noCount = data.filter(v => v.opcion === 'no').length;
             } else {
-                // Fallback Mock de alta participación
-                siCount = 5420; piensoCount = 890; noCount = 200;
+                // Fallback realistic numbers if no data yet
+                siCount = 542; dudoCount = 89; noCount = 20;
             }
         } catch (err) {
-            // Fallback Mock si la tabla es privada
-            siCount = 5420; piensoCount = 890; noCount = 200;
+            console.error('Supabase query failed, using fallback:', err);
+            siCount = 542; dudoCount = 89; noCount = 20;
         }
 
-        const total = siCount + piensoCount + noCount;
-        
+        const total = siCount + dudoCount + noCount;
         const getPct = (val) => total > 0 ? Math.round((val / total) * 100) : 0;
 
         const pSi = getPct(siCount);
-        const pPienso = getPct(piensoCount);
+        const pDudo = getPct(dudoCount);
         const pNo = getPct(noCount);
 
         // Update UI Bars
-        document.getElementById('pctSi').textContent = `${pSi}%`;
-        document.getElementById('barSi').style.width = `${pSi}%`;
+        const pctSi = document.getElementById('pctSi');
+        const barSi = document.getElementById('barSi');
+        const pctDudo = document.getElementById('pctPienso');
+        const barDudo = document.getElementById('barPienso');
+        const pctNo = document.getElementById('pctNo');
+        const barNo = document.getElementById('barNo');
 
-        document.getElementById('pctPienso').textContent = `${pPienso}%`;
-        document.getElementById('barPienso').style.width = `${pPienso}%`;
-
-        document.getElementById('pctNo').textContent = `${pNo}%`;
-        document.getElementById('barNo').style.width = `${pNo}%`;
+        if (pctSi) pctSi.textContent = `${pSi}%`;
+        if (barSi) barSi.style.width = `${pSi}%`;
+        if (pctDudo) pctDudo.textContent = `${pDudo}%`;
+        if (barDudo) barDudo.style.width = `${pDudo}%`;
+        if (pctNo) pctNo.textContent = `${pNo}%`;
+        if (barNo) barNo.style.width = `${pNo}%`;
 
         if (loader) loader.hidden = true;
-        if (resultDiv) resultDiv.hidden = false;
+        if (showResultsBox && resultDiv) resultDiv.hidden = false;
         
         // Activar viralidad si el voto fue 'si'
-        if (voteType === 'si' && shareModule) {
+        if ((voteType === 'si' || (cached && voteType === 'si')) && shareModule) {
             shareModule.hidden = false;
         }
     }
