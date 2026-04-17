@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/esthela-landing/esthela-landing/$1"
+    }
+  ]
+}
