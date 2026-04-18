@@ -56,9 +56,10 @@ try {
 /* ═══════════════════════════════════════════════
    2. CONSTANTES DE ALMACENAMIENTO
    ═══════════════════════════════════════════════ */
-const KEY_FP    = 'esthela_fp_v4';    // fingerprint SHA-256
-const KEY_VOTED = 'esthela_voted_v4'; // voto registrado: 'si' | 'dudo' | 'no'
-const BASE_VOCES = 5400;              // base social para el KPI de voces
+const KEY_FP      = 'esthela_fp_v4';    // fingerprint SHA-256
+const KEY_VOTED   = 'esthela_voted_v4'; // voto registrado: 'si' | 'dudo' | 'no'
+const KEY_PENDING = 'esthela_pending_sync_v1'; // para sincronización diferida
+const BASE_VOCES  = 5400;              // base social para el KPI de voces
 
 
 /* ═══════════════════════════════════════════════
@@ -269,18 +270,19 @@ let votingInProgress = false;
  * Si falla (sin red), retorna fallback numérico.
  */
 async function fetchVoteCounts() {
-    if (!db) return { si: 542, dudo: 89, no: 20 };
+    // Fallback inicial robusto (mientras carga o si falla)
+    const fallback = { total: 0, si: 542, dudo: 89, no: 20 };
+    
+    if (!db) return fallback;
 
     try {
-        // Ejecutar consulta SELECT count(*)
+        // Ejecutar consulta SELECT count(*) de forma silenciosa e inmediata
         const { count, error } = await db
             .from('votos_pulso')
             .select('*', { count: 'exact', head: true });
 
         if (error) throw error;
 
-        // También necesitamos el desglose para las barras, pero el usuario pidió count(*)
-        // para el contador del Hero. Obtenemos el desglose también para mantener la UI completa.
         const { data: breakdown, error: errB } = await db
             .from('votos_pulso')
             .select('opcion');
@@ -294,8 +296,9 @@ async function fetchVoteCounts() {
             no:   breakdown.filter(v => v.opcion === 'no').length,
         };
     } catch (err) {
-        console.error('Error de Supabase: [fetchVoteCounts]', err.message);
-        return { total: 0, si: 542, dudo: 89, no: 20 };
+        // Silenciar error en console para el usuario (fetchVoteCounts suele fallar por red)
+        console.warn('[Pulso] Usando datos locales por interrupción de conexión.');
+        return fallback;
     }
 }
 
@@ -355,10 +358,39 @@ function renderBars(counts) {
  *   Si hay red → el voto se persiste. Si no → se reintentará en la próxima sesión.
  *   En ningún caso el usuario queda bloqueado esperando.
  */
+/**
+ * Sincroniza votos que quedaron pendientes por falta de red.
+ * Se ejecuta al inicio y después de cada interacción.
+ */
+async function syncPendingVotes() {
+    if (!db) return;
+    
+    const pending = localStorage.getItem(KEY_PENDING);
+    if (!pending) return;
+
+    try {
+        const anonId = await getAnonId();
+        const { error } = await db.from('votos_pulso').insert([{
+            anon_id:    anonId,
+            opcion:     pending,
+            created_at: new Date().toISOString()
+        }]);
+
+        if (!error || error.code === '23505') {
+            console.log('[Sync] Votos pendientes sincronizados con éxito.');
+            localStorage.removeItem(KEY_PENDING);
+            // Refrescar contadores reales tras la sincronización
+            const realCounts = await fetchVoteCounts();
+            renderBars(realCounts);
+        }
+    } catch (err) {
+        // Falla silenciosa: se reintentará en la próxima carga de página
+    }
+}
+
 async function registerVote(voteType) {
     // 1. Anti-duplicado: Comprobar localStorage antes de cualquier acción
     if (localStorage.getItem(KEY_VOTED)) {
-        console.log("Ya has registrado tu voz anteriormente.");
         return;
     }
 
@@ -367,62 +399,32 @@ async function registerVote(voteType) {
 
     const optionsDiv = document.getElementById('pulsoOptions');
     const resultDiv  = document.getElementById('pulsoResult');
-    const shareMod   = document.getElementById('shareModule');
     const loader     = document.getElementById('loaderPulso');
+    const shareMod   = document.getElementById('shareModule');
 
-    try {
-        // UI Feedback: Mostrar loader mientras ocurre la sincronización estricta
-        if (optionsDiv) optionsDiv.hidden = true;
-        if (loader)     loader.hidden     = false;
+    // ── ESTRATEGIA QUIRÚRGICA: VOTO GARANTIZADO (OFFLINE-FIRST) ──
 
-        const anonId = await getAnonId();
+    // A) Guardar INMEDIATAMENTE en LocalStorage (No se pierde el dato aunque se cierre el navegador)
+    localStorage.setItem(KEY_VOTED, voteType);
+    localStorage.setItem(KEY_PENDING, voteType);
 
-        if (!db) {
-            throw new Error("Supabase no inicializado durante la votación.");
-        }
+    // B) UI OPTIMISTA: Mostrar éxito al instante sin esperar a la red
+    if (optionsDiv) optionsDiv.hidden = true;
+    if (resultDiv)  resultDiv.hidden  = false;
+    if (loader)     loader.hidden     = true;
 
-        // 2. Lógica de Votación: Insertar fila en la tabla votos_pulso
-        const { error: insertError } = await db.from('votos_pulso').insert([{
-            anon_id:    anonId,
-            opcion:     voteType,
-            created_at: new Date().toISOString()
-        }]);
+    // Simular incremento en UI para feedback visual inmediato
+    const currentCounts = { total: 0, si: 542, dudo: 89, no: 20 }; // Fallback base
+    currentCounts[voteType]++;
+    renderBars(currentCounts);
+    
+    if (shareMod) shareMod.hidden = false;
+    showToast('¡Tu voz ha sido registrada con éxito!');
 
-        if (insertError) {
-            // Manejo especial de duplicado a nivel DB (por si limpia localStorage)
-            if (insertError.code === '23505') {
-                console.log("Voto duplicado detectado por la base de datos.");
-            } else {
-                throw insertError;
-            }
-        }
-
-        // 3. Actualización en Tiempo Real: Consulta SELECT count(*) inmediatamente después de insertar
-        const counts = await fetchVoteCounts();
-
-        // Actualizar UI con resultados reales
-        if (loader)    loader.hidden = true;
-        if (resultDiv) resultDiv.hidden = false;
-        
-        renderBars(counts);
-
-        // Guardar persistencia local
-        localStorage.setItem(KEY_VOTED, voteType);
-        
-        if (shareMod) shareMod.hidden = false;
-        showToast('¡Tu voz ha sido contada con éxito!');
-        console.log("Voto sincronizado exitosamente con Supabase.");
-
-    } catch (err) {
-        console.error(`Error de Supabase: [${err.message}]`);
-        showToast('Error al registrar tu voz. Inténtalo de nuevo.');
-        
-        // Rollback UI si falló
-        if (optionsDiv) optionsDiv.hidden = false;
-        if (loader)     loader.hidden     = true;
-    } finally {
+    // C) Sincronización en segundo plano (Silenciosa)
+    syncPendingVotes().finally(() => {
         votingInProgress = false;
-    }
+    });
 }
 
 /**
@@ -644,8 +646,11 @@ function bootstrap() {
     initForm();
     initMap();
 
-    // Pre-computar el fingerprint en background para que esté listo cuando se vote
-    getAnonId().catch(() => {}); // fire-and-forget, sin bloquear el UI
+    // 1. Sincronizar votos pendientes de sesiones anteriores
+    syncPendingVotes();
+
+    // 2. Pre-computar el fingerprint en background
+    getAnonId().catch(() => {});
 }
 
 if (document.readyState === 'loading') {
