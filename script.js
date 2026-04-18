@@ -586,7 +586,11 @@ function initForm() {
         if (error) throw error;
 
         // ✅ Éxito: Oculta el formulario y muestra el mensaje del HTML
-        form.hidden = true;
+        // Oculta todo el formulario, incluyendo el encabezado con el mensaje viejo
+        document.getElementById('simpatizanteForm').hidden = true;
+        document.querySelector('.form-header').hidden = true;
+        // Muestra tu mensaje personalizado
+        document.getElementById('formSuccess').hidden = false;   
 
     } catch (err) {
         // ✅ En caso de error, restaura el botón
