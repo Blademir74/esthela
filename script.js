@@ -558,10 +558,11 @@ function initForm() {
 
         const btn       = document.getElementById('btnSubmitForm');
         const nombre    = (document.getElementById('nombre')?.value || '').trim();
+        const whatsapp  = (document.getElementById('whatsapp')?.value || '').trim();
         const municipio = document.getElementById('municipio')?.value || '';
 
-        if (!nombre || !municipio) {
-            showToast('Completa tu nombre y municipio.');
+        if (!nombre || !municipio || !whatsapp) {
+            showToast('Completa tu nombre, whatsapp y municipio.');
             return;
         }
 
@@ -575,11 +576,13 @@ function initForm() {
                 throw new Error("Conexión a base de datos no disponible.");
             }
 
-            // Inserción asíncrona a la tabla 'movilizadores'
+            // Inserción asíncrona a la tabla 'movilizadores' con mapeo exacto al ADN de la DB
             const { error } = await db.from('movilizadores').insert([{
                 nombre,
+                whatsapp,
                 municipio,
-                anon_id:    anonId
+                rol:         'simpatizante', // Valor por defecto solicitado por el NOT NULL
+                fingerprint: anonId
             }]);
             
             if (error) {
