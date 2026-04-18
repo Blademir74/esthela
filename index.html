@@ -1,43 +1,39 @@
 <!DOCTYPE html>
 <html lang="es-MX">
 <head>
-    <!-- SEO & Metadatos de Humanización -->
-    <title>Esthela Damián | Forjada en el trabajo comunitario</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="theme-color" content="#6B1D3A">
-    <meta name="description" content="Mi historia comenzó en Guerrero a los 15 años. Hoy regresamos con experiencia para servir a nuestra tierra. ¡Suma tu apoyo!">
-    
-    <!-- OpenGraph (WhatsApp, FB, Telegram) -->
-    <meta property="og:title" content="Esthela Damián | El Pulso de Guerrero 🏔️">
-    <meta property="og:description" content="Forjada desde joven en el trabajo comunitario. Suma tu voz al movimiento que transformará nuestro estado.">
-    <meta property="og:image" content="https://guerreroescone.vercel.app/assets/img/hero-guerrero.jpg">
-    <meta property="og:url" content="https://guerreroescone.vercel.app/">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Esthela Damián">
+    <meta name="description" content="Mi historia comenzó en Guerrero a los 15 años. 25 años de servicio que regresan para nuestra tierra.">
 
-    <!-- Twitter Cards -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Esthela Damián | El Pulso de Guerrero 🏔️">
-    <meta name="twitter:description" content="Forjada desde joven en el trabajo comunitario. Suma tu voz al movimiento que transformará nuestro estado.">
-    <meta name="twitter:image" content="https://guerreroescone.vercel.app/assets/img/hero-guerrero.jpg">
+    <meta property="og:title"       content="Esthela Damián | El Pulso de Guerrero">
+    <meta property="og:description" content="Forjada desde joven en el trabajo comunitario. Suma tu voz al movimiento.">
+    <meta property="og:image"       content="https://guerreroescone.vercel.app/assets/img/esthela.jpg">
+    <meta property="og:url"         content="https://guerreroescone.vercel.app/">
+    <meta property="og:type"        content="website">
+    <meta property="og:site_name"   content="Esthela Damián — Guerrero">
+    <meta name="twitter:card"       content="summary_large_image">
 
     <link rel="canonical" href="https://guerreroescone.vercel.app/">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
+    <!--
+        Playfair Display: serif elegante con alto contraste, legible sobre foto.
+        Lato: cuerpo limpio y humanista.
+    -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 
     <!--
-        CRÍTICO: Supabase carga SÍNCRONO en el <head>.
-        Sin defer, sin async. Así está disponible cuando script.js arranca.
+        CRÍTICO: Supabase carga SÍNCRONO, sin defer ni async.
+        Debe estar disponible antes de que script.js arranque.
     -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 
-    <!-- NAV -->
+    <!-- ══════════════ NAV ══════════════ -->
     <nav class="nav-sticky" id="navSticky">
         <div class="nav-container">
             <a href="#hero" class="nav-brand">
@@ -56,75 +52,111 @@
         </div>
     </nav>
 
-    <!-- ============ HERO SECTION ============ -->
+    <!-- ══════════════ HERO ══════════════
+         Arquitectura de 3 capas absolutas sobre un contenedor relativo.
+         Capa 1 (z:1): imagen de fondo — paisaje de Guerrero
+         Capa 2 (z:2): overlay gradiente para legibilidad
+         Capa 3 (z:3): retrato de Esthela, anclado a la derecha/abajo
+         Capa 4 (z:4): contenido UI (texto, CTA, stats)
+    ═══════════════════════════════════════ -->
     <section class="hero" id="hero">
-        <!-- Capa 1: Fondo (Landscape) -->
-        <div class="hero-layer hero-layer-bg">
-            <img src="assets/img/hero-guerrero.jpg" alt="Paisaje de Guerrero" class="hero-landscape">
-            <div class="hero-overlay-gradient"></div>
+
+        <!-- CAPA 1: Imagen de fondo principal -->
+        <div class="hero-bg" aria-hidden="true">
+            <img
+                src="assets/img/esthela.jpg"
+                alt=""
+                class="hero-bg-img"
+                loading="eager"
+                fetchpriority="high"
+            >
         </div>
 
-        <!-- Capa 2: Protagonista (Retrato) -->
-        <div class="hero-layer hero-layer-portrait">
-            <img src="assets/img/esthela.jpg" alt="Esthela Damián" class="hero-portrait-img">
-        </div>
+        <!-- CAPA 2: Overlay gradiente (legibilidad) -->
+        <div class="hero-overlay" aria-hidden="true"></div>
 
-        <!-- Capa 3: UI (Contenido e Interacción) -->
-        <div class="hero-layer hero-layer-ui">
-            <div class="container hero-container">
-                <div class="hero-badge">
-                    <span class="badge-dot"></span>
-                    <span>Aspirante · Morena Guerrero · Rumbo al 22 de Junio</span>
-                </div>
-                
-                <h1 class="hero-title">
-                    Forjada desde joven en<br>el trabajo comunitario
-                </h1>
-                
-                <p class="hero-subtitle">
-                    Un compromiso inquebrantable con el pueblo guerrerense.
-                </p>
+        <!-- CAPA 3: Contenido UI -->
+        <div class="hero-ui">
+            <div class="container">
+                <div class="hero-inner">
 
-                <div class="hero-cta-wrapper">
-                    <div class="cta-stack">
+                    <!-- Badge aspirante -->
+                    <div class="hero-badge">
+                        <span class="badge-dot" aria-hidden="true"></span>
+                        <span>Aspirante · Morena Guerrero · Rumbo al 22 de Junio</span>
+                    </div>
+
+                    <!--
+                        TÍTULO: elegante, conversacional.
+                        h1 en blanco, em.accent en dorado.
+                        Sin text-transform uppercase — tono humano.
+                    -->
+                    <h1 class="hero-title">
+                        Forjada desde joven<br>
+                        <em class="title-accent">en el trabajo comunitario</em>
+                    </h1>
+
+                    <p class="hero-subtitle">
+                        Un compromiso inquebrantable con el pueblo guerrerense.
+                    </p>
+
+                    <!-- CTA principal -->
+                    <div class="hero-cta">
                         <a href="#pulso" class="btn btn-primary pulse-btn">
-                            <span>Sumar mi apoyo</span>
+                            <span>Dar mi Pulso Digital</span>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                 <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </a>
-                        <p class="cta-subtext">Miles de guerrerenses ya se han sumado</p>
+                        <p class="cta-sub">Miles de guerrerenses ya se sumaron</p>
                     </div>
-                </div>
 
-                <!-- KPIs Vivos -->
-                <div class="hero-stats">
-                    <div class="stat-card">
-                        <div class="stat-num">25</div>
-                        <div class="stat-unit">años</div>
-                        <div class="stat-desc">SIRVIENDO A GUERRERO</div>
+                    <!-- Stats de referencia (como en la foto de diseño) -->
+                    <div class="hero-stats" role="list">
+                        <div class="stat-card" role="listitem">
+                            <svg class="stat-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <span class="stat-num">25</span>
+                            <span class="stat-unit">años</span>
+                            <span class="stat-desc">de trayectoria</span>
+                        </div>
+                        <div class="stat-card" role="listitem">
+                            <svg class="stat-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            <span class="stat-num" id="kpiVoces">+5,400</span>
+                            <span class="stat-unit">voces</span>
+                            <span class="stat-desc">y contando</span>
+                        </div>
+                        <div class="stat-card" role="listitem">
+                            <svg class="stat-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span class="stat-num">1</span>
+                            <span class="stat-unit">movimiento</span>
+                            <span class="stat-desc">por Guerrero</span>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-num" id="kpiVoces">+5,400</div>
-                        <div class="stat-unit">voces</div>
-                        <div class="stat-desc">Y CONTANDO</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-num">1</div>
-                        <div class="stat-unit">movimiento</div>
-                        <div class="stat-desc">POR GUERRERO</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
+                </div><!-- /hero-inner -->
+            </div><!-- /container -->
+        </div><!-- /hero-ui -->
+
+        <!-- Scroll indicator — solo desktop -->
         <div class="hero-scroll" aria-hidden="true">
             <span>Conoce más</span>
             <div class="scroll-line"></div>
         </div>
-    </section>
 
-    <!-- HISTORIA -->
+    </section><!-- /hero -->
+
+
+    <!-- ══════════════ HISTORIA ══════════════ -->
     <section class="section section-historia" id="historia">
         <div class="container">
             <div class="section-header">
@@ -164,7 +196,8 @@
         </div>
     </section>
 
-    <!-- PULSO CIUDADANO -->
+
+    <!-- ══════════════ PULSO CIUDADANO ══════════════ -->
     <section class="section section-pulso" id="pulso">
         <div class="container">
             <div class="section-header">
@@ -174,7 +207,7 @@
             </div>
 
             <div class="pulso-card">
-                <!-- Botones de voto — sin hidden, el JS gestiona visibilidad -->
+                <!-- pulsoOptions sin "hidden" — el JS decide según localStorage -->
                 <div class="pulso-options" id="pulsoOptions">
                     <button class="pulso-btn" data-vote="si" type="button">
                         <div class="pulso-icon">
@@ -207,13 +240,13 @@
                     </button>
                 </div>
 
-                <!-- Loader -->
+                <!-- Loader — oculto por defecto -->
                 <div id="loaderPulso" class="loader-container" hidden>
                     <div class="spinner"></div>
                     <p>Sincronizando con Supabase...</p>
                 </div>
 
-                <!-- Resultado -->
+                <!-- Resultado — oculto por defecto -->
                 <div id="pulsoResult" class="pulso-result" hidden>
                     <div class="result-check">
                         <svg width="52" height="52" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -238,7 +271,7 @@
                         </div>
                     </div>
 
-                    <!-- shareModule: aparece tras CUALQUIER voto -->
+                    <!-- Módulo compartir — visible tras cualquier voto -->
                     <div id="shareModule" class="share-module" hidden>
                         <h4>Comparte este movimiento</h4>
                         <p>Invita a más guerrerenses a dejar su Pulso Digital:</p>
@@ -263,13 +296,14 @@
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
                     </svg>
-                    <span>Voto anónimo · Sincronizado en vivo con Supabase</span>
+                    <span>Voto anónimo · Cifrado con SHA-256 · Sincronizado con Supabase</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- MAPA -->
+
+    <!-- ══════════════ MAPA ══════════════ -->
     <section class="section section-mapa" id="mapa">
         <div class="container">
             <div class="section-header">
@@ -305,7 +339,8 @@
         </div>
     </section>
 
-    <!-- FORMULARIO -->
+
+    <!-- ══════════════ FORMULARIO ══════════════ -->
     <section class="section section-sumate" id="sumate">
         <div class="container">
             <div class="form-container">
@@ -321,11 +356,11 @@
                     </div>
                     <div class="form-group">
                         <label for="municipio">Municipio</label>
+                        <!-- JS lo rellena dinámicamente con los 81 municipios -->
                         <select id="municipio" name="municipio" required>
                             <option value="" disabled selected>Selecciona tu municipio...</option>
                         </select>
                     </div>
-
                     <button type="submit" class="btn btn-primary btn-block" id="btnSubmitForm">
                         Sumarme al Movimiento
                     </button>
@@ -345,7 +380,8 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
+
+    <!-- ══════════════ FOOTER ══════════════ -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -355,6 +391,7 @@
         </div>
     </footer>
 
+    <!-- FAB WhatsApp -->
     <a href="https://wa.me/527474795833" class="fab-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
     </a>
@@ -362,8 +399,8 @@
     <div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
 
     <!--
-        script.js al FINAL del body, sin defer.
-        Supabase ya está disponible (cargó en <head> de forma síncrona).
+        script.js al FINAL del body, SIN defer.
+        Supabase ya cargó en el <head> de forma síncrona.
     -->
     <script src="script.js"></script>
 </body>
