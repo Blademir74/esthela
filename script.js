@@ -27,8 +27,8 @@
 /* ═══════════════════════════════════════════════
    1. SUPABASE
    ═══════════════════════════════════════════════ */
-const SUPABASE_URL = "https://efnfplynevefniadgidi.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmbmZwbHluZXZlZm5pYWRnaWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2ODc4MzUsImV4cCI6MjA3NTI2MzgzNX0.jNj-rnzMwV2WEGx8lqDjtNPKS3ACmTD4faAnr3eFrHI";
+const SUPABASE_URL = "https://iwqvrnnejiwadfxssumj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx";
 
 /** @type {import('@supabase/supabase-js').SupabaseClient} */
 let db;
