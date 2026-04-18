@@ -554,65 +554,47 @@ function initForm() {
     if (!form) return;
 
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        const btn       = document.getElementById('btnSubmitForm');
-        const nombre    = (document.getElementById('nombre')?.value || '').trim();
-        const whatsapp  = (document.getElementById('whatsapp')?.value || '').trim();
-        const municipio = document.getElementById('municipio')?.value || '';
+    const btn       = document.getElementById('btnSubmitForm');
+    const nombre    = (document.getElementById('nombre')?.value || '').trim();
+    const whatsapp  = (document.getElementById('whatsapp')?.value || '').trim();
+    const municipio = document.getElementById('municipio')?.value || '';
 
-        // Validación estricta solicitada: 10 dígitos numéricos
-        const waRegex = /^\d{10}$/;
-        if (!nombre || !municipio || !waRegex.test(whatsapp)) {
-            showToast('Ingresa un nombre, municipio y un WhatsApp válido (10 dígitos).');
-            return;
-        }
+    const waRegex = /^\d{10}$/;
+    if (!nombre || !municipio || !waRegex.test(whatsapp)) {
+        showToast('Ingresa un nombre, municipio y un WhatsApp válido (10 dígitos).');
+        return;
+    }
 
-        btn.textContent = 'Enviando...';
-        btn.disabled    = true;
+    // Desactiva el botón para prevenir doble envío
+    btn.textContent = 'Enviando...';
+    btn.disabled    = true;
 
-        try {
-            const anonId = await getAnonId();
+    try {
+        const anonId = await getAnonId();
+        if (!db) throw new Error("Conexión a base de datos no disponible.");
 
-            if (!db) {
-                throw new Error("Conexión a base de datos no disponible.");
-            }
+        const { error } = await db.from('movilizadores').insert([{
+            nombre,
+            whatsapp,
+            municipio,
+            rol: 'promotor',
+            fingerprint: anonId
+        }]);
+        
+        if (error) throw error;
 
-            // Inserción quirúrgica: se inyecta 'rol' para satisfacer restricción NOT NULL de la DB
-            const { error } = await db.from('movilizadores').insert([{
-                nombre,
-                whatsapp,
-                municipio,
-                rol:          'promotor', // Fix para el error de restricción
-                fingerprint:  anonId
-            }]);
-            
-            if (error) {
-                console.error('Error de Supabase (PostgREST - Form):', {
-                    message: error.message,
-                    details: error.details,
-                    hint: error.hint,
-                    code: error.code
-                });
-                throw error;
-            }
+        // ✅ Éxito: Oculta el formulario y muestra el mensaje del HTML
+        form.hidden = true;
 
-            // Manejo de Respuesta Exitoso
-            form.hidden = true;
-            const ok = document.getElementById('formSuccess');
-            if (ok) {
-                ok.querySelector('p').textContent = "¡Gracias por sumarte! Tu registro nos da fuerza";
-                ok.hidden = false;
-            }
-
-            console.log("Movilizador registrado exitosamente.");
-
-        } catch (err) {
-            showToast('Problema de conexión. Intenta de nuevo.');
-            btn.textContent = 'Sumarme al Movimiento';
-            btn.disabled    = false;
-        }
-    });
+    } catch (err) {
+        // ✅ En caso de error, restaura el botón
+        showToast('Problema de conexión. Intenta de nuevo.');
+        btn.textContent = 'Sumarme al Movimiento';
+        btn.disabled    = false;
+    }
+});   
 }
 
 
