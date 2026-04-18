@@ -561,8 +561,10 @@ function initForm() {
         const whatsapp  = (document.getElementById('whatsapp')?.value || '').trim();
         const municipio = document.getElementById('municipio')?.value || '';
 
-        if (!nombre || !municipio || !whatsapp) {
-            showToast('Completa tu nombre, whatsapp y municipio.');
+        // Validación estricta solicitada: 10 dígitos numéricos
+        const waRegex = /^\d{10}$/;
+        if (!nombre || !municipio || !waRegex.test(whatsapp)) {
+            showToast('Ingresa un nombre, municipio y un WhatsApp válido (10 dígitos).');
             return;
         }
 
@@ -576,13 +578,13 @@ function initForm() {
                 throw new Error("Conexión a base de datos no disponible.");
             }
 
-            // Inserción asíncrona a la tabla 'movilizadores' con mapeo exacto al ADN de la DB
+            // Inserción quirúrgica: se inyecta 'rol' para satisfacer restricción NOT NULL de la DB
             const { error } = await db.from('movilizadores').insert([{
                 nombre,
                 whatsapp,
                 municipio,
-                rol:         'simpatizante', // Valor por defecto solicitado por el NOT NULL
-                fingerprint: anonId
+                rol:          'promotor', // Fix para el error de restricción
+                fingerprint:  anonId
             }]);
             
             if (error) {
@@ -595,7 +597,7 @@ function initForm() {
                 throw error;
             }
 
-            // Mensaje de agradecimiento humanista
+            // Manejo de Respuesta Exitoso
             form.hidden = true;
             const ok = document.getElementById('formSuccess');
             if (ok) {
