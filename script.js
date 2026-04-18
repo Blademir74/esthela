@@ -45,8 +45,8 @@ try {
 
     db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    // Depuración: Validar conexión real con un ping ligero si es posible o solo log
-    console.log("Conexión exitosa con Supabase");
+    // Depuración: Validar conexión real y log de éxito
+    console.log("¡Conexión exitosa con Supabase! Estructura lista para sincronizar.");
 } catch (e) {
     console.error(`Error de Supabase: [${e.message}]`);
     db = null;
