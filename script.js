@@ -30,15 +30,26 @@
 const SUPABASE_URL = "https://efnfplynevefniadgidi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmbmZwbHluZXZlZm5pYWRnaWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2ODc4MzUsImV4cCI6MjA3NTI2MzgzNX0.jNj-rnzMwV2WEGx8lqDjtNPKS3ACmTD4faAnr3eFrHI";
 
+/** @type {import('@supabase/supabase-js').SupabaseClient} */
 let db;
+
 try {
-    if (typeof window.supabase === 'undefined') {
-        throw new Error('Supabase CDN no disponible');
+    // 1. INICIALIZACIÓN CORRECTA
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+        throw new Error("Variables de Supabase (URL o Key) son null o undefined.");
     }
+    
+    if (typeof window.supabase === 'undefined') {
+        throw new Error('Supabase SDK no detectado en el navegador (CDN falló).');
+    }
+
     db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Depuración: Validar conexión real con un ping ligero si es posible o solo log
+    console.log("Conexión exitosa con Supabase");
 } catch (e) {
-    console.error('[Esthela] Supabase no inicializado:', e.message);
-    // db = null — el código verifica db antes de usarlo
+    console.error(`Error de Supabase: [${e.message}]`);
+    db = null;
 }
 
 
@@ -261,24 +272,30 @@ async function fetchVoteCounts() {
     if (!db) return { si: 542, dudo: 89, no: 20 };
 
     try {
-        const { data, error } = await db
+        // Ejecutar consulta SELECT count(*)
+        const { count, error } = await db
             .from('votos_pulso')
-            .select('opcion');
+            .select('*', { count: 'exact', head: true });
 
         if (error) throw error;
 
-        if (!data || data.length === 0) {
-            return { si: 542, dudo: 89, no: 20 };
-        }
+        // También necesitamos el desglose para las barras, pero el usuario pidió count(*)
+        // para el contador del Hero. Obtenemos el desglose también para mantener la UI completa.
+        const { data: breakdown, error: errB } = await db
+            .from('votos_pulso')
+            .select('opcion');
+            
+        if (errB) throw errB;
 
         return {
-            si:   data.filter(v => v.opcion === 'si').length,
-            dudo: data.filter(v => v.opcion === 'dudo' || v.opcion === 'pienso').length,
-            no:   data.filter(v => v.opcion === 'no').length,
+            total: count || 0,
+            si:   breakdown.filter(v => v.opcion === 'si').length,
+            dudo: breakdown.filter(v => v.opcion === 'dudo' || v.opcion === 'pienso').length,
+            no:   breakdown.filter(v => v.opcion === 'no').length,
         };
     } catch (err) {
-        console.error('[Pulso] fetchVoteCounts error:', err.message);
-        return { si: 542, dudo: 89, no: 20 };
+        console.error('Error de Supabase: [fetchVoteCounts]', err.message);
+        return { total: 0, si: 542, dudo: 89, no: 20 };
     }
 }
 
@@ -287,7 +304,7 @@ async function fetchVoteCounts() {
  * @param {Object} counts - { si, dudo, no }
  */
 function renderBars(counts) {
-    const total = counts.si + counts.dudo + counts.no;
+    const total = (counts.si + counts.dudo + counts.no) || counts.total || 0;
     const pct   = v => total > 0 ? Math.round((v / total) * 100) : 0;
 
     const pSi   = pct(counts.si);
@@ -299,11 +316,15 @@ function renderBars(counts) {
     const dp = document.getElementById('pctPienso'); if (dp) dp.textContent = pDudo + '%';
     const np = document.getElementById('pctNo');    if (np) np.textContent = pNo   + '%';
 
-    // KPI voces en el hero
+    // KPI voces en el hero (Actualización dinámica solicitada)
     const kpi = document.getElementById('kpiVoces');
-    if (kpi) kpi.textContent = '+' + (total + BASE_VOCES).toLocaleString('en-US');
+    if (kpi) {
+        // Si tenemos un count exacto de la DB lo usamos, sino sumamos los locales
+        const displayTotal = total > 0 ? total : (counts.total || 0);
+        kpi.textContent = '+' + (displayTotal + BASE_VOCES).toLocaleString('en-US');
+    }
 
-    // Animar barras: reset a 0 → requestAnimationFrame → ancho real
+    // Animar barras
     const animBar = (id, val) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -335,6 +356,12 @@ function renderBars(counts) {
  *   En ningún caso el usuario queda bloqueado esperando.
  */
 async function registerVote(voteType) {
+    // 1. Anti-duplicado: Comprobar localStorage antes de cualquier acción
+    if (localStorage.getItem(KEY_VOTED)) {
+        console.log("Ya has registrado tu voz anteriormente.");
+        return;
+    }
+
     if (votingInProgress) return;
     votingInProgress = true;
 
@@ -343,64 +370,59 @@ async function registerVote(voteType) {
     const shareMod   = document.getElementById('shareModule');
     const loader     = document.getElementById('loaderPulso');
 
-    // ── PASO 1: UI OPTIMISTA (inmediata) ──────────────────
-    if (optionsDiv) optionsDiv.hidden = true;
-    if (loader)     loader.hidden     = true;
-    if (resultDiv)  resultDiv.hidden  = false;
+    try {
+        // UI Feedback: Mostrar loader mientras ocurre la sincronización estricta
+        if (optionsDiv) optionsDiv.hidden = true;
+        if (loader)     loader.hidden     = false;
 
-    // Conteo local optimista: añadir el voto actual antes de consultar Supabase
-    const localCounts = { si: 542, dudo: 89, no: 20 };
-    localCounts[voteType] = (localCounts[voteType] || 0) + 1;
-    renderBars(localCounts);
+        const anonId = await getAnonId();
 
-    // Módulo de compartir: visible para cualquier voto
-    if (shareMod) shareMod.hidden = false;
-
-    // Toast inmediato — el usuario recibe feedback al instante
-    showToast('¡Tu voz cuenta! Registrada al instante.');
-
-    // Guardar en localStorage para anti-duplicado persistente
-    localStorage.setItem(KEY_VOTED, voteType);
-
-    // ── PASO 2: SINCRONIZACIÓN EN SEGUNDO PLANO ────────────
-    // Fire-and-forget: no await, no bloquea la UI
-    (async () => {
-        try {
-            const anonId = await getAnonId();
-
-            if (!db) {
-                console.warn('[Pulso Sync] Supabase no disponible, voto guardado solo en localStorage.');
-                return;
-            }
-
-            const { error } = await db.from('votos_pulso').insert([{
-                anon_id:    anonId,
-                opcion:     voteType,
-                created_at: new Date().toISOString()
-            }]);
-
-            if (error) {
-                // Código 23505 = unique constraint violation (voto duplicado)
-                if (error.code === '23505') {
-                    console.log('[Pulso Sync] Voto duplicado detectado por la base de datos (anonId ya existe).');
-                } else {
-                    console.warn('[Pulso Sync] Warning:', error.message);
-                }
-            } else {
-                console.log('[Pulso Sync] Voto sincronizado exitosamente con Supabase.');
-                // Actualizar barras con los totales reales desde la base de datos
-                fetchVoteCounts().then(realCounts => {
-                    renderBars(realCounts);
-                });
-            }
-
-        } catch (err) {
-            console.error('[Pulso Sync] Error de red (sin conexión):', err.message);
-            // El voto ya está en localStorage — se mostrará en la próxima sesión
-        } finally {
-            votingInProgress = false;
+        if (!db) {
+            throw new Error("Supabase no inicializado durante la votación.");
         }
-    })();
+
+        // 2. Lógica de Votación: Insertar fila en la tabla votos_pulso
+        const { error: insertError } = await db.from('votos_pulso').insert([{
+            anon_id:    anonId,
+            opcion:     voteType,
+            created_at: new Date().toISOString()
+        }]);
+
+        if (insertError) {
+            // Manejo especial de duplicado a nivel DB (por si limpia localStorage)
+            if (insertError.code === '23505') {
+                console.log("Voto duplicado detectado por la base de datos.");
+            } else {
+                throw insertError;
+            }
+        }
+
+        // 3. Actualización en Tiempo Real: Consulta SELECT count(*) inmediatamente después de insertar
+        const counts = await fetchVoteCounts();
+
+        // Actualizar UI con resultados reales
+        if (loader)    loader.hidden = true;
+        if (resultDiv) resultDiv.hidden = false;
+        
+        renderBars(counts);
+
+        // Guardar persistencia local
+        localStorage.setItem(KEY_VOTED, voteType);
+        
+        if (shareMod) shareMod.hidden = false;
+        showToast('¡Tu voz ha sido contada con éxito!');
+        console.log("Voto sincronizado exitosamente con Supabase.");
+
+    } catch (err) {
+        console.error(`Error de Supabase: [${err.message}]`);
+        showToast('Error al registrar tu voz. Inténtalo de nuevo.');
+        
+        // Rollback UI si falló
+        if (optionsDiv) optionsDiv.hidden = false;
+        if (loader)     loader.hidden     = true;
+    } finally {
+        votingInProgress = false;
+    }
 }
 
 /**
@@ -520,24 +542,34 @@ function initForm() {
         btn.disabled    = true;
 
         try {
+            // Validación de Envío con Try/Catch
             const anonId = await getAnonId();
 
-            if (db) {
-                const { error } = await db.from('simpatizantes').insert([{
-                    nombre,
-                    municipio,
-                    anon_id:    anonId,
-                    created_at: new Date().toISOString()
-                }]);
-                if (error) console.warn('[Form] Supabase warning:', error.message);
+            if (!db) {
+                throw new Error("Conexión a base de datos no disponible.");
             }
 
+            const { error } = await db.from('simpatizantes').insert([{
+                nombre,
+                municipio,
+                anon_id:    anonId,
+                created_at: new Date().toISOString()
+            }]);
+            
+            if (error) throw error;
+
+            // Mensaje de agradecimiento humanista solicitado
             form.hidden = true;
             const ok = document.getElementById('formSuccess');
-            if (ok) ok.hidden = false;
+            if (ok) {
+                ok.querySelector('p').textContent = "¡Gracias por sumarte! Tu registro nos da fuerza";
+                ok.hidden = false;
+            }
+
+            console.log("Simpatizante registrado exitosamente.");
 
         } catch (err) {
-            console.error('[Form] Error de red:', err.message);
+            console.error(`Error de Supabase: [${err.message}]`);
             showToast('Problema de conexión. Intenta de nuevo.');
             btn.textContent = 'Sumarme al Movimiento';
             btn.disabled    = false;
