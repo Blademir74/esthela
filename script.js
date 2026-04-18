@@ -596,6 +596,9 @@ function initForm() {
                 });
                 throw error;
             }
+              // ✅ Restaura el estado del botón
+             btn.textContent = 'Sumarme al Movimiento';
+             btn.disabled = false;
            
         } catch (err) {
             showToast('Problema de conexión. Intenta de nuevo.');
