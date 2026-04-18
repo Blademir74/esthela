@@ -596,17 +596,7 @@ function initForm() {
                 });
                 throw error;
             }
-
-            // Manejo de Respuesta Exitoso
-            form.hidden = true;
-            const ok = document.getElementById('formSuccess');
-            if (ok) {
-                ok.querySelector('p').textContent = "¡Gracias por sumarte! Tu registro nos da fuerza";
-                ok.hidden = false;
-            }
-
-            console.log("Movilizador registrado exitosamente.");
-
+           
         } catch (err) {
             showToast('Problema de conexión. Intenta de nuevo.');
             btn.textContent = 'Sumarme al Movimiento';
