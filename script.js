@@ -276,15 +276,23 @@ async function fetchVoteCounts() {
     if (!db) return fallback;
 
     try {
-        // Ejecutar consulta SELECT count(*) de forma silenciosa e inmediata
+        // Ejecutar consulta SELECT count(*) de forma silenciosa e inmediata a la tabla 'votes'
         const { count, error } = await db
-            .from('votos_pulso')
+            .from('votes')
             .select('*', { count: 'exact', head: true });
 
-        if (error) throw error;
+        if (error) {
+            console.error('Error de Supabase (PostgREST):', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
+            throw error;
+        }
 
         const { data: breakdown, error: errB } = await db
-            .from('votos_pulso')
+            .from('votes')
             .select('opcion');
             
         if (errB) throw errB;
@@ -296,7 +304,6 @@ async function fetchVoteCounts() {
             no:   breakdown.filter(v => v.opcion === 'no').length,
         };
     } catch (err) {
-        // Silenciar error en console para el usuario (fetchVoteCounts suele fallar por red)
         console.warn('[Pulso] Usando datos locales por interrupción de conexión.');
         return fallback;
     }
@@ -370,21 +377,37 @@ async function syncPendingVotes() {
 
     try {
         const anonId = await getAnonId();
-        const { error } = await db.from('votos_pulso').insert([{
+        const { error } = await db.from('votes').insert([{
             anon_id:    anonId,
             opcion:     pending,
             created_at: new Date().toISOString()
         }]);
 
-        if (!error || error.code === '23505') {
-            console.log('[Sync] Votos pendientes sincronizados con éxito.');
-            localStorage.removeItem(KEY_PENDING);
-            // Refrescar contadores reales tras la sincronización
-            const realCounts = await fetchVoteCounts();
-            renderBars(realCounts);
+        if (error) {
+            // Código 23505 = unique constraint violation (voto duplicado)
+            if (error.code === '23505') {
+                console.log('[Sync] Voto duplicado ya persistido.');
+                localStorage.removeItem(KEY_PENDING);
+            } else {
+                console.error('Error de Supabase (PostgREST - Sync):', {
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                    code: error.code
+                });
+            }
+            return;
         }
+
+        console.log('[Sync] Votos pendientes sincronizados con éxito.');
+        localStorage.removeItem(KEY_PENDING);
+        
+        // Refrescar contadores reales tras la sincronización exitosa
+        const realCounts = await fetchVoteCounts();
+        renderBars(realCounts);
+        
     } catch (err) {
-        // Falla silenciosa: se reintentará en la próxima carga de página
+        // Falla silenciosa de red: se reintentará en la próxima carga
     }
 }
 
@@ -544,23 +567,30 @@ function initForm() {
         btn.disabled    = true;
 
         try {
-            // Validación de Envío con Try/Catch
             const anonId = await getAnonId();
 
             if (!db) {
                 throw new Error("Conexión a base de datos no disponible.");
             }
 
-            const { error } = await db.from('simpatizantes').insert([{
+            // Inserción asíncrona a la tabla 'movilizadores'
+            const { error } = await db.from('movilizadores').insert([{
                 nombre,
                 municipio,
-                anon_id:    anonId,
-                created_at: new Date().toISOString()
+                anon_id:    anonId
             }]);
             
-            if (error) throw error;
+            if (error) {
+                console.error('Error de Supabase (PostgREST - Form):', {
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                    code: error.code
+                });
+                throw error;
+            }
 
-            // Mensaje de agradecimiento humanista solicitado
+            // Mensaje de agradecimiento humanista
             form.hidden = true;
             const ok = document.getElementById('formSuccess');
             if (ok) {
@@ -568,10 +598,9 @@ function initForm() {
                 ok.hidden = false;
             }
 
-            console.log("Simpatizante registrado exitosamente.");
+            console.log("Movilizador registrado exitosamente.");
 
         } catch (err) {
-            console.error(`Error de Supabase: [${err.message}]`);
             showToast('Problema de conexión. Intenta de nuevo.');
             btn.textContent = 'Sumarme al Movimiento';
             btn.disabled    = false;
