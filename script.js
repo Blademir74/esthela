@@ -291,17 +291,18 @@ async function fetchVoteCounts() {
             throw error;
         }
 
+        // Seleccionamos la columna 'vote' que es la obligatoria en el esquema real
         const { data: breakdown, error: errB } = await db
             .from('votes')
-            .select('opcion');
+            .select('vote');
             
         if (errB) throw errB;
 
         return {
             total: count || 0,
-            si:   breakdown.filter(v => v.opcion === 'si').length,
-            dudo: breakdown.filter(v => v.opcion === 'dudo' || v.opcion === 'pienso').length,
-            no:   breakdown.filter(v => v.opcion === 'no').length,
+            si:   breakdown.filter(v => v.vote === 'si').length,
+            dudo: breakdown.filter(v => v.vote === 'dudo' || v.vote === 'pienso').length,
+            no:   breakdown.filter(v => v.vote === 'no').length,
         };
     } catch (err) {
         console.warn('[Pulso] Usando datos locales por interrupción de conexión.');
@@ -377,10 +378,11 @@ async function syncPendingVotes() {
 
     try {
         const anonId = await getAnonId();
+        // Mapeo preciso al esquema real: 'vote' y 'fingerprint'
         const { error } = await db.from('votes').insert([{
-            anon_id:    anonId,
-            opcion:     pending,
-            created_at: new Date().toISOString()
+            fingerprint: anonId,
+            vote:        pending,
+            created_at:  new Date().toISOString()
         }]);
 
         if (error) {
