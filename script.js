@@ -554,55 +554,49 @@ function initForm() {
     if (!form) return;
 
     form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    const btn       = document.getElementById('btnSubmitForm');
-    const nombre    = (document.getElementById('nombre')?.value || '').trim();
-    const whatsapp  = (document.getElementById('whatsapp')?.value || '').trim();
-    const municipio = document.getElementById('municipio')?.value || '';
+        const btn = document.getElementById('btnSubmitForm');
+        const nombre = (document.getElementById('nombre')?.value || '').trim();
+        const whatsapp = (document.getElementById('whatsapp')?.value || '').trim();
+        const municipio = document.getElementById('municipio')?.value || '';
 
-    const waRegex = /^\d{10}$/;
-    if (!nombre || !municipio || !waRegex.test(whatsapp)) {
-        showToast('Ingresa un nombre, municipio y un WhatsApp válido (10 dígitos).');
-        return;
-    }
+        const waRegex = /^\d{10}$/;
+        if (!nombre || !municipio || !waRegex.test(whatsapp)) {
+            showToast('Ingresa un nombre, municipio y un WhatsApp válido (10 dígitos).');
+            return;
+        }
 
-    // Desactiva el botón para prevenir doble envío
-    btn.textContent = 'Enviando...';
-    btn.disabled    = true;
+        btn.textContent = 'Enviando...';
+        btn.disabled = true;
 
-    try {
-        const anonId = await getAnonId();
-        if (!db) throw new Error("Conexión a base de datos no disponible.");
+        try {
+            const anonId = await getAnonId();
+            if (!db) throw new Error("Conexión a base de datos no disponible.");
 
-        const { error } = await db.from('movilizadores').insert([{
-            nombre,
-            whatsapp,
-            municipio,
-            rol: 'promotor',
-            fingerprint: anonId
-        }]);
-        
-        if (error) throw error;
+            const { error } = await db.from('movilizadores').insert([{
+                nombre,
+                whatsapp,
+                municipio,
+                rol: 'promotor',
+                fingerprint: anonId
+            }]);
 
-        // ✅ Éxito: Oculta el formulario y muestra el mensaje del HTML
-         HEAD
-        form.hidden = true;
-        // Oculta todo el formulario, incluyendo el encabezado con el mensaje viejo
-        document.getElementById('simpatizanteForm').hidden = true;
-        document.querySelector('.form-header').hidden = true;
-        // Muestra tu mensaje personalizado
-        document.getElementById('formSuccess').hidden = false;   
+            if (error) throw error;
 
-    } catch (err) {
-        // ✅ En caso de error, restaura el botón
-        showToast('Problema de conexión. Intenta de nuevo.');
-        btn.textContent = 'Sumarme al Movimiento';
-        btn.disabled    = false;
-        HEAD
-    }
-});   
-   }
+            // Éxito: ocultar formulario y mostrar mensaje personalizado
+            form.hidden = true;
+            document.getElementById('simpatizanteForm').hidden = true;
+            document.querySelector('.form-header').hidden = true;
+            document.getElementById('formSuccess').hidden = false;
+
+        } catch (err) {
+            showToast('Problema de conexión. Intenta de nuevo.');
+            btn.textContent = 'Sumarme al Movimiento';
+            btn.disabled = false;
+        }
+    });
+}
 
 /* ═══════════════════════════════════════════════
    11. NAV MOBILE
@@ -677,7 +671,7 @@ function bootstrap() {
     getAnonId().catch(() => {});
 }
 
-if (document.readyState === 'loading') {
+  if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bootstrap);
 } else {
     bootstrap();
