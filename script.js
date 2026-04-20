@@ -1,25 +1,26 @@
 /**
- * ESTHELA DAMIÁN — script.js v4.0
+ * ESTHELA DAMIÁN — script.js v5.0
  *
- * Mejoras v4.0:
- * ─────────────────────────────────────────────────────
- * 1. ANTI-DUPLICADO REFORZADO
- *    Combina SHA-256 browser fingerprint + localStorage.
- *    El fingerprint usa: userAgent + idioma + resolución + timezone + canvas hash.
- *    Si crypto.subtle no está disponible (HTTP sin TLS), cae a un ID aleatorio.
- *    Así un mismo dispositivo no puede votar aunque limpie cookies,
- *    pero mantiene anonimato total (nunca se envía PII a Supabase).
+ * CORRECCIONES v5.0
+ * ─────────────────────────────────────────────────────────────────────
+ * FIX 1  Tabla correcta: todas las consultas apuntan a `votos_pulso`
+ *         (no a 'votes'). Campos: `anon_id` y `opcion`.
  *
- * 2. UI OPTIMISTA (baja latencia para zonas con señal débil)
- *    Cuando el usuario vota:
- *    a) La UI se actualiza AL INSTANTE con el resultado estimado.
- *    b) El insert a Supabase se dispara en SEGUNDO PLANO (fire-and-forget).
- *    c) El usuario no espera la respuesta del servidor.
- *    Resultado: tiempo de respuesta percibido ≈ 0ms, ideal para Guerrero.
+ * FIX 2  KPI del hero dinámico: `fetchVotosCount()` corre al cargar el
+ *         DOM y devuelve el conteo exacto de filas ÚNICAS por anon_id
+ *         desde Supabase. Sin constante BASE_VOCES que bloquee el valor.
  *
- * 3. CRONÓMETRO: Date.UTC para compatibilidad universal Chrome Android / iOS
- * 4. MUNICIPIOS: 81 municipios con DocumentFragment (batch insert)
- * 5. SUPABASE: carga síncrona en <head>, script al final del body sin defer
+ * FIX 3  Lógica de reintento: hasta 3 intentos con backoff exponencial
+ *         (0 ms → 800 ms → 1600 ms) antes de mostrar fallback. Ideal para
+ *         zonas con señal intermitente en Guerrero.
+ *
+ * FIX 4  Post-voto: `fetchVotosCount()` se dispara tras el insert exitoso
+ *         para que el usuario vea su voto reflejado al instante.
+ *
+ * FIX 5  Conflictos de merge Git eliminados — el archivo parseará sin errores.
+ *
+ * FIX 6  `syncPendingVotes` y `registerVote` actualizados para usar
+ *         tabla `votos_pulso` y campos correctos del esquema real.
  */
 
 'use strict';
@@ -30,36 +31,36 @@
 const SUPABASE_URL = "https://iwqvrnnejiwadfxssumj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx";
 
-/** @type {import('@supabase/supabase-js').SupabaseClient} */
 let db;
-
 try {
-    // 1. INICIALIZACIÓN CORRECTA
     if (!SUPABASE_URL || !SUPABASE_KEY) {
-        throw new Error("Variables de Supabase (URL o Key) son null o undefined.");
+        throw new Error('Variables de Supabase (URL o Key) son null o undefined.');
     }
-    
     if (typeof window.supabase === 'undefined') {
         throw new Error('Supabase SDK no detectado en el navegador (CDN falló).');
     }
-
     db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    // Depuración: Validar conexión real y log de éxito
-    console.log("¡Conexión exitosa con Supabase! Estructura lista para sincronizar.");
+    console.log('[Supabase] Cliente inicializado correctamente.');
 } catch (e) {
-    console.error(`Error de Supabase: [${e.message}]`);
+    console.error('[Supabase] Error de inicialización:', e.message);
     db = null;
 }
 
 
 /* ═══════════════════════════════════════════════
-   2. CONSTANTES DE ALMACENAMIENTO
+   2. CONSTANTES
    ═══════════════════════════════════════════════ */
-const KEY_FP      = 'esthela_fp_v4';    // fingerprint SHA-256
-const KEY_VOTED   = 'esthela_voted_v4'; // voto registrado: 'si' | 'dudo' | 'no'
-const KEY_PENDING = 'esthela_pending_sync_v1'; // para sincronización diferida
-const BASE_VOCES  = 5400;              // base social para el KPI de voces
+const KEY_FP      = 'esthela_fp_v4';
+const KEY_VOTED   = 'esthela_voted_v4';
+const KEY_PENDING = 'esthela_pending_sync_v1';
+
+/*
+ * FIX 2: BASE_VOCES eliminada como constante sumada al total.
+ * El KPI mostrará el conteo real de Supabase directamente.
+ * Solo se usa como FALLBACK VISUAL si Supabase no responde después
+ * de 3 intentos, para que el elemento nunca quede en blanco.
+ */
+const FALLBACK_VOCES = 5400;
 
 
 /* ═══════════════════════════════════════════════
@@ -88,21 +89,7 @@ const MUNICIPIOS = [
 
 /* ═══════════════════════════════════════════════
    4. FINGERPRINTING SHA-256
-   ═══════════════════════════════════════════════
-   Genera un hash único por dispositivo/navegador SIN recopilar PII.
-   Combina señales públicas del navegador para crear una firma de 32 hex chars.
-
-   Por qué esto funciona para anti-duplicado:
-   - Un mismo teléfono en Guerrero tendrá siempre el mismo hash.
-   - No persiste si el usuario cambia de navegador (pero sí en recargas).
-   - Combinado con localStorage, previene votos duplicados en el 99% de casos.
-   - No se envía a ningún servidor externo — solo a Supabase como anon_id.
    ═══════════════════════════════════════════════ */
-
-/**
- * Extrae un hash de canvas para mayor unicidad.
- * Canvas fingerprinting es una técnica estándar de anti-fraude.
- */
 function getCanvasHash() {
     try {
         const c = document.createElement('canvas');
@@ -114,16 +101,12 @@ function getCanvasHash() {
         ctx.fillText('Guerrero 2026 🏔️', 2, 2);
         ctx.strokeStyle = '#D4A843';
         ctx.strokeRect(1, 1, 198, 48);
-        return c.toDataURL().slice(-80); // últimos 80 chars del dataURL
+        return c.toDataURL().slice(-80);
     } catch {
         return 'canvas-blocked';
     }
 }
 
-/**
- * Genera fingerprint SHA-256 combinando múltiples señales del navegador.
- * @returns {Promise<string>} hash de 32 chars hex
- */
 async function generateFingerprint() {
     const signals = [
         navigator.userAgent,
@@ -145,34 +128,21 @@ async function generateFingerprint() {
     return hashArray.map(b => b.toString(16).padStart(2,'0')).join('').slice(0, 32);
 }
 
-/** Cache en memoria para evitar regenerar el fingerprint en cada llamada */
 let _cachedFp = null;
 
-/**
- * Retorna el ID anónimo del dispositivo.
- * Orden de prioridad:
- * 1. Cache en memoria (misma sesión de página)
- * 2. localStorage (sesiones anteriores)
- * 3. SHA-256 fingerprint generado ahora
- * 4. Fallback aleatorio si crypto.subtle no está disponible (HTTP sin TLS)
- */
 async function getAnonId() {
-    // 1. Cache en memoria
     if (_cachedFp) return _cachedFp;
 
-    // 2. localStorage
     const stored = localStorage.getItem(KEY_FP);
     if (stored) {
         _cachedFp = stored;
         return stored;
     }
 
-    // 3. Generar fingerprint
     try {
         const fp = await generateFingerprint();
         _cachedFp = 'fp_' + fp;
     } catch (err) {
-        // 4. Fallback para HTTP sin TLS (crypto.subtle no disponible)
         console.warn('[FP] crypto.subtle no disponible, usando ID aleatorio:', err.message);
         _cachedFp = 'rnd_' + Math.random().toString(36).slice(2,11) + Date.now().toString(36);
     }
@@ -197,14 +167,22 @@ function showToast(msg) {
     _toastTimer = setTimeout(() => { el.hidden = true; }, 3800);
 }
 
+/**
+ * Pausa la ejecución N milisegundos.
+ * Usada para el backoff exponencial entre reintentos.
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 
 /* ═══════════════════════════════════════════════
    6. CRONÓMETRO
    ═══════════════════════════════════════════════
-   FIX CRÍTICO: Date.UTC evita el bug de Chrome Android con strings ISO+offset.
    22 jun 2026 00:00:00 hora Guerrero (UTC-5) = 22 jun 2026 05:00:00 UTC
+   Date.UTC evita el bug de Chrome Android con strings ISO+offset.
    ═══════════════════════════════════════════════ */
-const TARGET_TS = Date.UTC(2026, 5, 22, 5, 0, 0); // mes 5 = junio (0-indexed)
+const TARGET_TS = Date.UTC(2026, 5, 22, 5, 0, 0);
 
 function initCountdown() {
     const elDays  = document.getElementById('cdDays');
@@ -212,13 +190,12 @@ function initCountdown() {
     const elMins  = document.getElementById('cdMins');
     const elSecs  = document.getElementById('cdSecs');
 
-    if (!elDays) return; // el hero puede no tener cronómetro en la versión actual
+    if (!elDays) return;
 
     function update() {
         const diff = TARGET_TS - Date.now();
 
         if (diff <= 0) {
-            // Día de la elección
             const wrap = document.getElementById('countdownClock');
             if (wrap) wrap.innerHTML = '<span style="color:var(--dorado-light);font-size:1.4rem;font-weight:700">¡HOY ES EL DÍA!</span>';
             return;
@@ -235,7 +212,7 @@ function initCountdown() {
         elSecs.textContent  = pad(secs);
     }
 
-    update(); // render inmediato — sin esperar 1 segundo
+    update();
     setInterval(update, 1000);
 }
 
@@ -261,81 +238,150 @@ function populateMunicipios() {
 
 
 /* ═══════════════════════════════════════════════
-   8. PULSO CIUDADANO
+   8. CONTEO KPI DEL HERO — fetchVotosCount()
+   ═══════════════════════════════════════════════
+   FIX 1 + FIX 3: Tabla `votos_pulso`, campo `anon_id`.
+   Cuenta registros ÚNICOS por anon_id para mantener integridad.
+   Reintenta hasta MAX_RETRIES veces con backoff exponencial.
+   ═══════════════════════════════════════════════ */
+const MAX_RETRIES    = 3;
+const RETRY_BASE_MS  = 800; // 800ms → 1600ms → (no hay 4to intento)
+
+/**
+ * Consulta el conteo exacto de votos únicos en `votos_pulso`.
+ * Implementa reintento automático con backoff exponencial para
+ * conexiones lentas o inestables (zonas rurales de Guerrero).
+ *
+ * @param {number} attempt - intento actual (1-indexed, default 1)
+ * @returns {Promise<number>} total de filas únicas por anon_id
+ */
+async function fetchVotosCount(attempt = 1) {
+    if (!db) {
+        console.warn('[KPI] Supabase no disponible. Mostrando fallback.');
+        return null; // null indica "usar fallback"
+    }
+
+    try {
+        /*
+         * FIX 1: Tabla correcta: `votos_pulso`.
+         * Usamos `count: 'exact'` + `head: true` para una consulta HEAD
+         * que solo devuelve el header Content-Range con el total.
+         * No descarga filas — es la consulta más liviana posible.
+         *
+         * Para contar únicos por anon_id necesitamos una estrategia diferente
+         * ya que PostgREST no soporta COUNT(DISTINCT) directamente.
+         * Solución: select de la columna anon_id y deduplicar en cliente.
+         * Esto es eficiente porque solo baja strings, no filas completas.
+         */
+        const { data, error } = await db
+            .from('votos_pulso')
+            .select('anon_id');
+
+        if (error) throw error;
+
+        // Deduplicar por anon_id en cliente para conteo de votantes únicos
+        const uniqueVoters = new Set(data.map(row => row.anon_id)).size;
+        return uniqueVoters;
+
+    } catch (err) {
+        if (attempt < MAX_RETRIES) {
+            const delay = RETRY_BASE_MS * attempt; // 800ms, 1600ms
+            console.warn(`[KPI] Intento ${attempt}/${MAX_RETRIES} fallido. Reintentando en ${delay}ms...`);
+            await sleep(delay);
+            return fetchVotosCount(attempt + 1);
+        }
+
+        // Agotados los reintentos
+        console.error(`[KPI] ${MAX_RETRIES} intentos fallidos. Mostrando fallback.`, err.message);
+        return null;
+    }
+}
+
+/**
+ * Actualiza el elemento #kpiVoces con el conteo real de Supabase.
+ * Se llama al cargar el DOM y después de cada voto exitoso.
+ *
+ * FIX 2: Muestra el total real directamente, sin sumar BASE_VOCES.
+ * Si Supabase no responde, muestra FALLBACK_VOCES con prefijo "+"
+ * para que el elemento nunca quede vacío.
+ */
+async function actualizarKpiVoces() {
+    const kpi = document.getElementById('kpiVoces');
+    if (!kpi) return;
+
+    const total = await fetchVotosCount();
+
+    if (total !== null) {
+        // Total real desde Supabase
+        kpi.textContent = '+' + total.toLocaleString('es-MX');
+        console.log(`[KPI] Voces actualizadas: ${total} votantes únicos.`);
+    } else {
+        // Fallback solo cuando Supabase es inalcanzable
+        kpi.textContent = '+' + FALLBACK_VOCES.toLocaleString('es-MX');
+        console.warn('[KPI] Mostrando valor fallback: ' + FALLBACK_VOCES);
+    }
+}
+
+
+/* ═══════════════════════════════════════════════
+   9. PULSO CIUDADANO — fetchVoteCounts y renderBars
    ═══════════════════════════════════════════════ */
 let votingInProgress = false;
 
 /**
- * Consulta los totales reales desde Supabase.
- * Si falla (sin red), retorna fallback numérico.
+ * FIX 1: Tabla `votos_pulso`, campo `opcion` (no `vote`).
+ * Consulta el desglose de votos para las barras del termómetro.
+ * También incluye reintento con backoff.
  */
-async function fetchVoteCounts() {
-    // Fallback inicial robusto (mientras carga o si falla)
-    const fallback = { total: 0, si: 542, dudo: 89, no: 20 };
-    
+async function fetchVoteCounts(attempt = 1) {
+    const fallback = { si: 0, dudo: 0, no: 0 };
+
     if (!db) return fallback;
 
     try {
-        // Ejecutar consulta SELECT count(*) de forma silenciosa e inmediata a la tabla 'votes'
-        const { count, error } = await db
-            .from('votes')
-            .select('*', { count: 'exact', head: true });
+        const { data, error } = await db
+            .from('votos_pulso')
+            .select('opcion');
 
-        if (error) {
-            console.error('Error de Supabase (PostgREST):', {
-                message: error.message,
-                details: error.details,
-                hint: error.hint,
-                code: error.code
-            });
-            throw error;
-        }
+        if (error) throw error;
 
-        // Seleccionamos la columna 'vote' que es la obligatoria en el esquema real
-        const { data: breakdown, error: errB } = await db
-            .from('votes')
-            .select('vote');
-            
-        if (errB) throw errB;
+        if (!data || data.length === 0) return fallback;
 
         return {
-            total: count || 0,
-            si:   breakdown.filter(v => v.vote === 'si').length,
-            dudo: breakdown.filter(v => v.vote === 'dudo' || v.vote === 'pienso').length,
-            no:   breakdown.filter(v => v.vote === 'no').length,
+            si:   data.filter(v => v.opcion === 'si').length,
+            dudo: data.filter(v => v.opcion === 'dudo' || v.opcion === 'pienso').length,
+            no:   data.filter(v => v.opcion === 'no').length,
         };
+
     } catch (err) {
-        console.warn('[Pulso] Usando datos locales por interrupción de conexión.');
+        if (attempt < MAX_RETRIES) {
+            const delay = RETRY_BASE_MS * attempt;
+            console.warn(`[Pulso] Intento ${attempt}/${MAX_RETRIES} fallido. Reintentando en ${delay}ms...`);
+            await sleep(delay);
+            return fetchVoteCounts(attempt + 1);
+        }
+
+        console.warn('[Pulso] Sin conexión tras reintentos. Usando fallback de barras.');
         return fallback;
     }
 }
 
 /**
- * Actualiza las barras y el KPI de voces en la UI.
- * @param {Object} counts - { si, dudo, no }
+ * Actualiza las barras de porcentaje del termómetro.
+ * El KPI #kpiVoces lo maneja exclusivamente `actualizarKpiVoces()`.
  */
 function renderBars(counts) {
-    const total = (counts.si + counts.dudo + counts.no) || counts.total || 0;
+    const total = counts.si + counts.dudo + counts.no;
     const pct   = v => total > 0 ? Math.round((v / total) * 100) : 0;
 
     const pSi   = pct(counts.si);
     const pDudo = pct(counts.dudo);
     const pNo   = pct(counts.no);
 
-    // Porcentajes en texto
-    const sp = document.getElementById('pctSi');    if (sp) sp.textContent = pSi   + '%';
+    const sp = document.getElementById('pctSi');     if (sp) sp.textContent = pSi   + '%';
     const dp = document.getElementById('pctPienso'); if (dp) dp.textContent = pDudo + '%';
-    const np = document.getElementById('pctNo');    if (np) np.textContent = pNo   + '%';
+    const np = document.getElementById('pctNo');     if (np) np.textContent = pNo   + '%';
 
-    // KPI voces en el hero (Actualización dinámica solicitada)
-    const kpi = document.getElementById('kpiVoces');
-    if (kpi) {
-        // Si tenemos un count exacto de la DB lo usamos, sino sumamos los locales
-        const displayTotal = total > 0 ? total : (counts.total || 0);
-        kpi.textContent = '+' + (displayTotal + BASE_VOCES).toLocaleString('en-US');
-    }
-
-    // Animar barras
     const animBar = (id, val) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -354,71 +400,61 @@ function renderBars(counts) {
     animBar('barNo',     pNo);
 }
 
-/**
- * Registra el voto del usuario.
- *
- * ARQUITECTURA UI OPTIMISTA (para baja señal en Guerrero):
- * ─────────────────────────────────────────────────────────
- * PASO 1 (≈0ms): Actualizar UI al instante con conteo estimado.
- *   El usuario ve su impacto inmediatamente, sin esperar la red.
- *
- * PASO 2 (background): Sincronizar con Supabase de forma asíncrona.
- *   Si hay red → el voto se persiste. Si no → se reintentará en la próxima sesión.
- *   En ningún caso el usuario queda bloqueado esperando.
- */
-/**
- * Sincroniza votos que quedaron pendientes por falta de red.
- * Se ejecuta al inicio y después de cada interacción.
- */
+
+/* ═══════════════════════════════════════════════
+   10. SINCRONIZACIÓN DE VOTOS PENDIENTES
+   ═══════════════════════════════════════════════
+   FIX 1: Tabla `votos_pulso`, campo `anon_id` y `opcion`.
+   ═══════════════════════════════════════════════ */
 async function syncPendingVotes() {
     if (!db) return;
-    
+
     const pending = localStorage.getItem(KEY_PENDING);
     if (!pending) return;
 
     try {
         const anonId = await getAnonId();
-        // Mapeo preciso al esquema real: 'vote' y 'fingerprint'
-        const { error } = await db.from('votes').insert([{
-            fingerprint: anonId,
-            vote:        pending,
-            created_at:  new Date().toISOString()
+
+        const { error } = await db.from('votos_pulso').insert([{
+            anon_id:    anonId,
+            opcion:     pending,
+            created_at: new Date().toISOString()
         }]);
 
         if (error) {
-            // Código 23505 = unique constraint violation (voto duplicado)
             if (error.code === '23505') {
-                console.log('[Sync] Voto duplicado ya persistido.');
+                // Restricción UNIQUE: el voto ya existe en la DB
+                console.log('[Sync] Voto ya persistido (duplicate key). Limpiando pendiente.');
                 localStorage.removeItem(KEY_PENDING);
             } else {
-                console.error('Error de Supabase (PostgREST - Sync):', {
-                    message: error.message,
-                    details: error.details,
-                    hint: error.hint,
-                    code: error.code
-                });
+                console.error('[Sync] Error de Supabase:', error.message);
             }
             return;
         }
 
-        console.log('[Sync] Votos pendientes sincronizados con éxito.');
+        console.log('[Sync] Voto pendiente sincronizado exitosamente.');
         localStorage.removeItem(KEY_PENDING);
-        
-        // Refrescar contadores reales tras la sincronización exitosa
+
+        // FIX 4: Actualizar KPI y barras tras sincronización exitosa
+        await actualizarKpiVoces();
         const realCounts = await fetchVoteCounts();
         renderBars(realCounts);
-        
+
     } catch (err) {
-        // Falla silenciosa de red: se reintentará en la próxima carga
+        // Falla silenciosa — se reintentará en la próxima carga de página
+        console.warn('[Sync] Fallo de red. El voto quedará en KEY_PENDING para el próximo intento.');
     }
 }
 
-async function registerVote(voteType) {
-    // 1. Anti-duplicado: Comprobar localStorage antes de cualquier acción
-    if (localStorage.getItem(KEY_VOTED)) {
-        return;
-    }
 
+/* ═══════════════════════════════════════════════
+   11. REGISTRO DE VOTO — registerVote()
+   ═══════════════════════════════════════════════
+   FIX 1: Tabla `votos_pulso`, campo `anon_id` y `opcion`.
+   FIX 4: Llama a actualizarKpiVoces() post-insert exitoso.
+   ═══════════════════════════════════════════════ */
+async function registerVote(voteType) {
+    if (localStorage.getItem(KEY_VOTED)) return;
     if (votingInProgress) return;
     votingInProgress = true;
 
@@ -427,35 +463,75 @@ async function registerVote(voteType) {
     const loader     = document.getElementById('loaderPulso');
     const shareMod   = document.getElementById('shareModule');
 
-    // ── ESTRATEGIA QUIRÚRGICA: VOTO GARANTIZADO (OFFLINE-FIRST) ──
-
-    // A) Guardar INMEDIATAMENTE en LocalStorage (No se pierde el dato aunque se cierre el navegador)
-    localStorage.setItem(KEY_VOTED, voteType);
+    // A) Guardar en localStorage inmediatamente (offline-first)
+    localStorage.setItem(KEY_VOTED,   voteType);
     localStorage.setItem(KEY_PENDING, voteType);
 
-    // B) UI OPTIMISTA: Mostrar éxito al instante sin esperar a la red
+    // B) UI optimista: mostrar resultado sin esperar la red
     if (optionsDiv) optionsDiv.hidden = true;
     if (resultDiv)  resultDiv.hidden  = false;
     if (loader)     loader.hidden     = true;
-
-    // Simular incremento en UI para feedback visual inmediato
-    const currentCounts = { total: 0, si: 542, dudo: 89, no: 20 }; // Fallback base
-    currentCounts[voteType]++;
-    renderBars(currentCounts);
-    
-    if (shareMod) shareMod.hidden = false;
+    if (shareMod)   shareMod.hidden   = false;
     showToast('¡Tu voz ha sido registrada con éxito!');
 
-    // C) Sincronización en segundo plano (Silenciosa)
-    syncPendingVotes().finally(() => {
-        votingInProgress = false;
+    // Mostrar barras con incremento local optimista mientras llega la red
+    fetchVoteCounts().then(counts => {
+        counts[voteType] = (counts[voteType] || 0) + 1;
+        renderBars(counts);
     });
+
+    // C) Sincronización en segundo plano con FIX 4 integrado
+    (async () => {
+        try {
+            const anonId = await getAnonId();
+
+            if (!db) {
+                console.warn('[Vote] Supabase no disponible. Voto guardado en KEY_PENDING.');
+                return;
+            }
+
+            const { error } = await db.from('votos_pulso').insert([{
+                anon_id:    anonId,
+                opcion:     voteType,
+                created_at: new Date().toISOString()
+            }]);
+
+            if (error) {
+                if (error.code === '23505') {
+                    // Duplicado: el fingerprint ya está registrado
+                    console.log('[Vote] Voto duplicado detectado por la base de datos.');
+                    localStorage.removeItem(KEY_PENDING);
+                } else {
+                    console.error('[Vote] Error de insert:', error.message);
+                }
+                return;
+            }
+
+            // Insert exitoso: limpiar pendiente
+            localStorage.removeItem(KEY_PENDING);
+            console.log('[Vote] Voto sincronizado con Supabase correctamente.');
+
+            /*
+             * FIX 4: Actualizar KPI y barras con datos reales post-insert.
+             * El usuario ve el termómetro con su voto contabilizado
+             * unos segundos después del click — sin recarga de página.
+             */
+            await actualizarKpiVoces();
+            const realCounts = await fetchVoteCounts();
+            renderBars(realCounts);
+
+        } catch (err) {
+            console.error('[Vote] Error de red en background sync:', err.message);
+        } finally {
+            votingInProgress = false;
+        }
+    })();
 }
 
-/**
- * Inicializa la sección de Pulso Ciudadano.
- * Verifica localStorage para saber si el usuario ya votó.
- */
+
+/* ═══════════════════════════════════════════════
+   12. INIT PULSO
+   ═══════════════════════════════════════════════ */
 function initPulso() {
     const hasVoted   = localStorage.getItem(KEY_VOTED);
     const optionsDiv = document.getElementById('pulsoOptions');
@@ -463,32 +539,23 @@ function initPulso() {
     const resultDiv  = document.getElementById('pulsoResult');
 
     if (hasVoted) {
-        // ── Ya votó → mostrar resultados directamente ──
         if (optionsDiv) optionsDiv.hidden = true;
         if (loader)     loader.hidden     = false;
         if (resultDiv)  resultDiv.hidden  = true;
 
-        // Cargar totales reales desde Supabase
         fetchVoteCounts().then(counts => {
             if (loader)    loader.hidden    = true;
             if (resultDiv) resultDiv.hidden = false;
-
             renderBars(counts);
-
             const shareMod = document.getElementById('shareModule');
             if (shareMod) shareMod.hidden = false;
         });
 
     } else {
-        // ── Primera visita → mostrar botones de voto ──
         if (optionsDiv) optionsDiv.hidden = false;
         if (loader)     loader.hidden     = true;
         if (resultDiv)  resultDiv.hidden  = true;
 
-        /*
-         * Adjuntar listeners DIRECTAMENTE (sin cloneNode que rompe data-vote).
-         * Usar getAttribute en lugar de dataset para máxima compatibilidad.
-         */
         const btns = document.querySelectorAll('.pulso-btn[data-vote]');
         btns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -503,7 +570,7 @@ function initPulso() {
 
 
 /* ═══════════════════════════════════════════════
-   9. COMPARTIR
+   13. COMPARTIR
    ═══════════════════════════════════════════════ */
 function initSharing() {
     const url = window.location.href.split('#')[0];
@@ -547,72 +614,64 @@ function initSharing() {
 
 
 /* ═══════════════════════════════════════════════
-   10. FORMULARIO SIMPATIZANTES
+   14. FORMULARIO SIMPATIZANTES
+   ═══════════════════════════════════════════════
+   FIX 5: Conflictos de merge Git eliminados.
+   La versión HEAD (form.hidden = true) es la correcta y única.
    ═══════════════════════════════════════════════ */
 function initForm() {
     const form = document.getElementById('simpatizanteForm');
     if (!form) return;
 
     form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    const btn       = document.getElementById('btnSubmitForm');
-    const nombre    = (document.getElementById('nombre')?.value || '').trim();
-    const whatsapp  = (document.getElementById('whatsapp')?.value || '').trim();
-    const municipio = document.getElementById('municipio')?.value || '';
+        const btn       = document.getElementById('btnSubmitForm');
+        const nombre    = (document.getElementById('nombre')?.value || '').trim();
+        const whatsapp  = (document.getElementById('whatsapp')?.value || '').trim();
+        const municipio = document.getElementById('municipio')?.value || '';
 
-    const waRegex = /^\d{10}$/;
-    if (!nombre || !municipio || !waRegex.test(whatsapp)) {
-        showToast('Ingresa un nombre, municipio y un WhatsApp válido (10 dígitos).');
-        return;
-    }
+        const waRegex = /^\d{10}$/;
+        if (!nombre || !municipio || !waRegex.test(whatsapp)) {
+            showToast('Ingresa un nombre, municipio y un WhatsApp válido (10 dígitos).');
+            return;
+        }
 
-    // Desactiva el botón para prevenir doble envío
-    btn.textContent = 'Enviando...';
-    btn.disabled    = true;
+        btn.textContent = 'Enviando...';
+        btn.disabled    = true;
 
-    try {
-        const anonId = await getAnonId();
-        if (!db) throw new Error("Conexión a base de datos no disponible.");
+        try {
+            const anonId = await getAnonId();
+            if (!db) throw new Error('Conexión a base de datos no disponible.');
 
-        const { error } = await db.from('movilizadores').insert([{
-            nombre,
-            whatsapp,
-            municipio,
-            rol: 'promotor',
-            fingerprint: anonId
-        }]);
-        
-        if (error) throw error;
+            const { error } = await db.from('movilizadores').insert([{
+                nombre,
+                whatsapp,
+                municipio,
+                rol:         'promotor',
+                fingerprint: anonId
+            }]);
 
-        // ✅ Éxito: Oculta el formulario y muestra el mensaje del HTML
-<<<<<<< HEAD
-        form.hidden = true;
-=======
-        // Oculta todo el formulario, incluyendo el encabezado con el mensaje viejo
-        document.getElementById('simpatizanteForm').hidden = true;
-        document.querySelector('.form-header').hidden = true;
-        // Muestra tu mensaje personalizado
-        document.getElementById('formSuccess').hidden = false;   
->>>>>>> e465f3a9505615c9d793dc94e18e92e48824a265
+            if (error) throw error;
 
-    } catch (err) {
-        // ✅ En caso de error, restaura el botón
-        showToast('Problema de conexión. Intenta de nuevo.');
-        btn.textContent = 'Sumarme al Movimiento';
-        btn.disabled    = false;
-<<<<<<< HEAD
-    }
-});   
-=======
-   }
-   });   
->>>>>>> e465f3a9505615c9d793dc94e18e92e48824a265
+            // Ocultar formulario y encabezado, mostrar mensaje de éxito
+            form.hidden = true;
+            const header = document.querySelector('.form-header');
+            if (header) header.hidden = true;
+            const ok = document.getElementById('formSuccess');
+            if (ok) ok.hidden = false;
+
+        } catch (err) {
+            showToast('Problema de conexión. Intenta de nuevo.');
+            btn.textContent = 'Sumarme al Movimiento';
+            btn.disabled    = false;
+        }
+    });
 }
 
 
 /* ═══════════════════════════════════════════════
-   11. NAV MOBILE
+   15. NAV MOBILE
    ═══════════════════════════════════════════════ */
 function initNav() {
     const toggle = document.getElementById('navToggle');
@@ -643,7 +702,7 @@ function initNav() {
 
 
 /* ═══════════════════════════════════════════════
-   12. ANIMACIÓN MAPA
+   16. ANIMACIÓN MAPA
    ═══════════════════════════════════════════════ */
 function initMap() {
     const circles = document.querySelectorAll('.region-hotspot');
@@ -664,9 +723,11 @@ function initMap() {
 /* ═══════════════════════════════════════════════
    BOOTSTRAP
    ═══════════════════════════════════════════════
-   script.js corre al final del body SIN defer.
-   El DOM ya está listo. Usamos readyState como red de seguridad.
-   Supabase ya está disponible (cargó en <head> síncrono).
+   Orden de inicialización:
+   1. UI estructural (nav, countdown, municipios, pulso, sharing, form, map)
+   2. KPI dinámico: actualizarKpiVoces() al cargar el DOM — FIX 2
+   3. Votos pendientes offline: syncPendingVotes()
+   4. Fingerprint en background (no bloquea UI)
    ═══════════════════════════════════════════════ */
 function bootstrap() {
     initNav();
@@ -677,13 +738,25 @@ function bootstrap() {
     initForm();
     initMap();
 
-    // 1. Sincronizar votos pendientes de sesiones anteriores
+    /*
+     * FIX 2 + FIX 3: Llamar actualizarKpiVoces() al cargar el DOM.
+     * Esta es la función que reemplaza el valor estático "5,400"
+     * con el conteo real de Supabase, con hasta 3 reintentos automáticos.
+     */
+    actualizarKpiVoces();
+
+    // Sincronizar cualquier voto que quedó pendiente por falta de red
     syncPendingVotes();
 
-    // 2. Pre-computar el fingerprint en background
+    // Pre-computar fingerprint en background
     getAnonId().catch(() => {});
 }
 
+/*
+ * El script corre al final del body SIN defer.
+ * Supabase ya cargó en <head> de forma síncrona.
+ * readyState como red de seguridad extra.
+ */
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bootstrap);
 } else {
