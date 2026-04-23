@@ -9,7 +9,8 @@ import {
   ChevronRight, 
   Users, 
   Network,
-  Send
+  Send,
+  MapPin
 } from 'lucide-react';
 
 // --- DATA ---
@@ -39,6 +40,7 @@ export default function EsthelaPlatform() {
   const [formData, setFormData] = useState({ nombre: '', whatsapp: '', municipio: '', privacidad: false });
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Bandwagon Effect: Toast Notifications
   useEffect(() => {
@@ -71,17 +73,8 @@ export default function EsthelaPlatform() {
     setFormStatus('loading');
 
     try {
-      // 1. Simulación de Inserción en Supabase (RLS configurado: Insert Only)
-      // const { data, error } = await supabase.from('simpatizantes').insert([{
-      //   nombre: formData.nombre,
-      //   whatsapp: formData.whatsapp,
-      //   municipio: formData.municipio
-      // }]);
-      // if (error) throw error;
-      
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // 2. Disparar Eventos de Retargeting
       if (typeof window !== 'undefined' && (window as any).fbq) {
         (window as any).fbq('track', 'CompleteRegistration');
       }
@@ -91,19 +84,6 @@ export default function EsthelaPlatform() {
           value: 1
         });
       }
-
-      // 3. Webhook de WhatsApp Business API
-      /*
-        await fetch('https://api.tu-backend.com/webhook/whatsapp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone: formData.whatsapp,
-            name: formData.nombre,
-            municipio: formData.municipio
-          })
-        });
-      */
 
       setFormStatus('success');
     } catch (error) {
@@ -116,58 +96,86 @@ export default function EsthelaPlatform() {
     <div className="min-h-screen bg-[#0B0F19] text-white font-sans selection:bg-[#621132] selection:text-[#D4A843]">
 
       {/* ═══════════════════════════════════════════════════════════
-          HERO SECTION — Humanización y Confianza
+          HERO SECTION — Premium Mobile-First
+          Diseño split: Imagen arriba (55vh) + Texto abajo en móvil
+          Desktop: Imagen fullbleed con texto superpuesto
       ═══════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex flex-col overflow-hidden">
+      <section className="relative min-h-screen flex flex-col bg-[#0B0F19] overflow-hidden">
 
-        {/* Background Image — Full Bleed */}
-        <div className="absolute inset-0 z-0">
+        {/* ── BLOQUE DE IMAGEN (parte superior en móvil, fullbleed en desktop) ── */}
+        <div className="relative w-full h-[55vh] md:absolute md:inset-0 md:h-full flex-shrink-0">
+          
+          {/* Skeleton shimmer mientras carga */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#141B2D] via-[#1a2235] to-[#141B2D] animate-pulse" />
+          )}
+
+          {/* Imagen principal — Esthela y Claudia Sheinbaum */}
           <img 
-            src="/assets/img/esthela-claudia.jpg" 
+            src="/assets/img/esthela.jpg" 
             alt="Esthela Damián y Claudia Sheinbaum, unidas por Guerrero" 
-            className="w-full h-full object-cover object-[65%_20%] md:object-[center_30%]"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/assets/img/esthela.jpg';
-              (e.target as HTMLImageElement).className = 'w-full h-full object-cover object-[center_20%]';
-            }}
+            className={`w-full h-full object-cover object-[50%_25%] transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => setImageLoaded(true)}
           />
-          {/* Overlay oscuro 35-40% — más fuerte abajo (móvil) / izquierda (desktop) */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/60 to-[#0B0F19]/10 md:bg-gradient-to-r md:from-[#0B0F19] md:via-[#0B0F19]/75 md:to-transparent" />
+
+          {/* Overlay gradiente — móvil: fuerte abajo para fundir con el texto */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0B0F19]/30 via-transparent to-[#0B0F19] md:bg-gradient-to-r md:from-[#0B0F19]/90 md:via-[#0B0F19]/50 md:to-transparent" />
+          
+          {/* Borde dorado sutil inferior (solo móvil) */}
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4A843]/40 to-transparent md:hidden" />
+
+          {/* Línea dorada decorativa lateral (solo desktop) */}
+          <div className="hidden md:block absolute top-[15%] bottom-[15%] left-[42%] w-[1px] bg-gradient-to-b from-transparent via-[#D4A843]/20 to-transparent" />
         </div>
 
-        {/* Content — Bottom on mobile, vertically centered on desktop */}
-        <div className="relative z-10 flex-1 flex items-end md:items-center w-full">
-          <div className="w-full max-w-6xl mx-auto px-6 pb-8 pt-40 md:py-24">
+        {/* ── BLOQUE DE TEXTO (parte inferior en móvil, superpuesto izquierda en desktop) ── */}
+        <div className="relative z-10 flex-1 flex items-start md:items-center w-full md:absolute md:inset-0">
+          <div className="w-full max-w-6xl mx-auto px-6 pt-6 pb-4 md:py-24">
             <motion.div 
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="max-w-xl space-y-6"
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="max-w-xl space-y-5 md:space-y-6"
             >
-              {/* Badge — Estatus Legal Obligatorio */}
-              <div className="inline-flex items-center space-x-2 bg-black/50 border border-[#D4A843]/30 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium tracking-wide">
+              {/* Badge — Estatus legal claro */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="inline-flex items-center space-x-2 bg-[#0B0F19]/80 md:bg-black/50 border border-[#D4A843]/30 backdrop-blur-md px-4 py-2 rounded-full text-xs md:text-sm font-medium tracking-wide"
+              >
                 <span className="w-2 h-2 rounded-full bg-[#D4A843] animate-pulse"></span>
                 <span className="text-gray-200">Aspirante a la Coordinación de Guerrero · Morena</span>
-              </div>
+              </motion.div>
               
-              {/* H1 — Narrativa humanizada, sin mayúsculas agresivas */}
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.15]" style={{ textTransform: 'none' }}>
+              {/* H1 — Narrativa humanizada */}
+              <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold tracking-tight leading-[1.15]" style={{ textTransform: 'none' }}>
                 Forjada desde joven<br />
-                <span className="text-[#D4A843]">en el trabajo comunitario</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A843] to-[#E8C869]">en el trabajo comunitario</span>
               </h1>
               
-              {/* H2 — Subtítulo de identidad */}
-              <p className="text-lg md:text-xl text-gray-200/90 font-light max-w-lg leading-relaxed">
+              {/* Subtítulo de identidad */}
+              <p className="text-base md:text-xl text-gray-300 font-light max-w-lg leading-relaxed">
                 Mi historia comenzó en Guerrero cuando tenía 15 años. Hoy, con 25 años de resultados, quiero escribir la siguiente etapa contigo.
               </p>
 
-              {/* CTAs — Apilados verticalmente en móvil */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              {/* Indicador social — miles de guerrerenses */}
+              <div className="flex items-center space-x-3 text-sm text-gray-400">
+                <div className="flex -space-x-2">
+                  <div className="w-7 h-7 rounded-full bg-[#621132] border-2 border-[#0B0F19] flex items-center justify-center text-[10px] font-bold">E</div>
+                  <div className="w-7 h-7 rounded-full bg-[#D4A843] border-2 border-[#0B0F19] flex items-center justify-center text-[10px] font-bold text-[#0B0F19]">C</div>
+                  <div className="w-7 h-7 rounded-full bg-[#B38E5D]/40 border-2 border-[#0B0F19] flex items-center justify-center text-[10px]">+</div>
+                </div>
+                <span>Miles de guerrerenses ya se sumaron</span>
+              </div>
+
+              {/* CTAs — Apilados en móvil, horizontales en desktop */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
                 <motion.a 
                   href="#formulario"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="cta-pulse inline-flex items-center justify-center space-x-3 bg-[#621132] hover:bg-[#7a153e] text-white px-8 py-4 rounded-xl font-bold text-lg shadow-[0_0_25px_rgba(98,17,50,0.5)] transition-all relative overflow-hidden group"
+                  className="cta-pulse inline-flex items-center justify-center space-x-3 bg-[#621132] hover:bg-[#7a153e] text-white px-7 py-3.5 md:px-8 md:py-4 rounded-xl font-bold text-base md:text-lg shadow-[0_0_25px_rgba(98,17,50,0.5)] transition-all relative overflow-hidden group"
                 >
                   <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                   <span>Únete a la estructura digital</span>
@@ -177,7 +185,7 @@ export default function EsthelaPlatform() {
                   href="#pulso"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="inline-flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-semibold text-lg border border-white/20 hover:border-white/40 transition-all"
+                  className="inline-flex items-center justify-center space-x-2 bg-white/5 hover:bg-white/15 backdrop-blur-sm text-white px-7 py-3.5 md:px-8 md:py-4 rounded-xl font-semibold text-base md:text-lg border border-white/15 hover:border-[#D4A843]/40 transition-all"
                 >
                   <span>Sumar mi apoyo</span>
                 </motion.a>
@@ -186,12 +194,15 @@ export default function EsthelaPlatform() {
           </div>
         </div>
 
-        {/* Factor de Poder — Leyenda geográfica territorial */}
-        <div className="relative z-10 w-full border-t border-white/10 bg-black/40 backdrop-blur-sm">
+        {/* ── FOOTER TERRITORIAL — Factor de Poder ── */}
+        <div className="relative z-10 w-full border-t border-white/10 bg-[#0B0F19]/90 md:bg-black/40 backdrop-blur-sm mt-auto">
           <div className="max-w-6xl mx-auto px-6 py-3">
-            <p className="text-[10px] md:text-sm text-gray-400 font-mono tracking-wider text-center">
-              Chilpancingo · La Montaña · La Costa · Acapulco · Tierra Caliente · La Sierra · <span className="text-[#D4A843] font-semibold">Un solo Guerrero</span>
-            </p>
+            <div className="flex items-center justify-center space-x-2">
+              <MapPin className="w-3 h-3 text-[#D4A843] flex-shrink-0 hidden sm:block" />
+              <p className="text-[10px] md:text-sm text-gray-400 font-mono tracking-wider text-center">
+                Chilpancingo · La Montaña · La Costa · Acapulco · Tierra Caliente · La Sierra · <span className="text-[#D4A843] font-semibold">Un solo Guerrero</span>
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -330,7 +341,6 @@ export default function EsthelaPlatform() {
                 </h3>
               </div>
               
-              {/* Grid visual de actividad territorial */}
               <div className="grid grid-cols-6 gap-2 w-full relative z-10">
                 {Array.from({ length: 36 }).map((_, i) => (
                   <motion.div
@@ -512,8 +522,8 @@ export default function EsthelaPlatform() {
           100% { transform: translateX(100%); }
         }
         @keyframes ctaPulse {
-          0%, 100% { box-shadow: 0 0 20px rgba(98, 17, 50, 0.4); }
-          50% { box-shadow: 0 0 40px rgba(98, 17, 50, 0.7), 0 0 60px rgba(98, 17, 50, 0.25); }
+          0%, 100% { box-shadow: 0 0 20px rgba(98,17,50,0.4); }
+          50% { box-shadow: 0 0 35px rgba(98,17,50,0.7), 0 0 50px rgba(98,17,50,0.2); }
         }
         .cta-pulse {
           animation: ctaPulse 2.5s ease-in-out infinite;
