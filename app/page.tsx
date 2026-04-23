@@ -10,7 +10,8 @@ import {
   ChevronRight, 
   Users, 
   AlertCircle,
-  Network
+  Network,
+  Send
 } from 'lucide-react';
 
 // --- DATA ---
