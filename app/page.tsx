@@ -40,7 +40,6 @@ export default function EsthelaPlatform() {
   const [formData, setFormData] = useState({ nombre: '', whatsapp: '', municipio: '', privacidad: false });
   const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Bandwagon Effect: Toast Notifications
   useEffect(() => {
@@ -103,19 +102,13 @@ export default function EsthelaPlatform() {
       <section className="relative min-h-screen flex flex-col bg-[#0B0F19] overflow-hidden">
 
         {/* ── BLOQUE DE IMAGEN (parte superior en móvil, fullbleed en desktop) ── */}
-        <div className="relative w-full h-[55vh] md:absolute md:inset-0 md:h-full flex-shrink-0">
-          
-          {/* Skeleton shimmer mientras carga */}
-          {!imageLoaded && (
-            <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#141B2D] via-[#1a2235] to-[#141B2D] animate-pulse" />
-          )}
+        <div className="relative w-full h-[45vh] md:absolute md:inset-0 md:h-full flex-shrink-0">
 
           {/* Imagen principal — Esthela y Claudia Sheinbaum */}
           <img 
             src="/assets/img/esthela.jpg" 
             alt="Esthela Damián y Claudia Sheinbaum, unidas por Guerrero" 
-            className={`w-full h-full object-cover object-[50%_25%] transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            onLoad={() => setImageLoaded(true)}
+            className="w-full h-full object-cover object-[70%_25%] md:object-[50%_25%]"
           />
 
           {/* Overlay gradiente — móvil: fuerte abajo para fundir con el texto */}
