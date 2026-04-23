@@ -70,7 +70,7 @@ export default function EsthelaPlatform() {
     });
 
     try {
-      await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/votes_pulso', {
+      await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/votes', {
         method: 'POST',
         headers: {
           'apikey': 'sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
