@@ -31,7 +31,7 @@ const MUNICIPIOS_GUERRERO = [
   "Zirándaro", "Zitlala", "Zihuatanejo de Azueta"
 ].sort();
 
-// --- COMPONENTS ---
+// --- MAIN COMPONENT ---
 
 export default function EsthelaPlatform() {
   const [hasVoted, setHasVoted] = useState(false);
@@ -49,7 +49,7 @@ export default function EsthelaPlatform() {
       
       setTimeout(() => setToastMessage(null), 5000);
       
-      const nextInterval = Math.floor(Math.random() * (15000 - 8000 + 1) + 8000); // 8-15 seconds
+      const nextInterval = Math.floor(Math.random() * (15000 - 8000 + 1) + 8000);
       setTimeout(showRandomToast, nextInterval);
     };
 
@@ -60,7 +60,6 @@ export default function EsthelaPlatform() {
   // Handlers
   const handleVote = (type: 'total' | 'structure') => {
     setHasVoted(true);
-    // Simular conexión a DB estructurada (Supabase)
     setVoteStats({
       total: type === 'total' ? 84 : 12,
       structure: type === 'structure' ? 88 : 16
@@ -80,7 +79,7 @@ export default function EsthelaPlatform() {
       // }]);
       // if (error) throw error;
       
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simular red
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       // 2. Disparar Eventos de Retargeting
       if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -93,13 +92,11 @@ export default function EsthelaPlatform() {
         });
       }
 
-      // 3. TODO: Inyectar Webhook de WhatsApp Business API
+      // 3. Webhook de WhatsApp Business API
       /*
-        // Lógica Backend / Webhook para enviar mensaje en < 10 segundos:
-        // Mensaje esperado: "Hola [Nombre]. Gracias por sumarte al equipo de Esthela Damián en [Municipio]. Para confirmar tu participación, responde con un 1 si quieres ser coordinador de sección, o 2 si solo deseas recibir información."
-        
         await fetch('https://api.tu-backend.com/webhook/whatsapp', {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             phone: formData.whatsapp,
             name: formData.nombre,
@@ -116,81 +113,92 @@ export default function EsthelaPlatform() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white font-sans selection:bg-[#621132] selection:text-[#B38E5D]">
-      {/* --- HERO SECTION: Golpe de Autoridad --- */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-        {/* Fondos y gradientes */}
-        <div className="absolute inset-0 bg-[#0B0F19] z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#621132]/30 via-[#0B0F19] to-[#0B0F19] opacity-80" />
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#621132] rounded-full blur-[150px] opacity-20 transform translate-x-1/3 -translate-y-1/3" />
+    <div className="min-h-screen bg-[#0B0F19] text-white font-sans selection:bg-[#621132] selection:text-[#D4A843]">
+
+      {/* ═══════════════════════════════════════════════════════════
+          HERO SECTION — Humanización y Confianza
+      ═══════════════════════════════════════════════════════════ */}
+      <section className="relative min-h-screen flex flex-col overflow-hidden">
+
+        {/* Background Image — Full Bleed */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/assets/img/esthela-claudia.jpg" 
+            alt="Esthela Damián y Claudia Sheinbaum, unidas por Guerrero" 
+            className="w-full h-full object-cover object-[65%_20%] md:object-[center_30%]"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/assets/img/esthela.jpg';
+              (e.target as HTMLImageElement).className = 'w-full h-full object-cover object-[center_20%]';
+            }}
+          />
+          {/* Overlay oscuro 35-40% — más fuerte abajo (móvil) / izquierda (desktop) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/60 to-[#0B0F19]/10 md:bg-gradient-to-r md:from-[#0B0F19] md:via-[#0B0F19]/75 md:to-transparent" />
         </div>
 
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center pt-20">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-8"
-          >
-            <div className="inline-flex items-center space-x-2 bg-black/40 border border-[#B38E5D]/30 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium tracking-wide">
-              <span className="w-2 h-2 rounded-full bg-[#B38E5D] animate-pulse"></span>
-              <span className="text-gray-200">Defensora del Proyecto Federal en Guerrero</span>
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1]">
-              El <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#B38E5D] to-[#E5C790]">Puente Probado</span><br />
-              entre el Bienestar Federal y Guerrero.
-            </h1>
-            
-            <p className="text-xl text-gray-300 font-light max-w-lg leading-relaxed">
-              Con la experiencia, la lealtad y el respaldo del proyecto de Nación para construir el Segundo Piso de la Transformación. 
-            </p>
-
-            <motion.a 
-              href="#formulario"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center justify-center space-x-3 bg-[#621132] hover:bg-[#7a153e] text-white px-8 py-4 rounded-lg font-bold text-lg shadow-[0_0_30px_rgba(98,17,50,0.5)] transition-all relative overflow-hidden group"
+        {/* Content — Bottom on mobile, vertically centered on desktop */}
+        <div className="relative z-10 flex-1 flex items-end md:items-center w-full">
+          <div className="w-full max-w-6xl mx-auto px-6 pb-8 pt-40 md:py-24">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="max-w-xl space-y-6"
             >
-              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-              <span>Súmate a la Red de Coordinación</span>
-              <ChevronRight className="w-5 h-5" />
-            </motion.a>
-          </motion.div>
-
-          {/* Imagen de Autoridad Simulator (Placeholder visual de alto nivel) */}
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="relative hidden md:block"
-          >
-            <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-transparent z-10" />
-              <img 
-                src="/assets/img/esthela.jpg" 
-                alt="Esthela Damián, Coordinadora de la Defensa" 
-                className="w-full h-full object-cover object-top grayscale-[20%] contrast-125"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
-                  (e.target as HTMLImageElement).className = 'w-full h-full object-cover object-top opacity-50 grayscale contrast-125';
-                }}
-              />
-              <div className="absolute bottom-6 left-6 z-20 flex items-center space-x-4">
-                <div className="bg-[#621132]/90 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 flex items-center space-x-3">
-                  <Shield className="text-[#B38E5D] w-6 h-6" />
-                  <div className="text-left">
-                    <p className="text-xs text-gray-300 uppercase tracking-wider">Lealtad Probada</p>
-                    <p className="text-white font-bold">25 Años de Resultados</p>
-                  </div>
-                </div>
+              {/* Badge — Estatus Legal Obligatorio */}
+              <div className="inline-flex items-center space-x-2 bg-black/50 border border-[#D4A843]/30 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium tracking-wide">
+                <span className="w-2 h-2 rounded-full bg-[#D4A843] animate-pulse"></span>
+                <span className="text-gray-200">Aspirante a la Coordinación de Guerrero · Morena</span>
               </div>
-            </div>
-          </motion.div>
+              
+              {/* H1 — Narrativa humanizada, sin mayúsculas agresivas */}
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.15]" style={{ textTransform: 'none' }}>
+                Forjada desde joven<br />
+                <span className="text-[#D4A843]">en el trabajo comunitario</span>
+              </h1>
+              
+              {/* H2 — Subtítulo de identidad */}
+              <p className="text-lg md:text-xl text-gray-200/90 font-light max-w-lg leading-relaxed">
+                Mi historia comenzó en Guerrero cuando tenía 15 años. Hoy, con 25 años de resultados, quiero escribir la siguiente etapa contigo.
+              </p>
+
+              {/* CTAs — Apilados verticalmente en móvil */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                <motion.a 
+                  href="#formulario"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="cta-pulse inline-flex items-center justify-center space-x-3 bg-[#621132] hover:bg-[#7a153e] text-white px-8 py-4 rounded-xl font-bold text-lg shadow-[0_0_25px_rgba(98,17,50,0.5)] transition-all relative overflow-hidden group"
+                >
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                  <span>Únete a la estructura digital</span>
+                  <ChevronRight className="w-5 h-5" />
+                </motion.a>
+                <motion.a 
+                  href="#pulso"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="inline-flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-semibold text-lg border border-white/20 hover:border-white/40 transition-all"
+                >
+                  <span>Sumar mi apoyo</span>
+                </motion.a>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Factor de Poder — Leyenda geográfica territorial */}
+        <div className="relative z-10 w-full border-t border-white/10 bg-black/40 backdrop-blur-sm">
+          <div className="max-w-6xl mx-auto px-6 py-3">
+            <p className="text-[10px] md:text-sm text-gray-400 font-mono tracking-wider text-center">
+              Chilpancingo · La Montaña · La Costa · Acapulco · Tierra Caliente · La Sierra · <span className="text-[#D4A843] font-semibold">Un solo Guerrero</span>
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* --- SECCIÓN DE AUTORIDAD: Currículum de Poder --- */}
+      {/* ═══════════════════════════════════════════════════════════
+          SECCIÓN DE AUTORIDAD — Currículum de Poder
+      ═══════════════════════════════════════════════════════════ */}
       <section className="py-24 bg-[#0F1423] relative border-t border-white/5">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -223,8 +231,10 @@ export default function EsthelaPlatform() {
         </div>
       </section>
 
-      {/* --- CUARTO DE GUERRA: Data en Tiempo Real --- */}
-      <section className="py-24 bg-[#0B0F19] relative">
+      {/* ═══════════════════════════════════════════════════════════
+          CUARTO DE GUERRA — Data en Tiempo Real
+      ═══════════════════════════════════════════════════════════ */}
+      <section id="pulso" className="py-24 bg-[#0B0F19] relative">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[1px] bg-gradient-to-r from-transparent via-[#B38E5D]/30 to-transparent" />
         
         <div className="max-w-6xl mx-auto px-6">
@@ -320,7 +330,7 @@ export default function EsthelaPlatform() {
                 </h3>
               </div>
               
-              {/* Representación visual de actividad en Guerrero mediante un grid estilizado */}
+              {/* Grid visual de actividad territorial */}
               <div className="grid grid-cols-6 gap-2 w-full relative z-10">
                 {Array.from({ length: 36 }).map((_, i) => (
                   <motion.div
@@ -353,7 +363,9 @@ export default function EsthelaPlatform() {
         </div>
       </section>
 
-      {/* --- FORMULARIO ESTRATÉGICO DE CAPTACIÓN --- */}
+      {/* ═══════════════════════════════════════════════════════════
+          FORMULARIO ESTRATÉGICO DE CAPTACIÓN
+      ═══════════════════════════════════════════════════════════ */}
       <section id="formulario" className="py-24 bg-[#0F1423] relative">
         <div className="max-w-3xl mx-auto px-6 relative z-10">
           
@@ -462,7 +474,9 @@ export default function EsthelaPlatform() {
         </div>
       </section>
 
-      {/* --- FOOTER --- */}
+      {/* ═══════════════════════════════════════════════════════════
+          FOOTER
+      ═══════════════════════════════════════════════════════════ */}
       <footer className="border-t border-white/5 bg-[#0B0F19] py-12 text-center text-gray-500 text-sm">
         <div className="max-w-6xl mx-auto px-6">
           <p>© {new Date().getFullYear()} Coordinación Territorial | Guerrero.</p>
@@ -470,7 +484,9 @@ export default function EsthelaPlatform() {
         </div>
       </footer>
 
-      {/* --- TOAST NOTIFICATIONS (Bandwagon Effect) --- */}
+      {/* ═══════════════════════════════════════════════════════════
+          TOAST NOTIFICATIONS — Bandwagon Effect
+      ═══════════════════════════════════════════════════════════ */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div
@@ -490,10 +506,17 @@ export default function EsthelaPlatform() {
         )}
       </AnimatePresence>
       
-      {/* Script Tags Simulados para Analytics/Pixel (solo referencia, Next.js usa Next/Script) */}
+      {/* Keyframes globales */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes shimmer {
           100% { transform: translateX(100%); }
+        }
+        @keyframes ctaPulse {
+          0%, 100% { box-shadow: 0 0 20px rgba(98, 17, 50, 0.4); }
+          50% { box-shadow: 0 0 40px rgba(98, 17, 50, 0.7), 0 0 60px rgba(98, 17, 50, 0.25); }
+        }
+        .cta-pulse {
+          animation: ctaPulse 2.5s ease-in-out infinite;
         }
       `}} />
     </div>
