@@ -10,7 +10,10 @@ import {
   Users, 
   Network,
   Send,
-  MapPin
+  MapPin,
+  MessageCircle,
+  Facebook,
+  MessageSquare
 } from 'lucide-react';
 
 // --- DATA ---
@@ -59,12 +62,30 @@ export default function EsthelaPlatform() {
   }, []);
 
   // Handlers
-  const handleVote = (type: 'total' | 'structure') => {
+  const handleVote = async (type: string) => {
     setHasVoted(true);
     setVoteStats({
-      total: type === 'total' ? 84 : 12,
-      structure: type === 'structure' ? 88 : 16
+      total: type === 'si' ? 84 : 80,
+      structure: type === 'si' ? 88 : 85
     });
+
+    try {
+      await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/votos', {
+        method: 'POST',
+        headers: {
+          'apikey': 'sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
+          'Authorization': 'Bearer sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          tipo_apoyo: type,
+          fecha: new Date().toISOString()
+        })
+      });
+    } catch (error) {
+      console.error('Error al registrar voto:', error);
+    }
   };
 
   const handleFormSubmit = async (e: FormEvent) => {
@@ -72,7 +93,23 @@ export default function EsthelaPlatform() {
     setFormStatus('loading');
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // 1. Inserción Nativa en Supabase vía REST API
+      const req = await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/registros', {
+        method: 'POST',
+        headers: {
+          'apikey': 'sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
+          'Authorization': 'Bearer sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          nombre: formData.nombre,
+          whatsapp: formData.whatsapp,
+          municipio: formData.municipio
+        })
+      });
+
+      if (!req.ok) throw new Error('Error al conectar con Supabase');
 
       if (typeof window !== 'undefined' && (window as any).fbq) {
         (window as any).fbq('track', 'CompleteRegistration');
@@ -104,11 +141,13 @@ export default function EsthelaPlatform() {
         {/* ── BLOQUE DE IMAGEN (parte superior en móvil, fullbleed en desktop) ── */}
         <div className="relative w-full h-[45vh] md:absolute md:inset-0 md:h-full flex-shrink-0">
 
-          {/* Imagen principal — Esthela y Claudia Sheinbaum */}
+          {/* Imagen principal — Esthela y Claudia Sheinbaum opt for mobile */}
           <img 
             src="/assets/img/esthela.jpg" 
             alt="Esthela Damián y Claudia Sheinbaum, unidas por Guerrero" 
             className="w-full h-full object-cover object-[70%_25%] md:object-[50%_25%]"
+            loading="eager"
+            fetchPriority="high"
           />
 
           {/* Overlay gradiente — móvil: fuerte abajo para fundir con el texto */}
@@ -264,18 +303,25 @@ export default function EsthelaPlatform() {
               {!hasVoted ? (
                 <div className="space-y-4">
                   <button 
-                    onClick={() => handleVote('total')}
-                    className="w-full flex items-center justify-between p-5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-transparent hover:border-[#621132] group"
+                    onClick={() => handleVote('si')}
+                    className="w-full flex items-center justify-between p-5 rounded-xl bg-green-500/10 hover:bg-green-500/20 transition-colors border border-transparent hover:border-green-500 group"
                   >
-                    <span className="text-lg font-medium">Apoyo total para Guerrero</span>
-                    <ChevronRight className="text-gray-500 group-hover:text-white transition-colors" />
+                    <span className="text-lg font-medium text-green-400">Sí, estoy con la Aspirante</span>
+                    <ChevronRight className="text-green-500/50 group-hover:text-green-400 transition-colors" />
                   </button>
                   <button 
-                    onClick={() => handleVote('structure')}
-                    className="w-full flex items-center justify-between p-5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-transparent hover:border-[#B38E5D] group"
+                    onClick={() => handleVote('dudo')}
+                    className="w-full flex items-center justify-between p-5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-transparent hover:border-[#D4A843] group"
                   >
-                    <span className="text-lg font-medium text-[#B38E5D]">Quiero sumarme a la estructura</span>
-                    <ChevronRight className="text-gray-500 group-hover:text-white transition-colors" />
+                    <span className="text-lg font-medium text-[#D4A843]">Aún tengo dudas</span>
+                    <ChevronRight className="text-gray-500 group-hover:text-[#D4A843] transition-colors" />
+                  </button>
+                  <button 
+                    onClick={() => handleVote('no')}
+                    className="w-full flex items-center justify-between p-5 rounded-xl bg-white/5 hover:bg-red-500/10 transition-colors border border-transparent hover:border-red-500 group"
+                  >
+                    <span className="text-lg font-medium text-gray-400">No por ahora</span>
+                    <ChevronRight className="text-gray-500 group-hover:text-red-500 transition-colors" />
                   </button>
                 </div>
               ) : (
@@ -315,8 +361,29 @@ export default function EsthelaPlatform() {
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-start space-x-3 mt-6">
                     <CheckCircle2 className="text-green-500 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-green-500 font-medium">Pulso registrado con éxito</p>
-                      <p className="text-sm text-gray-400 mt-1">Tu postura ha sido cifrada y contabilizada en la base de datos distribuida territorialmente.</p>
+                      <p className="text-green-500 font-medium">¡Misión Cumplida!</p>
+                      <p className="text-sm text-gray-400 mt-1">Tu postura enciende el mapa territorial. Ayuda a que el pulso no se detenga.</p>
+                      
+                      <div className="mt-4 flex flex-col space-y-2">
+                        <a 
+                          href="https://wa.me/?text=¡Yo ya activé mi pulso por Esthela! Es de Guerrero y tiene la experiencia. Súmate aquí: https://guerreroescone.vercel.app" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center space-x-2 bg-[#25D366] hover:bg-[#128C7E] text-white text-sm font-bold py-3 pr-4 pl-3 rounded-lg w-full transition-colors"
+                        >
+                          <MessageCircle className="w-5 h-5" />
+                          <span>Compartir este Pulso en WhatsApp</span>
+                        </a>
+                        <a 
+                          href="https://www.facebook.com/sharer/sharer.php?u=https://guerreroescone.vercel.app" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center space-x-2 bg-[#1877F2] hover:bg-[#0c59ba] text-white text-sm font-bold py-3 pr-4 pl-3 rounded-lg w-full transition-colors"
+                        >
+                          <Facebook className="w-5 h-5" />
+                          <span>Misión Promotor Facebook</span>
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -362,6 +429,35 @@ export default function EsthelaPlatform() {
               </p>
             </div>
             
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════
+          IDENTIDAD TERRITORIAL (Regiones)
+      ═══════════════════════════════════════════════════════════ */}
+      <section className="py-16 bg-[#0B0F19] relative border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-bold text-[#D4A843] mb-2 font-mono">ESTRUCTURA Y MENSAJE</h2>
+            <p className="text-gray-400 text-lg">Vocación regional para construir un estado fuerte.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="p-6 border border-white/10 rounded-xl bg-white/5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-blue-500/50 group-hover:bg-blue-400 transition-colors" />
+              <h4 className="text-lg font-bold text-white mb-2">Acapulco y Costa</h4>
+              <p className="text-gray-400 text-sm">El proyecto está enfocado en la resiliencia y la inyección federal para la reconstrucción total de nuestros puertos históricos.</p>
+            </div>
+            <div className="p-6 border border-white/10 rounded-xl bg-white/5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[#621132]/50 group-hover:bg-[#621132] transition-colors" />
+              <h4 className="text-lg font-bold text-white mb-2">Montaña y Sierra</h4>
+              <p className="text-gray-400 text-sm">Forjada desde joven en el trabajo comunitario puro y fiel a sus raíces en la UAGro; nunca olvida de dónde viene.</p>
+            </div>
+            <div className="p-6 border border-white/10 rounded-xl bg-white/5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[#D4A843]/50 group-hover:bg-[#D4A843] transition-colors" />
+              <h4 className="text-lg font-bold text-white mb-2">Tierra Caliente</h4>
+              <p className="text-gray-400 text-sm">Desarrollo productivo con paz y justicia, garantizado gracias a la colaboración absoluta con la Federación.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -508,6 +604,16 @@ export default function EsthelaPlatform() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* FLOATING WHATSAPP CTA */}
+      <a
+        href="https://wa.me/5211234567890?text=Hola, quiero unirme a la estructura de la Aspirante para Guerrero"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#128C7E] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] transition-transform hover:scale-110 flex items-center justify-center animate-bounce duration-1000"
+      >
+        <MessageCircle className="w-8 h-8" />
+      </a>
       
       {/* Keyframes globales */}
       <style dangerouslySetInnerHTML={{__html: `

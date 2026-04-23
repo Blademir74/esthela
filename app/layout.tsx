@@ -2,14 +2,20 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Esthela Damián: El Proyecto Federal en Guerrero",
-  description: "La mujer de confianza en el proyecto de Nación para construir el Segundo Piso de la Transformación en Guerrero.",
+  title: "Esthela Damián | El Pulso de Guerrero 🏔️",
+  description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy!",
   openGraph: {
-    title: "Esthela Damián: El Proyecto Federal en Guerrero",
-    description: "La defensora del proyecto federal que conecta a Guerrero con el Bienestar Nacional. Súmate.",
-    images: [{ url: "https://guerreroescone.vercel.app/assets/img/og-esthela-poder.jpg" }],
+    title: "Esthela Damián | El Pulso de Guerrero 🏔️",
+    description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy!",
+    images: [{ url: "https://guerreroescone.vercel.app/assets/img/esthela.jpg" }],
     url: "https://guerreroescone.vercel.app/",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Esthela Damián | El Pulso de Guerrero 🏔️",
+    description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy!",
+    images: ["https://guerreroescone.vercel.app/assets/img/esthela.jpg"],
   }
 };
 
