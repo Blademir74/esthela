@@ -70,7 +70,7 @@ export default function EsthelaPlatform() {
     });
 
     try {
-      await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/pulsos', {
+      await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/votes_pulso', {
         method: 'POST',
         headers: {
           'apikey': 'sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
@@ -94,7 +94,7 @@ export default function EsthelaPlatform() {
 
     try {
       // 1. Inserción Nativa en Supabase vía REST API
-      const req = await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/simpatizantes', {
+      const req = await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/movilizadores', {
         method: 'POST',
         headers: {
           'apikey': 'sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',

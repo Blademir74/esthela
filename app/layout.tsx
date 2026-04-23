@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy!",
   openGraph: {
     title: "Esthela Damián | La Voz de Guerrero 🏔️",
-    description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy! El Puente Probado.",
+    description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy!",
     images: [{ url: "https://guerreroescone.vercel.app/assets/img/esthela.jpg" }],
     url: "https://guerreroescone.vercel.app/",
     type: "website",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Esthela Damián | La Voz de Guerrero 🏔️",
-    description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy! El Puente Probado.",
+    description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy!",
     images: ["https://guerreroescone.vercel.app/assets/img/esthela.jpg"],
   }
 };
