@@ -105,11 +105,15 @@ export default function EsthelaPlatform() {
         body: JSON.stringify({
           nombre: formData.nombre,
           whatsapp: formData.whatsapp,
-          municipio: formData.municipio
+          municipio: formData.municipio,
+          rol: 'promotor'
         })
       });
 
-      if (!req.ok) throw new Error('Error al conectar con Supabase');
+      if (!req.ok) {
+        const errData = await req.text();
+        throw new Error('Supabase rechazo el registro: ' + errData);
+      }
 
       if (typeof window !== 'undefined' && (window as any).fbq) {
         (window as any).fbq('track', 'CompleteRegistration');
@@ -562,7 +566,7 @@ export default function EsthelaPlatform() {
                     <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <span>Integrarme al Proyecto Federal</span>
+                      <span>Integrarme al Proyecto 2027</span>
                       <Send className="w-5 h-5" />
                     </>
                   )}
@@ -607,7 +611,7 @@ export default function EsthelaPlatform() {
 
       {/* FLOATING WHATSAPP CTA */}
       <a
-        href="https://wa.me/5211234567890?text=Hola, quiero unirme a la estructura de la Aspirante para Guerrero"
+        href="https://wa.me/5217474795833?text=Hola, quiero unirme a la estructura de la Aspirante para Guerrero"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#128C7E] text-white p-4 rounded-full shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] transition-transform hover:scale-110 flex items-center justify-center animate-bounce duration-1000"
