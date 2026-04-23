@@ -33,6 +33,3 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# Lock file - force Vercel to regenerate from package.json
-package-lock.json
