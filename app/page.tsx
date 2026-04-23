@@ -4,12 +4,10 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Shield, 
-  MapPin, 
   Activity, 
   CheckCircle2, 
   ChevronRight, 
   Users, 
-  AlertCircle,
   Network,
   Send
 } from 'lucide-react';
