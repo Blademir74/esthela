@@ -62,6 +62,21 @@ export default function EsthelaPlatform() {
   }, []);
 
   // Handlers
+  const getFingerprint = () => {
+    if (typeof window === 'undefined') return 'server';
+    const nav = window.navigator;
+    const screen = window.screen;
+    const str = `${nav.userAgent}${nav.language}${screen.colorDepth}${screen.width}${screen.height}${nav.hardwareConcurrency}`;
+    // Simple hash function for fingerprint
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return Math.abs(hash).toString(16);
+  };
+
   const handleVote = async (type: string) => {
     setHasVoted(true);
     setVoteStats({
@@ -70,6 +85,22 @@ export default function EsthelaPlatform() {
     });
 
     try {
+      // 1. Obtener geo-data básica por IP (precisión regional)
+      let geoData = { city: 'Desconocido', region: 'Guerrero' };
+      try {
+        const geoReq = await fetch('https://ipapi.co/json/');
+        if (geoReq.ok) {
+          const res = await geoReq.json();
+          geoData = { 
+            city: res.city || 'Desconocido', 
+            region: res.region || 'Guerrero' 
+          };
+        }
+      } catch (e) {
+        console.warn('Fallo geolocalización, usando default');
+      }
+
+      // 2. Enviar a Supabase con el esquema exacto: vote, fingerprint, region, city, opcion
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/votes`, {
         method: 'POST',
         headers: {
@@ -79,8 +110,11 @@ export default function EsthelaPlatform() {
           'Prefer': 'return=minimal'
         },
         body: JSON.stringify({
-          tipo_apoyo: type,
-          fecha: new Date().toISOString()
+          vote: type,
+          opcion: type,
+          fingerprint: getFingerprint(),
+          city: geoData.city,
+          region: geoData.region
         })
       });
 
