@@ -70,11 +70,11 @@ export default function EsthelaPlatform() {
     });
 
     try {
-      await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/votes', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/votes`, {
         method: 'POST',
         headers: {
-          'apikey': 'sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
-          'Authorization': 'Bearer sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
@@ -83,8 +83,13 @@ export default function EsthelaPlatform() {
           fecha: new Date().toISOString()
         })
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error al registrar voto:', response.status, errorText);
+      }
     } catch (error) {
-      console.error('Error al registrar voto:', error);
+      console.error('Error de red al registrar voto:', error);
     }
   };
 
@@ -93,12 +98,11 @@ export default function EsthelaPlatform() {
     setFormStatus('loading');
 
     try {
-      // 1. Inserción Nativa en Supabase vía REST API
-      const req = await fetch('https://iwqvrnnejiwadfxssumj.supabase.co/rest/v1/movilizadores', {
+      const req = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/movilizadores`, {
         method: 'POST',
         headers: {
-          'apikey': 'sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
-          'Authorization': 'Bearer sb_publishable_qFPSGf9-iITKuAX_rWVh2w_PtEHjCZx',
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
