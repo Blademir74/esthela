@@ -15,6 +15,7 @@ import {
   Facebook,
   MessageSquare
 } from 'lucide-react';
+import Image from 'next/image';
 
 // --- DATA ---
 const MUNICIPIOS_GUERRERO = [
@@ -224,7 +225,7 @@ export default function EsthelaPlatform() {
               
               {/* H1 — Narrativa humanizada */}
               <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold tracking-tight leading-[1.15]" style={{ textTransform: 'none' }}>
-                Forjada desde joven<br />
+                Mi historia comenzó en Guerrero cuando tenía 15 años<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A843] to-[#E8C869]">en el trabajo comunitario</span>
               </h1>
               
@@ -493,7 +494,7 @@ export default function EsthelaPlatform() {
             <div className="p-6 border border-white/10 rounded-xl bg-white/5 relative overflow-hidden group">
               <div className="absolute top-0 left-0 w-1 h-full bg-[#621132]/50 group-hover:bg-[#621132] transition-colors" />
               <h4 className="text-lg font-bold text-white mb-2">Montaña y Sierra</h4>
-              <p className="text-gray-400 text-sm">Forjada desde joven en el trabajo comunitario puro y fiel a sus raíces en la UAGro; nunca olvida de dónde viene.</p>
+              <p className="text-gray-400 text-sm">Mi historia comenzó en Guerrero cuando tenía 15 años en el trabajo comunitario puro y fiel a sus raíces en la UAGro; nunca olvida de dónde viene.</p>
             </div>
             <div className="p-6 border border-white/10 rounded-xl bg-white/5 relative overflow-hidden group">
               <div className="absolute top-0 left-0 w-1 h-full bg-[#D4A843]/50 group-hover:bg-[#D4A843] transition-colors" />
