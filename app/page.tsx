@@ -79,7 +79,7 @@ export default function EsthelaPlatform() {
         <video
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: 'center 30%' }}
-          autoPlay
+          autoPlay 
           loop
           muted
           playsInline
