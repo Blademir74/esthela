@@ -179,30 +179,27 @@ export default function EsthelaPlatform() {
           Diseño split: Imagen arriba (55vh) + Texto abajo en móvil
           Desktop: Imagen fullbleed con texto superpuesto
       ═══════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex flex-col bg-[#0B0F19] overflow-hidden">
-
-        {/* ── BLOQUE DE IMAGEN (parte superior en móvil, fullbleed en desktop) ── */}
-        <div className="relative w-full h-[45vh] md:absolute md:inset-0 md:h-full flex-shrink-0">
-
-          {/* Imagen principal — Esthela y Claudia Sheinbaum opt for mobile */}
-          <img 
-            src="/assets/img/esthela.jpg" 
-            alt="Esthela Damián y Claudia Sheinbaum, unidas por Guerrero" 
-            className="w-full h-full object-cover object-[70%_25%] md:object-[50%_25%]"
-            loading="eager"
-            fetchPriority="high"
-          />
-
-          {/* Overlay gradiente — móvil: fuerte abajo para fundir con el texto */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0B0F19]/30 via-transparent to-[#0B0F19] md:bg-gradient-to-r md:from-[#0B0F19]/90 md:via-[#0B0F19]/50 md:to-transparent" />
-          
-          {/* Borde dorado sutil inferior (solo móvil) */}
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4A843]/40 to-transparent md:hidden" />
-
-          {/* Línea dorada decorativa lateral (solo desktop) */}
-          <div className="hidden md:block absolute top-[15%] bottom-[15%] left-[42%] w-[1px] bg-gradient-to-b from-transparent via-[#D4A843]/20 to-transparent" />
-        </div>
-
+        <section className="relative min-h-screen flex flex-col overflow-hidden">
+  {/* ── VIDEO BACKGROUND ── */}
+  <video
+    className="absolute inset-0 w-full h-full object-cover"
+    autoPlay
+    loop
+    muted
+    playsInline
+  >
+    <source src="/assets/img/hero-video.mp4" type="video/mp4" />
+    {/* Fallback: imagen estática si el video falla */}
+    <img
+      src="/assets/img/esthela.jpg"
+      alt="Esthela Damián y Claudia Sheinbaum, unidas por Guerrero"
+      className="w-full h-full object-cover"
+      loading="eager"
+      fetchPriority="high"
+    />
+      {/* ── OVERLAY ── */}
+  <div className="absolute inset-0 bg-black/40 z-10" />
+  </video>
         {/* ── BLOQUE DE TEXTO (parte inferior en móvil, superpuesto izquierda en desktop) ── */}
         <div className="relative z-10 flex-1 flex items-start md:items-center w-full md:absolute md:inset-0">
           <div className="w-full max-w-6xl mx-auto px-6 pt-6 pb-4 md:py-24">
@@ -224,7 +221,7 @@ export default function EsthelaPlatform() {
               </motion.div>
               
               {/* H1 — Narrativa humanizada */}
-              <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold tracking-tight leading-[1.15]" style={{ textTransform: 'none' }}>
+                      <h1 className="font-[var(--font-playfair)] text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.15] text-white">
                 Mi historia comenzó en Guerrero cuando tenía 15 años<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A843] to-[#E8C869]">en el trabajo comunitario</span>
               </h1>
@@ -279,6 +276,17 @@ export default function EsthelaPlatform() {
               </p>
             </div>
           </div>
+            {/* ── IMAGEN RECORTADA — Claudia & Esthela — esquina inferior derecha */}
+  <Image
+    src="/assets/img/esthela4.png"
+    alt="Claudia Sheinbaum y Esthela Damián unidas por Guerrero"
+    width={320}
+    height={480}
+    priority
+    
+    className="absolute bottom-0 right-0 md:bottom-4 md:right-8 w-40 h-60 md:w-60 md:h-80 object-contain z-20"
+    style={{ objectFit: 'contain' }}
+  />
         </div>
       </section>
 
