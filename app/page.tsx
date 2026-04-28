@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Activity, CheckCircle2, ChevronRight, Users, Network, Send, MapPin, MessageCircle, Facebook, MessageSquare, Share2, Heart, ThumbsUp, ThumbsDown, HelpCircle } from 'lucide-react';
 
 // --- DATA ---
-const MUNICIPIOS_GUERRERO = [
+const MUNICIPIOS_GUERRERO = [ 
   "Acapulco de Juarez", "Acatepec", "Ahuacuotzingo", "Ajuchitlan del Progreso", "Alcozauca de Guerrero",
   "Alpoyeca", "Apaxtla", "Arcelia", "Atenango del Rio", "Atlamajalcingo del Monte",
   "Atlixtac", "Atoyac de Alvarez", "Ayutla de los Libres", "Azoyu", "Benito Juarez", "Buenavista de Cuellar",
