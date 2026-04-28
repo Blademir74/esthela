@@ -502,7 +502,7 @@ export default function EsthelaPlatform() {
             <div className="p-6 border border-white/10 rounded-xl bg-white/5 relative overflow-hidden group">
               <div className="absolute top-0 left-0 w-1 h-full bg-[#621132]/50 group-hover:bg-[#621132] transition-colors" />
               <h4 className="text-lg font-bold text-white mb-2">Montaña y Sierra</h4>
-              <p className="text-gray-400 text-sm">Mi historia comenzó en Guerrero cuando tenía 15 años en el trabajo comunitario puro y fiel a sus raíces en la UAGro; nunca olvida de dónde viene.</p>
+              <p className="text-gray-400 text-sm">Forjada desde joven en el trabajo comunitario puro y fiel a sus raíces en la UAGro; nunca olvida de dónde viene.</p>
             </div>
             <div className="p-6 border border-white/10 rounded-xl bg-white/5 relative overflow-hidden group">
               <div className="absolute top-0 left-0 w-1 h-full bg-[#D4A843]/50 group-hover:bg-[#D4A843] transition-colors" />
