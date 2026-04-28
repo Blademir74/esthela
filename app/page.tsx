@@ -64,7 +64,7 @@ export default function EsthelaPlatform() {
     setSelectedVote(vote);
     setVoteStatus('loading');
     try {
-      const req = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pulso_votos`, {
+      const req = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/votes`, {
         method: 'POST',
         headers: {
           'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
@@ -153,7 +153,7 @@ export default function EsthelaPlatform() {
         </motion.div>
 
         {/* Hero Content - Positioned at bottom to avoid covering face */}
-        <div className="relative z-20 flex-1 flex flex-col justify-end pb-8 md:pb-12 px-6 md:px-10">
+        <div className="relative z-20 flex-1 flex flex-col justify-end pb-16 md:pb-20 px-6 md:px-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
