@@ -72,7 +72,7 @@ export default function EsthelaPlatform() {
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({ vote: vote })
+        body: JSON.stringify({ vote: vote, fingerprint: crypto.randomUUID() })
       });
       if (!req.ok) throw new Error('Error al votar');
       setVoteStatus('voted');
@@ -153,7 +153,7 @@ export default function EsthelaPlatform() {
         </motion.div>
 
         {/* Hero Content - Positioned at bottom to avoid covering face */}
-        <div className="relative z-20 flex-1 flex flex-col justify-end pb-24 md:pb-32 px-6 md:px-10">
+        <div className="relative z-20 flex-1 flex flex-col justify-end pb-32 md:pb-40 px-6 md:px-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
