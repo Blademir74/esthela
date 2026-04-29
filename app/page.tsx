@@ -153,7 +153,7 @@ export default function EsthelaPlatform() {
         </motion.div>
 
         {/* Hero Content - Positioned at bottom to avoid covering face */}
-        <div className="relative z-20 flex-1 flex flex-col justify-end pb-64 md:pb-72 px-6 md:px-10">
+        <div className="relative z-20 flex-1 flex flex-col justify-end pb-[40vh] md:pb-[55vh] px-6 md:px-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
