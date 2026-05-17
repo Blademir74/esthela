@@ -193,7 +193,7 @@ export default function EsthelaPlatform() {
             </h1>
 
             <h2 className="text-white/95 text-sm md:text-xl max-w-2xl mb-6 md:mb-8 leading-relaxed font-normal">
-              Desde los 15 años, mi historia comenzó en Guerrero. Hoy, con 25 años de experiencia, quiero escribir la siguiente etapa contigo
+              Desde los 15 años, mi historia comenzó en Guerrero. Hoy, con 40 años de experiencia, quiero escribir la siguiente etapa contigo
             </h2>
 
             {/* CTA Buttons - Column on mobile */}
@@ -304,7 +304,7 @@ export default function EsthelaPlatform() {
               {
                 step: "03",
                 title: "Puente Probado",
-                desc: "Con una sólida trayectoria federal de 25 años de resultados comprobables, actúo como el 'Puente Probado' para canalizar el bienestar del proyecto nacional directamente a Guerrero."
+                desc: "Con una sólida trayectoria de 40 años de resultados comprobables, actúo como el 'Puente Probado' para canalizar el bienestar del proyecto nacional directamente a Guerrero."
               }
             ].map((item, idx) => (
               <motion.div
@@ -370,7 +370,7 @@ export default function EsthelaPlatform() {
             {[
               { icon: Shield, title: "Construcción Federal", desc: "Parte del equipo que ejecutó obras transformadoras en la CDMX bajo la coordinación de la Dra. Sheinbaum." },
               { icon: Network, title: "Puente Estratégico", desc: "La conexión directa entre las políticas de la Cuarta Transformación y las necesidades reales de Guerrero." },
-              { icon: CheckCircle2, title: "Resultados Tangibles", desc: "25 años de trabajo comprobable: no promesas, hechos que transforman comunidades." }
+              { icon: CheckCircle2, title: "Resultados Tangibles", desc: "40 años de trabajo comprobable: no promesas, hechos que transforman comunidades." }
             ].map((item, idx) => (
               <motion.div
                 key={item.title}
