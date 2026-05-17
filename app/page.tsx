@@ -32,6 +32,30 @@ export default function EsthelaPlatform() {
   const [selectedVote, setSelectedVote] = useState<'si' | 'dudo' | 'no' | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [totalVotes, setTotalVotes] = useState({ si: 0, dudo: 0, no: 0 });
+  const [showModal, setShowModal] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  // Countdown timer logic
+  useEffect(() => {
+    const targetDate = new Date('2026-06-22T00:00:00-06:00'); // Central Mexico Time (CST/CDT)
+    const calculateTime = () => {
+      const now = new Date();
+      const diff = targetDate.getTime() - now.getTime();
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      } else {
+        setTimeLeft({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((diff / (1000 * 60)) % 60),
+          seconds: Math.floor((diff / 1000) % 60)
+        });
+      }
+    };
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Toast notifications aleatorias
   useEffect(() => {
@@ -104,6 +128,10 @@ export default function EsthelaPlatform() {
       });
       if (!req.ok) throw new Error('Error al registrar');
       setFormStatus('success');
+      setShowModal(true);
+      setTimeout(() => {
+        window.location.href = "https://chat.whatsapp.com/HSUgjqCm69g8vKujvgkNFN";
+      }, 2000);
     } catch (error) {
       console.error(error);
       setFormStatus('error');
@@ -148,7 +176,7 @@ export default function EsthelaPlatform() {
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs md:text-sm text-white/90">
             <span className="w-2 h-2 bg-[#D4A843] rounded-full animate-pulse" />
-            Aspirante a la Coordinacion de Guerrero &middot; Morena
+            Aspirante a la Coordinación de Guerrero &middot; Morena
           </span>
         </motion.div>
 
@@ -160,30 +188,27 @@ export default function EsthelaPlatform() {
             transition={{ duration: 1, delay: 0.3 }}
         className="mt-auto max-w-2xl"
           >
-            <h1 className="font-bold leading-tight tracking-tight mb-4"
-              style={{ fontSize: 'clamp(28px, 7vw, 72px)' }}
-            >
-              <span className="block text-white">Forjada desde joven</span>
-              <span className="block text-[#D4A843]">en el trabajo comunitario</span>
+            <h1 className="hero-title font-bold leading-tight tracking-tight mb-4 text-white">
+              Forjada desde joven <span className="text-[#D4A843]">en el trabajo comunitario</span>
             </h1>
 
-            <p className="text-white/80 text-sm md:text-base max-w-lg mb-6 md:mb-8 leading-relaxed">
-              Con 25 anos de resultados, Esthela Damian es la voz que Guerrero necesita para el cambio real.
-            </p>
+            <h2 className="text-white/95 text-sm md:text-xl max-w-2xl mb-6 md:mb-8 leading-relaxed font-normal">
+              Desde los 15 años, mi historia comenzó en Guerrero. Hoy, con 25 años de experiencia, quiero escribir la siguiente etapa contigo
+            </h2>
 
             {/* CTA Buttons - Column on mobile */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <a
                 href="#pulso"
-                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 bg-[#D4A843] hover:bg-[#BC955C] text-[#14050B] rounded-full font-bold transition-all hover:scale-105 active:scale-95 text-sm md:text-base"
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 rounded-full font-bold transition-all hover:scale-105 active:scale-95 text-sm md:text-base shimmer-btn"
               >
-                Activar mi Pulso <Heart className="w-5 h-5" />
+                Activar mi Pulso <Heart className="w-5 h-5 text-[#D4A843]" />
               </a>
               <a
                 href="#registro"
-                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 border-2 border-white/40 hover:border-white/70 text-white rounded-full font-bold transition-all hover:scale-105 active:scale-95 text-sm md:text-base"
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 rounded-full font-bold transition-all hover:scale-105 active:scale-95 text-sm md:text-base shimmer-btn bg-[#6B1D3A]/60"
               >
-                Unirme al Movimiento <ChevronRight className="w-5 h-5" />
+                Unirme al Movimiento <ChevronRight className="w-5 h-5 text-[#D4A843]" />
               </a>
             </div>
           </motion.div>
@@ -201,6 +226,121 @@ export default function EsthelaPlatform() {
           </motion.div>
         </div>
 
+      </section>
+
+      {/* =========================================================
+          COUNTDOWN — Reloj Dinámico
+      ========================================================= */}
+      <section className="relative -mt-10 z-30 px-6 md:px-10">
+        <div className="max-w-4xl mx-auto bg-gradient-to-r from-[#6B1D3A]/95 to-[#802246]/95 backdrop-blur-md border border-[#D4A843]/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+          {/* Shimmer effect */}
+          <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none" />
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div className="text-center md:text-left">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-1">El momento de la verdad se acerca</h3>
+              <p className="text-white/70 text-xs md:text-sm font-medium">Para la definición interna de Morena &middot; 22 de junio</p>
+            </div>
+            
+            <div className="flex gap-3 md:gap-4 justify-center">
+              {[
+                { label: 'Días', value: timeLeft.days },
+                { label: 'Horas', value: timeLeft.hours },
+                { label: 'Minutos', value: timeLeft.minutes },
+                { label: 'Segundos', value: timeLeft.seconds }
+              ].map((time, idx) => (
+                <div key={idx} className="flex flex-col items-center min-w-[70px] md:min-w-[85px] bg-[#14050B]/60 border border-white/10 rounded-xl p-3 md:p-4">
+                  <span className="text-2xl md:text-4xl font-extrabold text-[#D4A843] tabular-nums tracking-tight">
+                    {String(time.value).padStart(2, '0')}
+                  </span>
+                  <span className="text-[10px] md:text-xs text-white/50 uppercase tracking-widest mt-1 font-semibold">
+                    {time.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================
+          NUEVA SECCIÓN: De Guerrero, con Guerrero — Trayectoria y Unidad
+      ========================================================= */}
+      <section className="py-20 md:py-28 px-6 md:px-10 bg-[#14050B] relative overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#6B1D3A]/20 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[#D4A843]/5 rounded-full blur-[100px] pointer-events-none" />
+        
+        <div className="max-w-5xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <span className="inline-block px-4 py-1.5 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 text-[#D4A843] text-xs md:text-sm font-semibold mb-4 tracking-wider uppercase">
+              Nuestra Historia, Nuestro Futuro
+            </span>
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
+              De Guerrero, con Guerrero
+            </h2>
+            <p className="text-white/80 text-sm md:text-lg max-w-2xl mx-auto leading-relaxed font-medium">
+              Mi trayectoria comenzó en las aulas y la lucha social de nuestro estado. La formación y el compromiso no se improvisan, se construyen con años de entrega y amor al pueblo guerrerense.
+            </p>
+          </motion.div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                step: "01",
+                title: "Orgullo UAGro",
+                desc: "Formada en las aulas de la Universidad Autónoma de Guerrero (UAGro), donde consolidé mis convicciones de justicia social, defendiendo siempre la educación pública y los derechos de las comunidades."
+              },
+              {
+                step: "02",
+                title: "Territorio y Cercanía",
+                desc: "Recorriendo los municipios, de la Costa Grande a la Costa Chica, de la Montaña a la Tierra Caliente, escuchando y construyendo soluciones junto a la gente trabajadora de nuestro estado."
+              },
+              {
+                step: "03",
+                title: "Puente Probado",
+                desc: "Con una sólida trayectoria federal de 25 años de resultados comprobables, actúo como el 'Puente Probado' para canalizar el bienestar del proyecto nacional directamente a Guerrero."
+              }
+            ].map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                className="relative p-8 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-[#D4A843]/30 hover:bg-white/[0.04] transition-all group flex flex-col justify-between"
+              >
+                <div>
+                  <span className="text-4xl font-extrabold text-[#D4A843]/20 group-hover:text-[#D4A843]/40 transition-colors block mb-4">
+                    {item.step}
+                  </span>
+                  <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
+                  <p className="text-white/75 text-sm md:text-base leading-relaxed">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="mt-16 text-center p-8 rounded-2xl bg-gradient-to-r from-[#6B1D3A]/30 to-[#802246]/30 border border-[#D4A843]/30 max-w-3xl mx-auto"
+          >
+            <p className="text-white text-lg md:text-xl font-medium leading-relaxed">
+              "Es momento de unidad y esperanza. Juntos haremos que{" "}
+              <span className="font-extrabold text-[#D4A843] tracking-wide inline-block shadow-[#D4A843]/10 drop-shadow-[0_2px_5px_rgba(212,168,67,0.4)]">
+                Guerrero Brilla
+              </span>{" "}
+              con fuerza propia sobre Acapulco y cada municipio de nuestra tierra."
+            </p>
+          </motion.div>
+        </div>
       </section>
 
       {/* =========================================================
@@ -228,9 +368,9 @@ export default function EsthelaPlatform() {
 
           <div className="grid gap-4 md:gap-6 md:grid-cols-3">
             {[
-              { icon: Shield, title: "Construccion Federal", desc: "Parte del equipo que ejecuto obras transformadoras en la CDMX bajo la coordinacion de la Dra. Sheinbaum." },
-              { icon: Network, title: "Puente Estrategico", desc: "La conexion directa entre las politicas de la Cuarta Transformacion y las necesidades reales de Guerrero." },
-              { icon: CheckCircle2, title: "Resultados Tangibles", desc: "25 anos de trabajo comprobable: no promesas, hechos que transforman comunidades." }
+              { icon: Shield, title: "Construcción Federal", desc: "Parte del equipo que ejecutó obras transformadoras en la CDMX bajo la coordinación de la Dra. Sheinbaum." },
+              { icon: Network, title: "Puente Estratégico", desc: "La conexión directa entre las políticas de la Cuarta Transformación y las necesidades reales de Guerrero." },
+              { icon: CheckCircle2, title: "Resultados Tangibles", desc: "25 años de trabajo comprobable: no promesas, hechos que transforman comunidades." }
             ].map((item, idx) => (
               <motion.div
                 key={item.title}
@@ -270,7 +410,7 @@ export default function EsthelaPlatform() {
               Activar mi Pulso
             </h2>
             <p className="text-white/60 text-sm md:text-lg max-w-xl mx-auto leading-relaxed">
-              Tu opinion cuenta. Vota de forma anonima y se parte del movimiento por la Coordinacion de Guerrero.
+              Tu opinión cuenta. Vota de forma anónima y sé parte del movimiento por la Coordinación de Guerrero.
             </p>
           </motion.div>
 
@@ -481,9 +621,9 @@ export default function EsthelaPlatform() {
               ) : (
                 <button
                   type="submit"
-                  className="w-full py-4 bg-[#D4A843] hover:bg-[#BC955C] text-[#14050B] rounded-full font-bold transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 text-sm md:text-base"
+                  className="w-full py-4 rounded-full font-bold transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 text-sm md:text-base shimmer-btn"
                 >
-                  Unete a la estructura digital del 22 de junio <Heart className="w-5 h-5" />
+                  Unete a la estructura digital del 22 de junio <Heart className="w-5 h-5 text-[#D4A843]" />
                 </button>
               )}
 
@@ -516,13 +656,13 @@ export default function EsthelaPlatform() {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <a
-                href={`https://wa.me/?text=¡Yo ya active mi pulso por Esthela Damian! Unete a la estructura digital para Guerrero. Vota y registrate aqui: https://guerreroescone.vercel.app`}
+                href="https://chat.whatsapp.com/HSUgjqCm69g8vKujvgkNFN"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-full font-bold transition-all hover:scale-105 active:scale-95 text-sm md:text-base"
+                className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold transition-all hover:scale-105 active:scale-95 text-sm md:text-base shimmer-btn"
               >
-                <MessageCircle className="w-5 h-5" />
-                Compartir en WhatsApp
+                <MessageCircle className="w-5 h-5 text-[#D4A843]" />
+                Unirme al Grupo de WhatsApp
               </a>
               <a
                 href="https://www.facebook.com/sharer/sharer.php?u=https://guerreroescone.vercel.app"
@@ -544,10 +684,10 @@ export default function EsthelaPlatform() {
       <footer className="py-8 md:py-12 px-6 md:px-10 bg-[#14050B] border-t border-white/5">
         <div className="max-w-5xl mx-auto text-center">
           <p className="text-white/80 font-bold text-sm md:text-base mb-2">
-            &copy; {new Date().getFullYear()} Esthela Damian | La Voz de Guerrero
+            &copy; {new Date().getFullYear()} Esthela Damián | Aspirante a la Coordinación
           </p>
           <p className="text-white/40 text-xs md:text-sm">
-            Coordinacion Territorial &middot; Plataforma de organizacion ciudadana
+            Coordinación Territorial &middot; Plataforma de organización ciudadana
           </p>
         </div>
       </footer>
@@ -569,13 +709,68 @@ export default function EsthelaPlatform() {
 
       {/* Floating WhatsApp */}
       <a
-        href="https://wa.me/5217474795833?text=Hola, quiero unirme al movimiento de Esthela Damian para Guerrero"
+        href="https://chat.whatsapp.com/HSUgjqCm69g8vKujvgkNFN"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 w-12 h-12 md:w-14 md:h-14 bg-[#25D366] hover:bg-[#20BD5A] rounded-full flex items-center justify-center shadow-lg shadow-black/40 transition-all hover:scale-110 active:scale-95"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 shimmer-btn"
+        style={{
+          boxShadow: '0 0 15px rgba(212, 168, 67, 0.3)'
+        }}
       >
         <MessageCircle className="w-6 h-6 md:w-7 md:h-7 text-white" />
       </a>
+
+      {/* Confirmation Success Modal overlay */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="relative max-w-md w-full p-8 rounded-2xl bg-[#6B1D3A] border-2 border-[#D4A843]/50 shadow-2xl text-center flex flex-col items-center overflow-hidden"
+              style={{
+                boxShadow: '0 0 30px rgba(212, 168, 67, 0.3)'
+              }}
+            >
+              {/* Shimmer reflection effect */}
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite] pointer-events-none" />
+
+              {/* Glowing icon */}
+              <div className="w-20 h-20 rounded-full bg-[#D4A843]/20 flex items-center justify-center mb-6 border border-[#D4A843]/40 animate-pulse">
+                <CheckCircle2 className="w-10 h-10 text-[#D4A843]" />
+              </div>
+
+              <h3 className="text-2xl md:text-3xl font-extrabold text-[#D4A843] mb-4">
+                ¡Registro exitoso!
+              </h3>
+              
+              <p className="text-white text-base md:text-lg leading-relaxed font-medium mb-6">
+                Te estamos uniendo al único camino para que Guerrero avance...
+              </p>
+
+              {/* Loading progress bar */}
+              <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 2, ease: "linear" }}
+                  className="bg-[#D4A843] h-full"
+                />
+              </div>
+              
+              <p className="text-white/40 text-xs mt-4">
+                Redirigiendo a WhatsApp en segundos...
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </main>
   );

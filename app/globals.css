@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #0B0F19;
+  --background: #14050B; /* Guinda ultra oscuro institucional */
   --foreground: #ffffff;
 }
 
@@ -12,3 +12,67 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* --- TIPOGRAFÍA RESPONSIVA Y CONTROL DE MAYÚSCULAS --- */
+.hero-title {
+  font-size: clamp(28px, 7vw, 72px) !important;
+  text-transform: none !important; /* Evita mayúsculas forzadas */
+}
+
+/* --- BOTÓN SHIMMER CON BASE GUINDA (#6B1D3A) Y SHINE DORADO (#D4A843) --- */
+.shimmer-btn {
+  position: relative;
+  overflow: hidden;
+  background-color: #6B1D3A !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(212, 168, 67, 0.4) !important;
+  box-shadow: 0 4px 15px rgba(107, 29, 58, 0.3), 0 0 10px rgba(212, 168, 67, 0.1);
+  transition: all 0.3s ease;
+}
+
+.shimmer-btn:hover {
+  background-color: #501328 !important;
+  border-color: #D4A843 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 29, 58, 0.5), 0 0 15px rgba(212, 168, 67, 0.3);
+}
+
+.shimmer-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(212, 168, 67, 0) 0%,
+    rgba(212, 168, 67, 0.4) 50%,
+    rgba(212, 168, 67, 0) 100%
+  );
+  transform: skewX(-25deg);
+  animation: button-shimmer 3.5s infinite ease-in-out;
+}
+
+@keyframes button-shimmer {
+  0% {
+    left: -150%;
+  }
+  30% {
+    left: 150%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+/* Animación shimmer general para el modal */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
