@@ -109,6 +109,14 @@ export default function EsthelaPlatform() {
   // Manejar registro (Unirme al Movimiento)
   const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    // Blindaje de validación: solo permite exactamente 10 dígitos
+    const cleanWhatsapp = formData.whatsapp.replace(/\D/g, '');
+    if (cleanWhatsapp.length !== 10) {
+      alert("Por favor, introduce un número de WhatsApp válido de 10 dígitos.");
+      return;
+    }
+
     setFormStatus('loading');
     try {
       const req = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/movilizadores`, {
@@ -121,17 +129,24 @@ export default function EsthelaPlatform() {
         },
         body: JSON.stringify({
           nombre: formData.nombre,
-          whatsapp: formData.whatsapp,
+          whatsapp: cleanWhatsapp,
           municipio: formData.municipio,
           rol: 'promotor'
         })
       });
-      if (!req.ok) throw new Error('Error al registrar');
+      
+      // Integridad de datos: requiere estrictamente código de estado 201 para proceder
+      if (req.status !== 201) {
+        throw new Error('Error al registrar: El servidor no retornó estado 201.');
+      }
+      
       setFormStatus('success');
       setShowModal(true);
+      
+      // Redirección blindada con .assign() tras 1500ms para robustez en móviles
       setTimeout(() => {
-        window.location.href = "https://chat.whatsapp.com/HSUgjqCm69g8vKujvgkNFN";
-      }, 2000);
+        window.location.assign("https://chat.whatsapp.com/HSUgjqCm69g8vKujvgkNFN");
+      }, 1500);
     } catch (error) {
       console.error(error);
       setFormStatus('error');
@@ -751,7 +766,7 @@ export default function EsthelaPlatform() {
               </h3>
               
               <p className="text-white text-base md:text-lg leading-relaxed font-medium mb-6">
-                Te estamos uniendo al único camino para que Guerrero avance...
+                Guerrero brilla con tu apoyo. Te estamos uniendo al único camino para avanzar...
               </p>
 
               {/* Loading progress bar */}
@@ -759,7 +774,7 @@ export default function EsthelaPlatform() {
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: "100%" }}
-                  transition={{ duration: 2, ease: "linear" }}
+                  transition={{ duration: 1.5, ease: "linear" }}
                   className="bg-[#D4A843] h-full"
                 />
               </div>
