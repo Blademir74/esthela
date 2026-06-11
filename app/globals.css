@@ -78,3 +78,119 @@ body {
 
 /* UTILIDADES */
 .font-montserrat { font-family: 'Montserrat', sans-serif; }
+
+/* =========================================================
+   HERO RESTRUCTURA: DOBLE COLUMNA + ANCLAJE INFERIOR
+   ========================================================= */
+
+.hero-grid-container {
+  display: grid;
+  grid-template-columns: 40% 60%;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding-bottom: 40px;
+  height: 100%;
+}
+
+/* Eyebrow fijo arriba */
+.hero-eyebrow {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #D4A843;
+  text-align: center;
+  width: 90%;
+  pointer-events: none;
+}
+
+/* Copa Oficial: Columna izquierda */
+.hero-copa {
+  grid-column: 1;
+  align-self: flex-end;
+  width: 180px;
+  object-fit: contain;
+  margin-left: 32px;
+  margin-bottom: 0;
+  filter: drop-shadow(0 0 20px rgba(212, 168, 67, 0.5));
+}
+
+/* Contenido textual: Columna derecha */
+.hero-text-col {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding-bottom: 40px;
+  padding-left: 24px;
+  gap: 12px;
+}
+
+/* H1 reducido y sin margen superior */
+.hero-h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin-top: 0;
+  margin-bottom: 4px;
+  line-height: 1.1;
+  text-align: left;
+  font-weight: 900;
+  color: white;
+}
+
+/* Párrafo descriptivo ajustado */
+.hero-p {
+  font-size: 1rem;
+  margin-top: 0;
+  margin-bottom: 8px;
+  text-align: left;
+  max-width: 480px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Contenedor de botones (fondo columna derecha) */
+.hero-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* SEGURIDAD MÓVIL: Apila verticalmente para no romper la UX en pantallas < 768px */
+@media (max-width: 768px) {
+  .hero-grid-container {
+    grid-template-columns: 1fr;
+    padding-bottom: 30px;
+    padding-top: 80px; /* Espacio para el eyebrow */
+  }
+  .hero-copa {
+    display: none; /* Se oculta en móvil para priorizar texto/CTAs como regla Mobile-First */
+  }
+  .hero-text-col {
+    grid-column: 1;
+    padding-left: 0;
+    padding-bottom: 0;
+    align-items: center;
+    text-align: center;
+  }
+  .hero-h1, .hero-p {
+    text-align: center;
+  }
+  .hero-buttons {
+    justify-content: center;
+    width: 100%;
+  }
+  .hero-buttons a {
+    width: 100%;
+    justify-content: center;
+  }
+}
