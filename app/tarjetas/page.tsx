@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { ChevronRight, Star, Download, Share2, RotateCcw, Upload, Check, Trophy, ZoomIn, ZoomOut, Camera } from 'lucide-react';
 
 // --- TIPOS ---
 type FormData = {
