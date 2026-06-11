@@ -7,61 +7,60 @@ export default function HomePage() {
   return (
     <main className="overflow-x-hidden min-h-screen bg-[#0a1f1b] text-[#fdfaf5]">
       
-      {/* HERO DE ALTO IMPACTO */}
-      <section className="hero-section">
-        <div className="hero-bg" />
-        <div className="hero-overlay" />
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="relative z-10 flex flex-col justify-end h-full pb-16 md:pb-24 px-6 md:px-10"
-        >
-          <div className="max-w-3xl mx-auto w-full text-center md:text-left">
-            <motion.span 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs md:text-sm font-bold tracking-widest uppercase mb-6"
-            >
-              SELECCIÓN GUERRERO · REGISTRO OFICIAL
-            </motion.span>
-            
-            <motion.h1 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="font-black leading-tight tracking-tight mb-4 text-4xl md:text-6xl lg:text-7xl"
-            >
-              Va por Guerrero. <span className="text-[#D4A843]">Va por México.</span>
-            </motion.h1>
-            
-            <motion.p 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-              className="text-lg md:text-xl text-white/90 max-w-2xl mb-8 leading-relaxed font-medium"
-            >
-              Forma tu equipo ganador, registra a tu capitán y sal a la cancha con Esthela Damián.
-            </motion.p>
-            
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start"
-            >
-              <Link href="/registro" className="btn-stadium animate-shimmer">
-                Entrar a la cancha <Trophy className="w-5 h-5" />
-              </Link>
-              <Link href="/tarjetas" className="btn-ghost">
-                Crear tarjeta oficial <ChevronRight className="w-5 h-5" />
-              </Link>
-            </motion.div>
-          </div>
-        </motion.div>
-      </section>
+     <section className="hero-section relative w-full h-[100svh] overflow-hidden flex flex-col">
+  <div className="hero-bg absolute inset-0 w-full h-full" />
+  <div className="hero-overlay absolute inset-0 z-10" />
+  
+  <div className="hero-content relative z-20 w-full flex flex-col justify-end px-6 md:px-10 pb-12">
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      className="max-w-3xl mx-auto text-center md:text-left"
+    >
+      <motion.span 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs md:text-sm font-bold tracking-widest uppercase mb-6"
+      >
+        SELECCIÓN GUERRERO · REGISTRO OFICIAL
+      </motion.span>
+      
+      <motion.h1 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="font-black leading-tight tracking-tight mb-4 text-4xl md:text-6xl lg:text-7xl text-white"
+      >
+        Va por Guerrero. <span className="text-[#D4A843]">Va por México.</span>
+      </motion.h1>
+      
+      <motion.p 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="text-lg md:text-xl text-white/90 max-w-2xl mb-8 leading-relaxed font-medium"
+      >
+        Forma tu equipo ganador, registra a tu capitán y sal a la cancha con Esthela Damián.
+      </motion.p>
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9 }}
+        className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start"
+      >
+        <Link href="/registro" className="btn-stadium animate-shimmer">
+          Entrar a la cancha <Trophy className="w-5 h-5" />
+        </Link>
+        <Link href="/tarjetas" className="btn-ghost">
+          Crear tarjeta oficial <ChevronRight className="w-5 h-5" />
+        </Link>
+      </motion.div>
+    </motion.div>
+  </div>
+</section>
 
       {/* SECCIÓN DE CONVOCATORIA (ESTADIO) */}
       <section className="py-20 px-6 md:px-10 bg-gradient-to-b from-[#0a1f1b] to-[#0d2924] relative overflow-hidden">
