@@ -1,128 +1,66 @@
 "use client";
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Star, Download, Share2, RotateCcw, Upload, Check, Trophy, ZoomIn, ZoomOut } from 'lucide-react';
+import { ChevronRight, Star, Download, Share2, Upload, Check, Trophy, Camera, Image } from 'lucide-react';
 
-// ... (Mantén tus constantes MUNICIPIOS_GUERRERO y tipos igual que antes)
 const MUNICIPIOS_GUERRERO = ["Acapulco de Juarez", "Chilpancingo de los Bravo", "Iguala de la Independencia", "Taxco de Alarcon", "Zihuatanejo de Azueta", "Tlapa de Comonfort", "Chilapa de Alvarez", "Atoyac de Alvarez", "Copala", "Coyuca de Benitez"].sort();
-type ModelType = 'mundialista' | 'esthelado' | 'camino';
+
+type ModelType = 'camino' | 'mundialista' | 'ola';
 interface PlayerData {
-  nombre: string; apellido: string; municipio: string; fechaNacimiento: string;
+  nombre: string; apellido: string; municipio: string;
   foto: string | null; fotoScale: number; fotoRotate: number;
 }
 
-// --- MODELO 1: MUNDIALISTA (Fondo Estadio/Futbol) ---
-function CardMundialista({ data }: { data: PlayerData }) {
-  const nombre = data.nombre || 'Tu Nombre';
-  const apellido = data.apellido ? data.apellido.toUpperCase() : 'APELLIDO';
-  const municipio = data.municipio || 'Tu Municipio';
-  return (
-    <div className="relative w-full rounded-2xl overflow-hidden card-bg-mundialista" style={{ aspectRatio: '3/4', border: '3px solid #D4A843', boxShadow: '0 0 60px rgba(212,168,67,0.2)' }}>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/90" />
-      <div className="relative h-full flex flex-col">
-        <div className="h-2 w-full bg-gradient-to-r from-[#D4A843] via-[#fff9e6] to-[#D4A843]" />
-        <div className="px-5 pt-3 pb-2 flex items-center justify-between">
-          <div><p className="text-[8px] font-black tracking-[0.2em] text-[#D4A843] uppercase">Guerrero</p><p className="text-[9px] font-black tracking-widest text-white/60 uppercase">2026</p></div>
-          <div className="flex gap-0.5">{[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 fill-[#D4A843] text-[#D4A843]" />)}</div>
-          <div className="text-right"><p className="text-[8px] font-black tracking-widest text-[#D4A843] uppercase">Selección</p><p className="text-[8px] tracking-widest text-white/50 uppercase">de la Esperanza</p></div>
-        </div>
-        <div className="flex-1 flex items-center justify-center px-6 py-2">
-          {data.foto ? (
-            <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#D4A843]" style={{ boxShadow: '0 0 20px rgba(212,168,67,0.4)' }}>
-              <img src={data.foto} alt="Titular" className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)`, transformOrigin: 'center' }} />
-            </div>
-          ) : (
-            <div className="w-28 h-28 rounded-full flex items-center justify-center text-4xl font-black bg-[#D4A843]/20 border-4 border-[#D4A843] text-[#D4A843]">
-              {nombre[0]?.toUpperCase() || '?'}
-            </div>
-          )}
-        </div>
-        <div className="px-4 py-4 text-center" style={{ borderTop: '1px solid rgba(212,168,67,0.25)' }}>
-          <p className="text-[10px] tracking-[0.25em] text-[#D4A843]/70 uppercase mb-0.5 font-semibold">Capitán de la Esperanza</p>
-          <p className="font-black text-white text-xl leading-tight">{nombre}</p>
-          <p className="font-black text-[#D4A843] text-2xl leading-tight tracking-widest">{apellido}</p>
-          <div className="mt-2 mx-auto px-4 py-1 rounded-full inline-block bg-[#D4A843]/20 border border-[#D4A843]/40">
-            <p className="text-[10px] text-[#D4A843] font-bold tracking-wider">{municipio}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- MODELO 2: ESTHELA DO (Fondo Bandera Mexicana) ---
-function CardEsthelado({ data }: { data: PlayerData }) {
-  const nombre = data.nombre || 'Tu Nombre';
-  const apellido = data.apellido || '';
-  const municipio = data.municipio || 'Tu Municipio';
-  return (
-    <div className="relative w-full rounded-2xl overflow-hidden card-bg-esthelado" style={{ aspectRatio: '3/4', border: '3px solid #6B1D3A' }}>
-      <div className="absolute inset-0 bg-gradient-to-b from-green-900/40 via-red-800/40 to-white/90" />
-      <div className="relative h-full flex flex-col">
-        <div className="h-2/5 relative overflow-hidden bg-gradient-to-b from-green-900/30 to-transparent">
-          <div className="absolute top-4 right-6 w-16 h-16 rounded-full opacity-20 bg-[#D4A843]" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
-            {data.foto ? (
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#D4A843]" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
-                <img src={data.foto} alt="Titular" className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)`, transformOrigin: 'center' }} />
-              </div>
-            ) : (
-              <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-black bg-[#D4A843] border-4 border-[#D4A843] text-[#6B1D3A]">
-                {nombre[0]?.toUpperCase() || '?'}
-              </div>
-            )}
-          </div>
-          <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-[#D4A843]">
-            <p className="text-[9px] font-black text-[#6B1D3A] tracking-widest uppercase">Titular Oficial</p>
-          </div>
-        </div>
-        <div className="h-3/5 flex flex-col items-center justify-center px-5 pt-14 pb-5">
-          <p className="text-[10px] font-black tracking-[0.3em] text-[#6B1D3A]/50 uppercase mb-1">Yo estoy de</p>
-          <p className="font-black text-5xl leading-none mb-1 text-[#6B1D3A]" style={{ textShadow: '2px 2px 0px rgba(212,168,67,0.3)', letterSpacing: '-0.02em' }}>Esthelado</p>
-          <div className="w-16 h-0.5 mx-auto my-3 bg-[#D4A843]" />
-          <p className="font-black text-[#6B1D3A] text-xl leading-tight text-center">{nombre} {apellido && <span className="text-red-700">{apellido}</span>}</p>
-          <div className="mt-3 px-4 py-1.5 rounded-full bg-[#6B1D3A]">
-            <p className="text-[10px] text-[#D4A843] font-bold tracking-wider uppercase">{municipio}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- MODELO 3: CAMINO (Fondo Territorial/Naturaleza) ---
+// --- MODELO 1: Yo camino con Esthela (Territorial / Acuarela) ---
 function CardCamino({ data }: { data: PlayerData }) {
-  const nombre = data.nombre || 'Tu Nombre';
-  const municipio = data.municipio || 'Tu Municipio';
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden card-bg-camino" style={{ aspectRatio: '3/4', border: '2px solid #8B5E3C' }}>
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-50/80 via-orange-50/60 to-stone-200/90" />
-      <div className="relative h-full flex flex-col">
-        <div className="relative z-10 px-5 pt-5">
-          <p className="text-[11px] font-black tracking-[0.2em] uppercase text-center text-[#8B5E3C]">Guerrero · 40 años</p>
-          <div className="w-full h-px mt-2 bg-gradient-to-r from-transparent via-[#8B5E3C] to-transparent" />
+    <div className="relative w-full h-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #F9F4EF 0%, #EDE0D4 50%, #E0CEBC 100%)' }}>
+      <svg className="absolute inset-0 w-full h-full opacity-[0.12]" viewBox="0 0 360 360" preserveAspectRatio="xMidYMid slice">
+        <path d="M0,200 Q90,150 180,200 T360,200 L360,360 L0,360 Z" fill="#6B1D3A" />
+        <path d="M0,250 Q90,220 180,250 T360,250 L360,360 L0,360 Z" fill="#8B5E3C" opacity="0.6" />
+      </svg>
+      <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
+        <p className="font-montserrat text-[11px] tracking-[0.2em] uppercase text-[#8B5E3C] mb-3">Guerrero · 40 años</p>
+        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#8B5E3C] mb-4" style={{ boxShadow: '4px 4px 0px rgba(107,29,58,0.2)' }}>
+          {data.foto ? <img src={data.foto} className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)` }} alt="Titular" /> 
+          : <div className="w-full h-full flex items-center justify-center text-5xl font-black bg-[#8B5E3C]/20 text-[#8B5E3C]">{data.nombre[0]?.toUpperCase() || '?'}</div>}
         </div>
-        <div className="relative z-10 flex justify-center mt-5">
-          {data.foto ? (
-            <div className="w-28 h-28 overflow-hidden border-3 border-[#8B5E3C]" style={{ borderRadius: '40% 60% 60% 40% / 55% 45% 55% 45%', boxShadow: '4px 4px 0px rgba(107,29,58,0.2)' }}>
-              <img src={data.foto} alt="Titular" className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)`, transformOrigin: 'center' }} />
-            </div>
-          ) : (
-            <div className="w-28 h-28 flex items-center justify-center text-4xl font-black bg-[#8B5E3C]/20 border-3 border-[#8B5E3C] text-[#8B5E3C]" style={{ borderRadius: '40% 60% 60% 40% / 55% 45% 55% 45%' }}>
-              {nombre[0]?.toUpperCase() || '?'}
-            </div>
-          )}
+        <p className="font-montserrat text-[10px] tracking-[0.25em] uppercase text-[#8B5E3C]/80 mb-1">Yo camino con</p>
+        <p className="font-black text-4xl leading-none text-[#6B1D3A] italic">Esthela</p>
+        <div className="w-20 h-0.5 my-4 bg-gradient-to-r from-transparent via-[#D4A843] to-transparent" />
+        <p className="font-black text-[#6B1D3A] text-2xl leading-tight">{data.nombre || 'Tu Nombre'} {data.apellido || ''}</p>
+        <p className="font-montserrat font-bold text-[#8B5E3C] text-lg mt-1">{data.municipio || 'Tu Municipio'}</p>
+      </div>
+    </div>
+  );
+}
+
+// --- MODELO 2: Estampa Mundialista (Cromo / Guinda / E Dorada) ---
+function CardMundialista({ data }: { data: PlayerData }) {
+  return (
+    <div className="relative w-full h-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #6B1D3A 0%, #3D0A1F 60%, #1A0510 100%)', border: '3px solid #D4A843' }}>
+      <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 8px)' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[180px] font-black text-[#D4A843]/10 font-montserrat select-none">E</div>
+      
+      <div className="relative z-10 flex flex-col h-full px-6 py-5">
+        <div className="flex justify-between items-start">
+          <div className="text-[#D4A843] font-montserrat text-[9px] font-bold tracking-widest uppercase">Guerrero<br/>2026</div>
+          <div className="flex gap-1">{[1,2,3,4,5].map(i => <Star key={i} className="w-3 h-3 fill-[#D4A843] text-[#D4A843]" />)}</div>
         </div>
-        <div className="relative z-10 flex-1 flex flex-col items-center px-5 pt-5 pb-6">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-center mb-1 font-semibold text-[#8B5E3C]">Yo camino con</p>
-          <p className="font-black text-4xl leading-none text-center text-[#6B1D3A] italic">Esthela</p>
-          <svg className="w-24 h-4 my-3" viewBox="0 0 100 16"><path d="M0,8 Q12,2 25,8 Q37,14 50,8 Q62,2 75,8 Q87,14 100,8" fill="none" stroke="#D4A843" strokeWidth="1.5" /></svg>
-          <p className="font-black text-[#6B1D3A] text-xl leading-tight text-center">{nombre}</p>
-          <p className="text-[11px] text-center mt-1 font-semibold text-[#8B5E3C]">{municipio}</p>
-          <div className="mt-auto pt-4">
-            <div className="px-5 py-2 rounded-full border-2 text-center border-dashed border-[#8B5E3C]">
-              <p className="text-[9px] font-black tracking-[0.25em] uppercase text-[#8B5E3C]">Forjada en el territorio</p>
-            </div>
+        
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-[#D4A843]" style={{ boxShadow: '0 0 30px rgba(212,168,67,0.4)' }}>
+            {data.foto ? <img src={data.foto} className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)` }} alt="Titular" /> 
+            : <div className="w-full h-full flex items-center justify-center text-5xl font-black bg-[#D4A843]/20 text-[#D4A843]">{data.nombre[0]?.toUpperCase() || '?'}</div>}
+          </div>
+        </div>
+
+        <div className="text-center mt-2" style={{ borderTop: '1px solid rgba(212,168,67,0.3)' }}>
+          <p className="text-[10px] tracking-[0.25em] text-[#D4A843]/80 uppercase mb-1 font-bold">Capitán de la Esperanza</p>
+          <p className="font-black text-white text-2xl leading-tight">{data.nombre || 'Tu Nombre'}</p>
+          {data.apellido && <p className="font-black text-[#D4A843] text-3xl leading-tight tracking-widest">{data.apellido.toUpperCase()}</p>}
+          <div className="mt-2 mx-auto px-4 py-1.5 rounded-full bg-[#D4A843]/20 border border-[#D4A843]/40">
+            <p className="text-[10px] text-[#D4A843] font-montserrat font-bold tracking-wider">{data.municipio || 'Tu Municipio'}</p>
           </div>
         </div>
       </div>
@@ -130,14 +68,48 @@ function CardCamino({ data }: { data: PlayerData }) {
   );
 }
 
-// --- PÁGINA PRINCIPAL DE TARJETAS ---
+// --- MODELO 3: Yo camino con la Ola de la E (Movimiento / Vibrante) ---
+function CardOla({ data }: { data: PlayerData }) {
+  return (
+    <div className="relative w-full h-full overflow-hidden bg-white">
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #6B1D3A 0%, #9B2B55 50%, #D4A843 100%)' }} />
+      <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-white rounded-t-[40px]" />
+      
+      <div className="relative z-10 flex flex-col h-full px-6 py-5">
+        <div className="flex justify-between items-center mb-2">
+          <span className="px-3 py-1 rounded-full bg-[#D4A843] text-[#6B1D3A] font-montserrat text-[9px] font-black tracking-widest uppercase">Titular Oficial</span>
+          <div className="flex gap-1">{[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 fill-[#6B1D3A] text-[#6B1D3A]" />)}</div>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center relative">
+          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white" style={{ boxShadow: '0 8px 25px rgba(0,0,0,0.25)' }}>
+            {data.foto ? <img src={data.foto} className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)` }} alt="Titular" /> 
+            : <div className="w-full h-full flex items-center justify-center text-5xl font-black bg-[#D4A843] text-[#6B1D3A]">{data.nombre[0]?.toUpperCase() || '?'}</div>}
+          </div>
+        </div>
+
+        <div className="text-center mt-2">
+          <p className="text-[10px] font-black tracking-[0.2em] text-[#6B1D3A]/50 uppercase mb-1">Yo camino con la Ola</p>
+          <p className="font-black text-4xl leading-none text-[#6B1D3A]" style={{ textShadow: '2px 2px 0px rgba(212,168,67,0.3)' }}>de la E</p>
+          <div className="w-16 h-0.5 mx-auto my-3 bg-[#D4A843]" />
+          <p className="font-black text-[#6B1D3A] text-2xl leading-tight">{data.nombre || 'Tu Nombre'} {data.apellido || ''}</p>
+          <div className="mt-2 px-4 py-1.5 rounded-full bg-[#6B1D3A] inline-block">
+            <p className="text-[10px] text-[#D4A843] font-montserrat font-bold tracking-wider uppercase">{data.municipio || 'Tu Municipio'}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- PÁGINA PRINCIPAL ---
 export default function TarjetasPage() {
   const [step, setStep] = useState<'form' | 'card'>('form');
   const [selectedModel, setSelectedModel] = useState<ModelType>('mundialista');
   const [downloaded, setDownloaded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const [playerData, setPlayerData] = useState<PlayerData>({
-    nombre: '', apellido: '', municipio: '', fechaNacimiento: '', foto: null, fotoScale: 1, fotoRotate: 0
+    nombre: '', apellido: '', municipio: '', foto: null, fotoScale: 1, fotoRotate: 0
   });
 
   const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,9 +134,10 @@ export default function TarjetasPage() {
     if (!cardRef.current) return;
     try {
       const html2canvas = (await import('html2canvas')).default;
+      // 360px preview * scale 3 = 1080x1080px export
       const canvas = await html2canvas(cardRef.current, { scale: 3, useCORS: true, backgroundColor: null, logging: false });
       const link = document.createElement('a');
-      link.download = `Titular_${playerData.nombre || 'Esthela'}_${selectedModel}.png`;
+      link.download = `Titular_${playerData.nombre || 'Esthela'}_${selectedModel}_1080x1080.png`;
       link.href = canvas.toDataURL('image/png', 1.0);
       link.click();
       setDownloaded(true);
@@ -175,33 +148,31 @@ export default function TarjetasPage() {
   };
 
   const handleShareWhatsApp = () => {
-    const text = `¡Ya soy Titular de la Red de Esthela Damián!\n${playerData.nombre} ${playerData.apellido} — Capitán de la Esperanza en ${playerData.municipio || 'Guerrero'}.\nÚnete: https://guerreroescone.vercel.app`;
+    const text = `¡Ya soy Titular de la Red de Esthela Damián!\n${playerData.nombre} ${playerData.apellido} — Capitán en ${playerData.municipio || 'Guerrero'}.\nÚnete: https://guerreroescone.vercel.app`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const inputClass = "w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] transition-all text-sm";
-  const labelClass = "block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase";
+  const labelClass = "block text-xs font-montserrat font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase";
   const models = [
-    { id: 'mundialista' as ModelType, emoji: '🏆', title: 'Estampa Mundialista con la E', desc: 'Holográfico · Institucional' },
-    { id: 'esthelado' as ModelType, emoji: '⚡', title: 'Yo Camino con la Ola de la E', desc: 'Viral · Redes sociales' },
-    { id: 'camino' as ModelType, emoji: '🌿', title: 'Yo Camino con Esthela', desc: 'Acuarela · Territorial' },
+    { id: 'mundialista' as ModelType, emoji: '🏆', title: 'Estampa Mundialista', desc: 'Cromo Guinda · E Dorada' },
+    { id: 'ola' as ModelType, emoji: '⚡', title: 'Ola de la E', desc: 'Movimiento · Vibrante' },
+    { id: 'camino' as ModelType, emoji: '🌿', title: 'Yo camino con Esthela', desc: 'Territorial · Acuarela' },
   ];
 
   return (
-    <main className="overflow-x-hidden bg-[#14050B] w-full min-h-screen text-white">
-      <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 py-10 md:py-16">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10 md:mb-14">
+    <main className="overflow-x-hidden bg-[#14050B] w-full min-h-screen pb-20">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 py-10">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
           <a href="/" className="inline-flex items-center gap-2 text-[#D4A843]/60 text-xs mb-6 hover:text-[#D4A843] transition-colors">
             <ChevronRight className="w-3 h-3 rotate-180" /> Volver al inicio
           </a>
           <div className="flex items-center justify-center gap-3 mb-5">
             <Trophy className="w-7 h-7 text-[#D4A843]" />
-            <span className="text-[#D4A843] font-black text-lg tracking-widest uppercase">Generador Oficial</span>
+            <span className="text-[#D4A843] font-montserrat font-black text-lg tracking-widest uppercase">Generador Oficial</span>
             <Trophy className="w-7 h-7 text-[#D4A843]" />
           </div>
-          <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-3 tracking-tight">
-            Tu Tarjeta de <span className="text-[#D4A843]">Titular</span>
-          </h1>
+          <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-3 tracking-tight">Tu Tarjeta de <span className="text-[#D4A843]">Titular</span></h1>
         </motion.div>
 
         <AnimatePresence mode="wait">
@@ -220,25 +191,15 @@ export default function TarjetasPage() {
                       {MUNICIPIOS_GUERRERO.map(m => <option key={m} value={m} className="bg-[#1A0510] text-white">{m}</option>)}
                     </select>
                   </div>
-                  <div><label className={labelClass}>Tu Foto (Galería o Cámara)</label>
+                  <div><label className={labelClass}>Tu Foto (Cámara o Galería)</label>
                     <label className="w-full flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed border-white/20 hover:border-[#D4A843]/40 cursor-pointer transition-colors group" htmlFor="foto-upload">
-                      {playerData.foto ? <><img src={playerData.foto} alt="Preview" className="w-12 h-12 rounded-full object-cover border border-[#D4A843]/40" /><p className="text-[#D4A843] font-semibold text-sm">Foto cargada</p></> : <><Upload className="w-8 h-8 text-white/30 group-hover:text-[#D4A843]" /><p className="text-white/50 text-sm">Sube tu foto</p></>}
-                      {/* capture="user" habilita cámara en móviles, accept="image/*" habilita galería */}
+                      {playerData.foto ? <><img src={playerData.foto} alt="Preview" className="w-12 h-12 rounded-full object-cover border border-[#D4A843]/40" /><p className="text-[#D4A843] font-semibold text-sm">Foto cargada</p></> 
+                      : <><Camera className="w-8 h-8 text-white/30 group-hover:text-[#D4A843]" /><p className="text-white/50 text-sm">Toma o sube una foto</p></>}
                       <input id="foto-upload" type="file" accept="image/*" capture="user" onChange={handlePhotoUpload} className="hidden" />
                     </label>
                   </div>
-                  {playerData.foto && (
-                    <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-3">
-                      <p className="text-[#D4A843]/70 text-xs font-semibold tracking-wider uppercase mb-2">Ajustar foto</p>
-                      <div className="flex items-center gap-3">
-                        <ZoomOut className="w-4 h-4 text-white/40 flex-shrink-0" />
-                        <input type="range" min="0.5" max="2" step="0.1" value={playerData.fotoScale} onChange={(e) => setPlayerData(prev => ({ ...prev, fotoScale: parseFloat(e.target.value) }))} className="flex-1 accent-[#D4A843]" />
-                        <ZoomIn className="w-4 h-4 text-white/40 flex-shrink-0" />
-                      </div>
-                    </div>
-                  )}
-                  <button type="submit" className="w-full py-4 rounded-full font-black text-base shimmer-btn flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
-                    <Star className="w-5 h-5 text-[#D4A843]" /> Ver mi Tarjeta Oficial
+                  <button type="submit" className="w-full py-4 rounded-full font-black text-base bg-[#D4A843] text-[#14050B] flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
+                    <Star className="w-5 h-5" /> Ver mi Tarjeta Oficial
                   </button>
                 </form>
               </div>
@@ -251,11 +212,11 @@ export default function TarjetasPage() {
                     {selectedModel === model.id && <div className="w-6 h-6 rounded-full bg-[#D4A843] flex items-center justify-center"><Check className="w-4 h-4 text-[#14050B]" /></div>}
                   </button>
                 ))}
-                <div className="mt-6 p-4 rounded-2xl bg-white/[0.02] border border-white/10">
-                  <p className="text-white/40 text-xs text-center mb-4 uppercase tracking-widest">Vista previa · {models.find(m => m.id === selectedModel)?.title}</p>
-                  <div className="w-40 mx-auto">
+                <div className="mt-6 p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col items-center">
+                  <p className="text-white/40 text-xs text-center mb-4 uppercase tracking-widest">Vista previa</p>
+                  <div className="w-[200px] h-[200px]">
                     {selectedModel === 'mundialista' && <CardMundialista data={playerData} />}
-                    {selectedModel === 'esthelado' && <CardEsthelado data={playerData} />}
+                    {selectedModel === 'ola' && <CardOla data={playerData} />}
                     {selectedModel === 'camino' && <CardCamino data={playerData} />}
                   </div>
                 </div>
@@ -265,20 +226,28 @@ export default function TarjetasPage() {
           {step === 'card' && (
             <motion.div key="card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md mx-auto">
               <div className="text-center mb-8">
-                <p className="text-[#D4A843] text-sm font-semibold uppercase tracking-widest mb-2">{models.find(m => m.id === selectedModel)?.emoji} Tu tarjeta oficial está lista</p>
+                <p className="text-[#D4A843] text-sm font-semibold uppercase tracking-widest mb-2">{models.find(m => m.id === selectedModel)?.emoji} Tu tarjeta está lista</p>
                 <h2 className="text-white font-black text-2xl">{playerData.nombre} {playerData.apellido}</h2>
               </div>
-              <div ref={cardRef} className="mx-auto max-w-[280px]">
+              {/* Contenedor 360px que escala a 1080x1080 al exportar */}
+              <div ref={cardRef} className="mx-auto w-[360px] h-[360px]">
                 {selectedModel === 'mundialista' && <CardMundialista data={playerData} />}
-                {selectedModel === 'esthelado' && <CardEsthelado data={playerData} />}
+                {selectedModel === 'ola' && <CardOla data={playerData} />}
                 {selectedModel === 'camino' && <CardCamino data={playerData} />}
               </div>
+              <div className="mt-6 flex gap-2 justify-center">
+                {models.map(m => (
+                  <button key={m.id} onClick={() => setSelectedModel(m.id)} className="px-3 py-2 rounded-xl text-sm font-semibold transition-all" style={{ background: selectedModel === m.id ? 'rgba(212,168,67,0.2)' : 'rgba(255,255,255,0.04)', border: `1px solid ${selectedModel === m.id ? '#D4A843' : 'rgba(255,255,255,0.1)'}`, color: selectedModel === m.id ? '#D4A843' : 'rgba(255,255,255,0.4)' }}>
+                    {m.emoji}
+                  </button>
+                ))}
+              </div>
               <div className="mt-8 space-y-3">
-                <button onClick={handleDownload} className="w-full py-4 rounded-full font-black flex items-center justify-center gap-2 transition-all hover:scale-[1.02] shimmer-btn">
+                <button onClick={handleDownload} className="w-full py-4 rounded-full font-black flex items-center justify-center gap-2 transition-all hover:scale-[1.02] bg-[#D4A843] text-[#14050B]">
                   {downloaded ? <Check className="w-5 h-5" /> : <Download className="w-5 h-5" />}
-                  {downloaded ? '¡Tarjeta descargada!' : 'Descargar mi Tarjeta'}
+                  {downloaded ? '¡Tarjeta descargada!' : 'Descargar 1080x1080'}
                 </button>
-                <button onClick={handleShareWhatsApp} className="w-full py-4 rounded-full font-bold flex items-center justify-center gap-2 shimmer-btn">
+                <button onClick={handleShareWhatsApp} className="w-full py-4 rounded-full font-bold flex items-center justify-center gap-2 bg-[#6B1D3A] border border-[#D4A843]/40 text-white transition-all hover:scale-[1.02]">
                   <Share2 className="w-5 h-5 text-[#D4A843]" /> Compartir en WhatsApp
                 </button>
                 <button onClick={() => setStep('form')} className="w-full text-center text-white/30 text-xs py-2 hover:text-white/60 transition-colors">Editar mis datos</button>

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,10 +6,9 @@
 :root {
   --background: #14050B;
   --foreground: #ffffff;
-  --verde-seleccion: #004d40;
-  --dorado-quemado: #D4A843;
-  --crema-suave: #fdfaf5;
-  --guinda-morena: #6B1D3A;
+  --gold: #D4A843;
+  --guinda: #6B1D3A;
+  --guinda-dark: #3D0A1F;
 }
 
 body {
@@ -18,104 +18,61 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* --- HERO: ESPACIO NEGATIVO Y ALINEACIÓN MÓVIL --- */
-.hero-section {
-  position: relative;
-  width: 100%;
-  min-height: 100svh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
+/* HERO: Rostro libre & Overlay estratégico */
 .hero-bg {
-  position: absolute;
-  inset: 0;
-  background-image: url('/assets/img/equipo.png');
   background-size: cover;
-  background-position: center 30%; /* Escritorio: Rostro centrado */
-  filter: saturate(85%);
-  transition: transform 0.5s ease;
+  background-position: top center !important;
+  background-repeat: no-repeat;
 }
-
-/* Ajuste crítico para móvil: Bajar el foco para que "VA POR GUERRERO" no se corte */
-@media (max-width: 768px) {
-  .hero-bg {
-    background-position: center 35% !important;
-  }
-}
-
 .hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 100%);
-  z-index: 1;
+  background: linear-gradient(to bottom, rgba(20,5,11,0.1) 0%, rgba(20,5,11,0.85) 60%, rgba(20,5,11,1) 100%);
 }
 
-/* --- EYEBROW SUPERIOR --- */
-.top-eyebrow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 30;
-  padding: 16px 20px;
-  text-align: center;
-  font-size: 11px;
+/* BOTONES: Jerarquía Estadio */
+.btn-primary {
+  background-color: var(--gold);
+  color: var(--guinda);
+  font-family: 'Montserrat', sans-serif;
   font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--dorado-quemado);
-  background: linear-gradient(to bottom, rgba(20,5,11,0.95) 0%, transparent 100%);
-  pointer-events: none;
-}
-
-/* --- CONTENIDO HERO (BAJADO) --- */
-.hero-content {
-  padding-top: 35vh; /* Empeja narrativa hacia abajo */
-}
-
-/* --- BOTÓN SHIMMER --- */
-.shimmer-btn {
-  position: relative;
-  overflow: hidden;
-  background-color: var(--guinda-morena) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(212, 168, 67, 0.4) !important;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  animation: pulse-gold 2s infinite;
 }
-.shimmer-btn:hover {
-  background-color: #501328 !important;
-  border-color: var(--dorado-quemado) !important;
+.btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(107, 29, 58, 0.5), 0 0 15px rgba(212, 168, 67, 0.3);
-}
-.shimmer-btn::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -150%;
-  width: 50%; height: 100%;
-  background: linear-gradient(to right, transparent, rgba(212, 168, 67, 0.4), transparent);
-  transform: skewX(-25deg);
-  animation: button-shimmer 3.5s infinite ease-in-out;
-}
-@keyframes button-shimmer {
-  0% { left: -150%; } 30% { left: 150%; } 100% { left: 150%; }
+  box-shadow: 0 8px 25px rgba(212, 168, 67, 0.4);
 }
 
-/* --- FONDOS DE CROMOS OFICIALES --- */
-.card-bg-mundialista {
-  background-image: url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1000&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
-.card-bg-esthelado {
-  background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?q=80&w=1000&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: white;
 }
-.card-bg-camino {
-  background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 168, 67, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(212, 168, 67, 0); }
 }
+
+/* UTILIDADES */
+.font-montserrat { font-family: 'Montserrat', sans-serif; }
