@@ -1,41 +1,35 @@
-import { Playfair_Display } from "next/font/google";
 import type { Metadata } from "next";
-import React from "react";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
+const inter = Inter({ 
+  subsets: ["latin"], 
+  variable: "--font-inter",
+  display: "swap"
 });
 
 export const metadata: Metadata = {
-  title: "Esthela Damián | La Voz de Guerrero 🏔️",
-  description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy!",
+  title: "Esthela Damián | Selección Guerrero 2026 ⚽",
+  description:
+    "Únete al equipo. El 22 de junio, la cancha es nuestra. Ficha oficial con Esthela Damián — aspirante a la Coordinación de Guerrero · Morena.",
   openGraph: {
-    title: "Esthela Damián | La Voz de Guerrero 🏔️",
-    description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy!",
-    images: [{ url: "https://guerreroescone.vercel.app/assets/img/esthela.jpg" }],
-    url: "https://guerreroescone.vercel.app/",
+    title: "Esthela Damián | Selección Guerrero 2026 ⚽",
+    description: "Ficha con el equipo más fuerte de Guerrero. 22 de junio.",
+    url: "https://guerreroescone.vercel.app",
+    siteName: "Esthela Damián Guerrero",
+    locale: "es_MX",
     type: "website",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Esthela Damián | La Voz de Guerrero 🏔️",
-    description: "Forjada desde joven en el trabajo comunitario. Mi historia comenzó en Guerrero a los 15 años. ¡Suma tu voz hoy!",
-    images: ["https://guerreroescone.vercel.app/assets/img/esthela.jpg"],
-  }
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-        <html lang="es" className={playfair.variable}>
-      <body className={`antialiased bg-[#0B0F19] text-white`}>
-        {children}
-      </body>
+    <html lang="es" className={`${inter.variable}`}>
+      <body className="antialiased bg-[#0a1f1b] text-[#fdfaf5]">{children}</body>
     </html>
   );
 }

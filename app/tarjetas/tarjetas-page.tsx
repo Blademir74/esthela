@@ -37,7 +37,7 @@ interface PlayerData {
   fotoRotate: number;
 }
 
-// --- MODELO 1: ESTAMPA MUNDIALISTA ---
+// --- MODELO 1: Estampa Mundialista con la E ---
 function CardMundialista({ data, canvasRef }: { data: PlayerData; canvasRef: React.RefObject<HTMLCanvasElement> }) {
   const nombre = data.nombre || 'Tu Nombre';
   const apellido = data.apellido ? data.apellido.toUpperCase() : 'APELLIDO';
@@ -150,7 +150,7 @@ function CardMundialista({ data, canvasRef }: { data: PlayerData; canvasRef: Rea
   );
 }
 
-// --- MODELO 2: YO ESTOY DE ESTHELADO ---
+// --- MODELO 2: yo estoy con la ola de las Esperanza  ---
 function CardEsthelado({ data }: { data: PlayerData }) {
   const nombre = data.nombre || 'Tu Nombre';
   const apellido = data.apellido || '';
@@ -416,8 +416,8 @@ export default function TarjetasPage() {
   const labelClass = "block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase";
 
   const models: { id: ModelType; emoji: string; title: string; desc: string }[] = [
-    { id: 'mundialista', emoji: '🏆', title: 'Estampa Mundialista', desc: 'Holográfico · Institucional' },
-    { id: 'esthelado', emoji: '⚡', title: 'Yo estoy de Esthelado', desc: 'Viral · Redes sociales' },
+    { id: 'mundialista', emoji: '🏆', title: 'Estampa Mundialista con la E', desc: 'Holográfico · Institucional' },
+    { id: 'esthelado', emoji: '⚡', title: 'Yo Camino con la Ola de la E', desc: 'Viral · Redes sociales' },
     { id: 'camino', emoji: '🌿', title: 'Yo Camino con Esthela', desc: 'Acuarela · Territorial' },
   ];
 

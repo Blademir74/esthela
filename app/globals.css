@@ -3,76 +3,137 @@
 @tailwind utilities;
 
 :root {
-  --background: #14050B; /* Guinda ultra oscuro institucional */
-  --foreground: #ffffff;
+  --background: #0a1f1b; /* Fondo oscuro tipo estadio premium */
+  --foreground: #fdfaf5;
+  --verde-seleccion: #004d40;
+  --dorado-quemado: #D4A843;
+  --crema-suave: #fdfaf5;
+  --guinda-morena: #6B1D3A;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* --- TIPOGRAFÍA RESPONSIVA Y CONTROL DE MAYÚSCULAS --- */
-.hero-title {
-  font-size: clamp(28px, 7vw, 72px) !important;
-  text-transform: none !important; /* Evita mayúsculas forzadas */
+/* --- HERO ESTADIO --- */
+.hero-section {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* --- BOTÓN SHIMMER CON BASE GUINDA (#6B1D3A) Y SHINE DORADO (#D4A843) --- */
-.shimmer-btn {
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('/assets/img/equipo.png');
+  background-size: cover;
+  background-position: center 30%;
+  filter: saturate(85%);
+  transition: transform 0.5s ease;
+}
+
+@media (max-width: 768px) {
+  .hero-bg {
+    background-position: center bottom !important;
+  }
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.9) 100%);
+  z-index: 1;
+}
+
+/* --- BOTÓN WHATSAPP FLOTANTE (CORREGIDO) --- */
+.whatsapp-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+  width: 56px;
+  height: 56px;
+  background: var(--verde-seleccion);
+  border: 2px solid var(--dorado-quemado);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 77, 64, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.whatsapp-float:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 18px rgba(212, 168, 67, 0.3);
+}
+
+/* --- BOTONES DE ESTADIO --- */
+.btn-stadium {
   position: relative;
   overflow: hidden;
-  background-color: #6B1D3A !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(212, 168, 67, 0.4) !important;
-  box-shadow: 0 4px 15px rgba(107, 29, 58, 0.3), 0 0 10px rgba(212, 168, 67, 0.1);
+  background: var(--dorado-quemado);
+  color: #0a1f1b;
+  font-weight: 800;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.shimmer-btn:hover {
-  background-color: #501328 !important;
-  border-color: #D4A843 !important;
+.btn-stadium:hover {
+  background: #b8923b;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(107, 29, 58, 0.5), 0 0 15px rgba(212, 168, 67, 0.3);
+  box-shadow: 0 4px 15px rgba(212, 168, 67, 0.4);
 }
 
-.shimmer-btn::after {
+.btn-ghost {
+  background: transparent;
+  color: var(--crema-suave);
+  font-weight: 600;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  border: 2px solid rgba(253, 250, 245, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-ghost:hover {
+  border-color: var(--dorado-quemado);
+  color: var(--dorado-quemado);
+  background: rgba(212, 168, 67, 0.05);
+}
+
+/* --- UTILIDADES --- */
+.text-gold { color: var(--dorado-quemado); }
+.text-cream { color: var(--crema-suave); }
+.bg-guinda { background-color: var(--guinda-morena); }
+.bg-verde { background-color: var(--verde-seleccion); }
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: -150%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(
-    to right,
-    rgba(212, 168, 67, 0) 0%,
-    rgba(212, 168, 67, 0.4) 50%,
-    rgba(212, 168, 67, 0) 100%
-  );
+  top: 0; left: -150%;
+  width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
   transform: skewX(-25deg);
-  animation: button-shimmer 3.5s infinite ease-in-out;
+  animation: shimmer 3s infinite;
 }
-
-@keyframes button-shimmer {
-  0% {
-    left: -150%;
-  }
-  30% {
-    left: 150%;
-  }
-  100% {
-    left: 150%;
-  }
-}
-
-/* Animación shimmer general para el modal */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
