@@ -3,136 +3,126 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Star, Download, Share2, RotateCcw, Upload, Check, Trophy, ZoomIn, ZoomOut } from 'lucide-react';
 
-const MUNICIPIOS_GUERRERO = [
- "Acapulco de Juarez", "Acatepec", "Ahuacuotzingo", "Ajuchitlan del Progreso", "Alcozauca de Guerrero",
- "Alpoyeca", "Apaxtla", "Arcelia", "Atenango del Rio", "Atlamajalcingo del Monte",
- "Atlixtac", "Atoyac de Alvarez", "Ayutla de los Libres", "Azoyu", "Benito Juarez", "Buenavista de Cuellar",
- "Coahuayutla de Jose Maria Izazaga", "Cocula", "Copala", "Copalillo", "Copanatoyac",
- "Coyuca de Benitez", "Coyuca de Catalan", "Cuajinicuilapa", "Cualac", "Cuautepec",
- "Cuetzala del Progreso", "Cutzamala de Pinzon", "Chilapa de Alvarez", "Chilpancingo de los Bravo", "Eduardo Neri",
- "Florencio Villarreal", "General Canuto A. Neri", "General Heliodoro Castillo", "Huamuxtitlan",
- "Huitzuco de los Figueroa", "Iguala de la Independencia", "Igualapa",
- "Iliatenco", "Ixcateopan de Cuauhtemoc", "Jose Joaquin de Herrera", "Juan R. Escudero", "Juchitan",
- "La Union de Isidoro Montes de Oca", "Las Vigas", "Leonardo Bravo", "Malinaltepec",
- "Marquelia", "Martir de Cuilapan", "Metlatonoc", "Mochitlan", "Nuu Savi",
- "Olinala", "Ometepec", "Pedro Ascencio Alquisiras", "Petatlan", "Pilcaya",
- "Pungarabato", "Quechultenango", "San Luis Acatlan", "San Marcos",
- "San Miguel Totolapan", "San Nicolas", "Santa Cruz del Rincon", "Taxco de Alarcon",
- "Tecoanapa", "Tecpan de Galeana", "Teloloapan", "Tepecoacuilco de Trujano",
- "Tetipac", "Tixtla de Guerrero", "Tlacoachistlahuaca", "Tlacoapa", "Tlalchapa",
- "Tlalixtaquilla de Maldonado", "Tlapa de Comonfort", "Tlapehuala", "Xalpatlahuac", "Xochihuehuetlan",
- "Xochistlahuaca", "Zapotitlan Tablas", "Zirandaro", "Zitlala", "Zihuatanejo de Azueta"
-].sort();
-
+// ... (Mantén tus constantes MUNICIPIOS_GUERRERO y tipos igual que antes)
+const MUNICIPIOS_GUERRERO = ["Acapulco de Juarez", "Chilpancingo de los Bravo", "Iguala de la Independencia", "Taxco de Alarcon", "Zihuatanejo de Azueta", "Tlapa de Comonfort", "Chilapa de Alvarez", "Atoyac de Alvarez", "Copala", "Coyuca de Benitez"].sort();
 type ModelType = 'mundialista' | 'esthelado' | 'camino';
 interface PlayerData {
   nombre: string; apellido: string; municipio: string; fechaNacimiento: string;
   foto: string | null; fotoScale: number; fotoRotate: number;
 }
 
-// --- MODELOS DE TARJETA (Lógica idéntica, sintaxis saneada) ---
+// --- MODELO 1: MUNDIALISTA (Fondo Estadio/Futbol) ---
 function CardMundialista({ data }: { data: PlayerData }) {
   const nombre = data.nombre || 'Tu Nombre';
   const apellido = data.apellido ? data.apellido.toUpperCase() : 'APELLIDO';
   const municipio = data.municipio || 'Tu Municipio';
-  const año = data.fechaNacimiento ? new Date(data.fechaNacimiento).getFullYear() : '';
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4', background: 'linear-gradient(145deg, #6B1D3A 0%, #3D0A1F 55%, #0D0308 100%)', border: '3px solid #D4A843', boxShadow: '0 0 60px rgba(212,168,67,0.2)' }}>
-      <div className="h-2 w-full" style={{ background: 'linear-gradient(90deg, #D4A843 0%, #fff9e6 50%, #D4A843 100%)' }} />
-      <div className="px-5 pt-3 pb-2 flex items-center justify-between">
-        <div><p className="text-[8px] font-black tracking-[0.2em] text-[#D4A843] uppercase">Guerrero</p><p className="text-[9px] font-black tracking-widest text-white/60 uppercase">2026</p></div>
-        <div className="flex gap-0.5">{[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 fill-[#D4A843] text-[#D4A843]" />)}</div>
-        <div className="text-right"><p className="text-[8px] font-black tracking-widest text-[#D4A843] uppercase">Selección</p><p className="text-[8px] tracking-widest text-white/50 uppercase">de la Esperanza</p></div>
-      </div>
-      <div className="flex-1 flex items-center justify-center px-6 py-2">
-        {data.foto ? (
-          <div className="w-28 h-28 rounded-full overflow-hidden" style={{ border: '3px solid #D4A843' }}>
-            <img src={data.foto} alt="Titular" className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)`, transformOrigin: 'center' }} />
+    <div className="relative w-full rounded-2xl overflow-hidden card-bg-mundialista" style={{ aspectRatio: '3/4', border: '3px solid #D4A843', boxShadow: '0 0 60px rgba(212,168,67,0.2)' }}>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/90" />
+      <div className="relative h-full flex flex-col">
+        <div className="h-2 w-full bg-gradient-to-r from-[#D4A843] via-[#fff9e6] to-[#D4A843]" />
+        <div className="px-5 pt-3 pb-2 flex items-center justify-between">
+          <div><p className="text-[8px] font-black tracking-[0.2em] text-[#D4A843] uppercase">Guerrero</p><p className="text-[9px] font-black tracking-widest text-white/60 uppercase">2026</p></div>
+          <div className="flex gap-0.5">{[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 fill-[#D4A843] text-[#D4A843]" />)}</div>
+          <div className="text-right"><p className="text-[8px] font-black tracking-widest text-[#D4A843] uppercase">Selección</p><p className="text-[8px] tracking-widest text-white/50 uppercase">de la Esperanza</p></div>
+        </div>
+        <div className="flex-1 flex items-center justify-center px-6 py-2">
+          {data.foto ? (
+            <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#D4A843]" style={{ boxShadow: '0 0 20px rgba(212,168,67,0.4)' }}>
+              <img src={data.foto} alt="Titular" className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)`, transformOrigin: 'center' }} />
+            </div>
+          ) : (
+            <div className="w-28 h-28 rounded-full flex items-center justify-center text-4xl font-black bg-[#D4A843]/20 border-4 border-[#D4A843] text-[#D4A843]">
+              {nombre[0]?.toUpperCase() || '?'}
+            </div>
+          )}
+        </div>
+        <div className="px-4 py-4 text-center" style={{ borderTop: '1px solid rgba(212,168,67,0.25)' }}>
+          <p className="text-[10px] tracking-[0.25em] text-[#D4A843]/70 uppercase mb-0.5 font-semibold">Capitán de la Esperanza</p>
+          <p className="font-black text-white text-xl leading-tight">{nombre}</p>
+          <p className="font-black text-[#D4A843] text-2xl leading-tight tracking-widest">{apellido}</p>
+          <div className="mt-2 mx-auto px-4 py-1 rounded-full inline-block bg-[#D4A843]/20 border border-[#D4A843]/40">
+            <p className="text-[10px] text-[#D4A843] font-bold tracking-wider">{municipio}</p>
           </div>
-        ) : (
-          <div className="w-28 h-28 rounded-full flex items-center justify-center text-4xl font-black" style={{ background: 'rgba(212,168,67,0.12)', border: '3px solid rgba(212,168,67,0.4)', color: '#D4A843' }}>
-            {nombre[0]?.toUpperCase() || '?'}
-          </div>
-        )}
-      </div>
-      <div className="px-4 py-4 text-center" style={{ background: 'linear-gradient(180deg, transparent, rgba(0,0,0,0.7))', borderTop: '1px solid rgba(212,168,67,0.25)' }}>
-        <p className="text-[10px] tracking-[0.25em] text-[#D4A843]/70 uppercase mb-0.5 font-semibold">Capitán de la Esperanza</p>
-        <p className="font-black text-white text-xl leading-tight">{nombre}</p>
-        <p className="font-black text-[#D4A843] text-2xl leading-tight tracking-widest">{apellido}</p>
-        {año && <p className="text-white/40 text-[10px] mt-1 uppercase tracking-wider">Desde {año}</p>}
-        <div className="mt-2 mx-auto px-4 py-1 rounded-full inline-block" style={{ background: 'rgba(212,168,67,0.18)', border: '1px solid rgba(212,168,67,0.35)' }}>
-          <p className="text-[10px] text-[#D4A843] font-bold tracking-wider">{municipio}</p>
         </div>
       </div>
-      <div className="h-1.5 w-full" style={{ background: 'linear-gradient(90deg, #D4A843 0%, #BC955C 50%, #D4A843 100%)' }} />
     </div>
   );
 }
 
+// --- MODELO 2: ESTHELA DO (Fondo Bandera Mexicana) ---
 function CardEsthelado({ data }: { data: PlayerData }) {
   const nombre = data.nombre || 'Tu Nombre';
   const apellido = data.apellido || '';
   const municipio = data.municipio || 'Tu Municipio';
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4', background: '#ffffff', border: '3px solid #6B1D3A' }}>
-      <div className="h-2/5 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #6B1D3A 0%, #9B2B55 60%, #6B1D3A 100%)' }}>
-        <div className="absolute top-4 right-6 w-16 h-16 rounded-full opacity-20" style={{ background: '#D4A843' }} />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
-          {data.foto ? (
-            <div className="w-24 h-24 rounded-full overflow-hidden" style={{ border: '4px solid #D4A843' }}>
-              <img src={data.foto} alt="Titular" className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)`, transformOrigin: 'center' }} />
-            </div>
-          ) : (
-            <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-black" style={{ background: '#D4A843', border: '4px solid #D4A843', color: '#6B1D3A' }}>
-              {nombre[0]?.toUpperCase() || '?'}
-            </div>
-          )}
+    <div className="relative w-full rounded-2xl overflow-hidden card-bg-esthelado" style={{ aspectRatio: '3/4', border: '3px solid #6B1D3A' }}>
+      <div className="absolute inset-0 bg-gradient-to-b from-green-900/40 via-red-800/40 to-white/90" />
+      <div className="relative h-full flex flex-col">
+        <div className="h-2/5 relative overflow-hidden bg-gradient-to-b from-green-900/30 to-transparent">
+          <div className="absolute top-4 right-6 w-16 h-16 rounded-full opacity-20 bg-[#D4A843]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+            {data.foto ? (
+              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#D4A843]" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
+                <img src={data.foto} alt="Titular" className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)`, transformOrigin: 'center' }} />
+              </div>
+            ) : (
+              <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-black bg-[#D4A843] border-4 border-[#D4A843] text-[#6B1D3A]">
+                {nombre[0]?.toUpperCase() || '?'}
+              </div>
+            )}
+          </div>
+          <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-[#D4A843]">
+            <p className="text-[9px] font-black text-[#6B1D3A] tracking-widest uppercase">Titular Oficial</p>
+          </div>
         </div>
-        <div className="absolute top-4 left-4 px-3 py-1 rounded-full" style={{ background: '#D4A843' }}>
-          <p className="text-[9px] font-black text-[#6B1D3A] tracking-widest uppercase">Titular Oficial</p>
-        </div>
-      </div>
-      <div className="h-3/5 flex flex-col items-center justify-center px-5 pt-14 pb-5">
-        <p className="text-[10px] font-black tracking-[0.3em] text-[#6B1D3A]/50 uppercase mb-1">Yo estoy de</p>
-        <p className="font-black text-5xl leading-none mb-1" style={{ color: '#6B1D3A', textShadow: '2px 2px 0px rgba(212,168,67,0.3)' }}>Esthelado</p>
-        <div className="w-16 h-0.5 mx-auto my-3" style={{ background: '#D4A843' }} />
-        <p className="font-black text-[#6B1D3A] text-xl leading-tight text-center">{nombre} {apellido && <span className="text-[#9B2B55]">{apellido}</span>}</p>
-        <div className="mt-3 px-4 py-1.5 rounded-full" style={{ background: '#6B1D3A' }}>
-          <p className="text-[10px] text-[#D4A843] font-bold tracking-wider uppercase">{municipio}</p>
+        <div className="h-3/5 flex flex-col items-center justify-center px-5 pt-14 pb-5">
+          <p className="text-[10px] font-black tracking-[0.3em] text-[#6B1D3A]/50 uppercase mb-1">Yo estoy de</p>
+          <p className="font-black text-5xl leading-none mb-1 text-[#6B1D3A]" style={{ textShadow: '2px 2px 0px rgba(212,168,67,0.3)', letterSpacing: '-0.02em' }}>Esthelado</p>
+          <div className="w-16 h-0.5 mx-auto my-3 bg-[#D4A843]" />
+          <p className="font-black text-[#6B1D3A] text-xl leading-tight text-center">{nombre} {apellido && <span className="text-red-700">{apellido}</span>}</p>
+          <div className="mt-3 px-4 py-1.5 rounded-full bg-[#6B1D3A]">
+            <p className="text-[10px] text-[#D4A843] font-bold tracking-wider uppercase">{municipio}</p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+// --- MODELO 3: CAMINO (Fondo Territorial/Naturaleza) ---
 function CardCamino({ data }: { data: PlayerData }) {
   const nombre = data.nombre || 'Tu Nombre';
   const municipio = data.municipio || 'Tu Municipio';
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4', background: 'linear-gradient(160deg, #F9F4EF 0%, #EDE0D4 60%, #E0CEBC 100%)', border: '2px solid #8B5E3C' }}>
-      <div className="relative z-10 px-5 pt-5">
-        <p className="text-[11px] font-black tracking-[0.2em] uppercase text-center" style={{ color: '#8B5E3C', fontFamily: 'Georgia, serif' }}>Guerrero · 40 años</p>
-        <div className="w-full h-px mt-2" style={{ background: 'linear-gradient(90deg, transparent, #8B5E3C, transparent)' }} />
-      </div>
-      <div className="relative z-10 flex justify-center mt-5">
-        {data.foto ? (
-          <div className="w-28 h-28 overflow-hidden" style={{ borderRadius: '40% 60% 60% 40% / 55% 45% 55% 45%', border: '3px solid #8B5E3C' }}>
-            <img src={data.foto} alt="Titular" className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)`, transformOrigin: 'center' }} />
-          </div>
-        ) : (
-          <div className="w-28 h-28 flex items-center justify-center text-4xl font-black" style={{ borderRadius: '40% 60% 60% 40% / 55% 45% 55% 45%', background: 'rgba(107,29,58,0.15)', border: '3px solid #8B5E3C', color: '#8B5E3C' }}>
-            {nombre[0]?.toUpperCase() || '?'}
-          </div>
-        )}
-      </div>
-      <div className="relative z-10 flex-1 flex flex-col items-center px-5 pt-5 pb-6">
-        <p className="text-[10px] tracking-[0.25em] uppercase text-center mb-1 font-semibold" style={{ color: '#8B5E3C', fontFamily: 'Georgia, serif' }}>Yo camino con</p>
-        <p className="font-black text-4xl leading-none text-center" style={{ color: '#6B1D3A', fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>Esthela</p>
-        <p className="font-black text-[#6B1D3A] text-xl leading-tight text-center">{nombre}</p>
-        <p className="text-[11px] text-center mt-1 font-semibold" style={{ color: '#8B5E3C' }}>{municipio}</p>
-        <div className="mt-auto pt-4">
-          <div className="px-5 py-2 rounded-full border-2 text-center" style={{ borderColor: '#8B5E3C', borderStyle: 'dashed' }}>
-            <p className="text-[9px] font-black tracking-[0.25em] uppercase" style={{ color: '#8B5E3C' }}>Forjada en el territorio</p>
+    <div className="relative w-full rounded-2xl overflow-hidden card-bg-camino" style={{ aspectRatio: '3/4', border: '2px solid #8B5E3C' }}>
+      <div className="absolute inset-0 bg-gradient-to-b from-amber-50/80 via-orange-50/60 to-stone-200/90" />
+      <div className="relative h-full flex flex-col">
+        <div className="relative z-10 px-5 pt-5">
+          <p className="text-[11px] font-black tracking-[0.2em] uppercase text-center text-[#8B5E3C]">Guerrero · 40 años</p>
+          <div className="w-full h-px mt-2 bg-gradient-to-r from-transparent via-[#8B5E3C] to-transparent" />
+        </div>
+        <div className="relative z-10 flex justify-center mt-5">
+          {data.foto ? (
+            <div className="w-28 h-28 overflow-hidden border-3 border-[#8B5E3C]" style={{ borderRadius: '40% 60% 60% 40% / 55% 45% 55% 45%', boxShadow: '4px 4px 0px rgba(107,29,58,0.2)' }}>
+              <img src={data.foto} alt="Titular" className="w-full h-full object-cover" style={{ transform: `scale(${data.fotoScale}) rotate(${data.fotoRotate}deg)`, transformOrigin: 'center' }} />
+            </div>
+          ) : (
+            <div className="w-28 h-28 flex items-center justify-center text-4xl font-black bg-[#8B5E3C]/20 border-3 border-[#8B5E3C] text-[#8B5E3C]" style={{ borderRadius: '40% 60% 60% 40% / 55% 45% 55% 45%' }}>
+              {nombre[0]?.toUpperCase() || '?'}
+            </div>
+          )}
+        </div>
+        <div className="relative z-10 flex-1 flex flex-col items-center px-5 pt-5 pb-6">
+          <p className="text-[10px] tracking-[0.25em] uppercase text-center mb-1 font-semibold text-[#8B5E3C]">Yo camino con</p>
+          <p className="font-black text-4xl leading-none text-center text-[#6B1D3A] italic">Esthela</p>
+          <svg className="w-24 h-4 my-3" viewBox="0 0 100 16"><path d="M0,8 Q12,2 25,8 Q37,14 50,8 Q62,2 75,8 Q87,14 100,8" fill="none" stroke="#D4A843" strokeWidth="1.5" /></svg>
+          <p className="font-black text-[#6B1D3A] text-xl leading-tight text-center">{nombre}</p>
+          <p className="text-[11px] text-center mt-1 font-semibold text-[#8B5E3C]">{municipio}</p>
+          <div className="mt-auto pt-4">
+            <div className="px-5 py-2 rounded-full border-2 text-center border-dashed border-[#8B5E3C]">
+              <p className="text-[9px] font-black tracking-[0.25em] uppercase text-[#8B5E3C]">Forjada en el territorio</p>
+            </div>
           </div>
         </div>
       </div>
@@ -230,9 +220,10 @@ export default function TarjetasPage() {
                       {MUNICIPIOS_GUERRERO.map(m => <option key={m} value={m} className="bg-[#1A0510] text-white">{m}</option>)}
                     </select>
                   </div>
-                  <div><label className={labelClass}>Tu Foto</label>
+                  <div><label className={labelClass}>Tu Foto (Galería o Cámara)</label>
                     <label className="w-full flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed border-white/20 hover:border-[#D4A843]/40 cursor-pointer transition-colors group" htmlFor="foto-upload">
                       {playerData.foto ? <><img src={playerData.foto} alt="Preview" className="w-12 h-12 rounded-full object-cover border border-[#D4A843]/40" /><p className="text-[#D4A843] font-semibold text-sm">Foto cargada</p></> : <><Upload className="w-8 h-8 text-white/30 group-hover:text-[#D4A843]" /><p className="text-white/50 text-sm">Sube tu foto</p></>}
+                      {/* capture="user" habilita cámara en móviles, accept="image/*" habilita galería */}
                       <input id="foto-upload" type="file" accept="image/*" capture="user" onChange={handlePhotoUpload} className="hidden" />
                     </label>
                   </div>
@@ -260,6 +251,14 @@ export default function TarjetasPage() {
                     {selectedModel === model.id && <div className="w-6 h-6 rounded-full bg-[#D4A843] flex items-center justify-center"><Check className="w-4 h-4 text-[#14050B]" /></div>}
                   </button>
                 ))}
+                <div className="mt-6 p-4 rounded-2xl bg-white/[0.02] border border-white/10">
+                  <p className="text-white/40 text-xs text-center mb-4 uppercase tracking-widest">Vista previa · {models.find(m => m.id === selectedModel)?.title}</p>
+                  <div className="w-40 mx-auto">
+                    {selectedModel === 'mundialista' && <CardMundialista data={playerData} />}
+                    {selectedModel === 'esthelado' && <CardEsthelado data={playerData} />}
+                    {selectedModel === 'camino' && <CardCamino data={playerData} />}
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}

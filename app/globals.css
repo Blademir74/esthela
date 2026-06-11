@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a1f1b; /* Fondo oscuro tipo estadio premium */
-  --foreground: #fdfaf5;
+  --background: #14050B;
+  --foreground: #ffffff;
   --verde-seleccion: #004d40;
   --dorado-quemado: #D4A843;
   --crema-suave: #fdfaf5;
@@ -18,7 +18,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* --- HERO ESTADIO --- */
+/* --- HERO: ESPACIO NEGATIVO Y ALINEACIÓN MÓVIL --- */
 .hero-section {
   position: relative;
   width: 100%;
@@ -33,143 +33,60 @@ body {
   inset: 0;
   background-image: url('/assets/img/equipo.png');
   background-size: cover;
-  background-position: center 30%;
+  background-position: center 30%; /* Escritorio: Rostro centrado */
   filter: saturate(85%);
   transition: transform 0.5s ease;
 }
 
+/* Ajuste crítico para móvil: Bajar el foco para que "VA POR GUERRERO" no se corte */
 @media (max-width: 768px) {
   .hero-bg {
-    background-position: center bottom !important;
+    background-position: center 35% !important;
   }
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.9) 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 100%);
   z-index: 1;
 }
 
-/* --- BOTÓN WHATSAPP FLOTANTE (CORREGIDO) --- */
-.whatsapp-float {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 999;
-  width: 56px;
-  height: 56px;
-  background: var(--verde-seleccion);
-  border: 2px solid var(--dorado-quemado);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 77, 64, 0.4);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.whatsapp-float:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 18px rgba(212, 168, 67, 0.3);
-}
-
-/* --- BOTONES DE ESTADIO --- */
-.btn-stadium {
-  position: relative;
-  overflow: hidden;
-  background: var(--dorado-quemado);
-  color: #0a1f1b;
-  font-weight: 800;
-  padding: 16px 32px;
-  border-radius: 9999px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-stadium:hover {
-  background: #b8923b;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(212, 168, 67, 0.4);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--crema-suave);
-  font-weight: 600;
-  padding: 16px 32px;
-  border-radius: 9999px;
-  border: 2px solid rgba(253, 250, 245, 0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-ghost:hover {
-  border-color: var(--dorado-quemado);
-  color: var(--dorado-quemado);
-  background: rgba(212, 168, 67, 0.05);
-}
-
-/* --- UTILIDADES --- */
-.text-gold { color: var(--dorado-quemado); }
-.text-cream { color: var(--crema-suave); }
-.bg-guinda { background-color: var(--guinda-morena); }
-.bg-verde { background-color: var(--verde-seleccion); }
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-shimmer::after {
-  content: '';
+/* --- EYEBROW SUPERIOR --- */
+.top-eyebrow {
   position: absolute;
-  top: 0; left: -150%;
-  width: 50%; height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
-  transform: skewX(-25deg);
-  animation: shimmer 3s infinite;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: 16px 20px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dorado-quemado);
+  background: linear-gradient(to bottom, rgba(20,5,11,0.95) 0%, transparent 100%);
+  pointer-events: none;
 }
 
-/* --- HERO: ESPACIO NEGATIVO INTELIGENTE --- */
-.hero-bg {
-  background-position: center 15% !important; /* Rostro en tercio superior */
-  background-size: cover;
-}
-
-@media (max-width: 768px) {
-  .hero-bg {
-    background-position: center 20% !important; /* Ajuste móvil */
-  }
-}
-
+/* --- CONTENIDO HERO (BAJADO) --- */
 .hero-content {
-  padding-top: 30vh; /* Empuja narrativa al tercio inferior */
+  padding-top: 35vh; /* Empeja narrativa hacia abajo */
 }
 
-.hero-overlay {
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.85) 100%);
-}
-
-/* --- UTILIDADES GAMA --- */
+/* --- BOTÓN SHIMMER --- */
 .shimmer-btn {
   position: relative;
   overflow: hidden;
-  background-color: #6B1D3A !important;
+  background-color: var(--guinda-morena) !important;
   color: #ffffff !important;
   border: 1px solid rgba(212, 168, 67, 0.4) !important;
   transition: all 0.3s ease;
 }
 .shimmer-btn:hover {
   background-color: #501328 !important;
-  border-color: #D4A843 !important;
+  border-color: var(--dorado-quemado) !important;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(107, 29, 58, 0.5), 0 0 15px rgba(212, 168, 67, 0.3);
 }
@@ -183,7 +100,22 @@ body {
   animation: button-shimmer 3.5s infinite ease-in-out;
 }
 @keyframes button-shimmer {
-  0% { left: -150%; }
-  30% { left: 150%; }
-  100% { left: 150%; }
+  0% { left: -150%; } 30% { left: 150%; } 100% { left: 150%; }
+}
+
+/* --- FONDOS DE CROMOS OFICIALES --- */
+.card-bg-mundialista {
+  background-image: url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1000&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+.card-bg-esthelado {
+  background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?q=80&w=1000&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+.card-bg-camino {
+  background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
 }

@@ -7,9 +7,14 @@ export default function HomePage() {
   return (
     <main className="overflow-x-hidden min-h-screen bg-[#0a1f1b] text-[#fdfaf5]">
       
-     <section className="hero-section relative w-full h-[100svh] overflow-hidden flex flex-col">
-  <div className="hero-bg absolute inset-0 w-full h-full" />
-  <div className="hero-overlay absolute inset-0 z-10" />
+<section className="hero-section">
+  {/* Eyebrow Superior Solicitado */}
+  <div className="top-eyebrow">
+    DETALLES GRANDES · SELECCIÓN GUERRERO · REGISTRO OFICIAL
+  </div>
+
+  <div className="hero-bg" />
+  <div className="hero-overlay" />
   
   <div className="hero-content relative z-20 w-full flex flex-col justify-end px-6 md:px-10 pb-12">
     <motion.div 
