@@ -194,3 +194,11 @@ body {
     justify-content: center;
   }
 }
+
+/* HERO: Corrección de corte lateral en móvil */
+@media (max-width: 640px) {
+  .hero-bg-movil {
+    background-position: center 32% !important;
+    background-size: cover !important;
+  }
+}

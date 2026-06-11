@@ -7,11 +7,11 @@ export default function HomePage() {
   return (
     <main className="overflow-x-hidden min-h-screen bg-[#14050B]">
 <section
-  className="relative w-full h-[100svh] overflow-hidden flex flex-col"
+  className="relative w-full h-[100svh] overflow-hidden flex flex-col hero-bg-movil"
   style={{
     backgroundImage: "url('/assets/img/equipo.png')", // Ajusta la ruta si tu archivo se llama diferente
     backgroundSize: 'cover',
-    backgroundPosition: 'center top',
+    backgroundPosition: 'center 30%',
     backgroundRepeat: 'no-repeat',
     minHeight: '100vh'
   }}
