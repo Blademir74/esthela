@@ -8,7 +8,6 @@
   --foreground: #ffffff;
   --gold: #D4A843;
   --guinda: #6B1D3A;
-  --guinda-dark: #3D0A1F;
 }
 
 body {
@@ -18,60 +17,63 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* HERO: Rostro libre & Overlay estratégico */
+/* HERO: Alineación Móvil Optimizada */
 .hero-bg {
   background-size: cover;
-  background-position: top center !important;
+  background-position: center 20% !important; /* Escritorio: rostro centrado */
   background-repeat: no-repeat;
 }
-.hero-overlay {
-  background: linear-gradient(to bottom, rgba(20,5,11,0.1) 0%, rgba(20,5,11,0.85) 60%, rgba(20,5,11,1) 100%);
+
+@media (max-width: 768px) {
+  .hero-bg {
+    background-position: center 12% !important; /* Móvil: muestra fondo completo + rostro */
+  }
 }
 
-/* BOTONES: Jerarquía Estadio */
+.hero-overlay {
+  background: linear-gradient(to bottom, rgba(20,5,11,0.05) 0%, rgba(20,5,11,0.75) 55%, rgba(20,5,11,0.95) 100%);
+}
+
+/* BOTONES ESTADIO */
 .btn-primary {
-  background-color: var(--gold);
+  background: var(--gold);
   color: var(--guinda);
   font-family: 'Montserrat', sans-serif;
   font-weight: 800;
-  padding: 16px 32px;
+  padding: 16px 24px;
   border-radius: 9999px;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  animation: pulse-gold 2s infinite;
+  animation: pulse-gold 2.5s infinite;
 }
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(212, 168, 67, 0.4);
-}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212,168,67,0.4); }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
   color: white;
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  padding: 16px 32px;
+  padding: 16px 24px;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255,255,255,0.3);
   cursor: pointer;
   transition: all 0.3s ease;
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: white;
-}
+.btn-secondary:hover { background: rgba(255,255,255,0.2); border-color: white; }
 
 @keyframes pulse-gold {
   0%, 100% { box-shadow: 0 0 0 0 rgba(212, 168, 67, 0.4); }
-  50% { box-shadow: 0 0 0 10px rgba(212, 168, 67, 0); }
+  50% { box-shadow: 0 0 0 12px rgba(212, 168, 67, 0); }
 }
 
 /* UTILIDADES */
