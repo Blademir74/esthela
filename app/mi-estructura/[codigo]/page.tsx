@@ -1,10 +1,21 @@
+"use client";
+import { useEffect, useState, useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Shield, Users, Phone, MapPin, Facebook, Instagram, Link2, Copy, AlertCircle, CheckCircle2, Download } from "lucide-react";
+
+export default function MiEstructuraPage() {
+  const { codigo } = useParams();
+  const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [csvStatus, setCsvStatus] = useState<"idle" | "success" | "error">("idle");
-  const [teamList, setTeamList] = useState<any[]>([]);
 
+  // ═══════════════════════════════════════════════════════
+  // 1. FETCH DE DATOS
+  // ═══════════════════════════════════════════════════════
   useEffect(() => {
     if (!codigo) return;
     const fetchData = async () => {
@@ -28,23 +39,42 @@
     fetchData();
   }, [codigo]);
 
-  // Parseo sincronizado con CSV + filtro de miembros vacíos
-  useEffect(() => {
-    if (!data?.alineacion_equipo) {
-      setTeamList([]);
-      return;
+  // ═══════════════════════════════════════════════════════
+  // 2. PARSEO ROBUSTO DE JSONB (SOLUCIÓN AL PROBLEMA)
+  // ═══════════════════════════════════════════════════════
+  const teamList = useMemo(() => {
+    if (!data) return [];
+    let raw = data.alineacion_equipo;
+    if (!raw) return [];
+
+    // Supabase REST a veces devuelve JSONB como string escapado
+    if (typeof raw === "string") {
+      try {
+        raw = JSON.parse(raw);
+      } catch (e) {
+        console.warn("⚠️ Error parseando alineacion_equipo (string):", e);
+        return [];
+      }
     }
-    let parsed = data.alineacion_equipo;
-    if (typeof parsed === "string") {
-      try { parsed = JSON.parse(parsed); } catch { parsed = []; }
+
+    // Manejo de contenedores inesperados (.value, .array)
+    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+      if (Array.isArray(raw.value)) raw = raw.value;
+      else if (Array.isArray(raw.array)) raw = raw.array;
+      else return [];
     }
-    if (!Array.isArray(parsed)) parsed = [];
-    // Filtra el miembro vacío por defecto y objetos sin datos reales
-    const filtered = parsed.filter((m: any) => m.nombre || m.celular || m.facebook || m.tiktok || m.twitter);
-    setTeamList(filtered);
-    console.log("🔍 Team parsed:", filtered); // Debug en consola del navegador
+
+    if (!Array.isArray(raw)) return [];
+
+    // Filtra objetos vacíos por defecto del formulario
+    const filtered = raw.filter((m: any) => m.nombre || m.celular || m.facebook || m.tiktok || m.twitter);
+    console.log("✅ Alineación parseada correctamente:", filtered);
+    return filtered;
   }, [data]);
 
+  // ═══════════════════════════════════════════════════════
+  // 3. ACCIONES (COPY & CSV)
+  // ═══════════════════════════════════════════════════════
   const handleCopyLink = () => {
     const link = `${window.location.origin}/mi-estructura/${codigo}`;
     navigator.clipboard.writeText(link);
@@ -55,31 +85,42 @@
   const handleDownloadCSV = () => {
     try {
       if (teamList.length === 0) {
-        setCsvStatus("error"); setTimeout(() => setCsvStatus("idle"), 3000); return;
+        setCsvStatus("error");
+        setTimeout(() => setCsvStatus("idle"), 3000);
+        return;
       }
       const headers = ["Nombre", "Celular", "Facebook", "TikTok", "Twitter"];
       const rows = teamList.map((m: any) => 
         [m.nombre || "", m.celular || "", m.facebook || "", m.tiktok || "", m.twitter || ""]
-          .map((val: string) => `"${val.replace(/"/g, '""')}"`).join(",")
+          .map((val: string) => `"${val.replace(/"/g, '""')}"`)
+          .join(",")
       );
       const csvContent = [headers.join(","), ...rows].join("\n");
       const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = url; link.download = `Estructura_${data.responsabilidad_municipal || "Guerrero"}.csv`;
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      link.href = url;
+      link.download = `Estructura_${data.responsabilidad_municipal || "Guerrero"}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      setCsvStatus("success"); setTimeout(() => setCsvStatus("idle"), 3000);
+      
+      setCsvStatus("success");
+      setTimeout(() => setCsvStatus("idle"), 3000);
     } catch {
-      setCsvStatus("error"); setTimeout(() => setCsvStatus("idle"), 3000);
+      setCsvStatus("error");
+      setTimeout(() => setCsvStatus("idle"), 3000);
     }
   };
 
+  // ═══════════════════════════════════════════════════════
+  // 4. RENDERIZADO
+  // ═══════════════════════════════════════════════════════
   return (
     <main className="min-h-screen bg-[#14050B] text-white px-4 py-10 md:py-14">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
         
-        {/* Header Seguro */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 text-[#D4A843] text-xs font-bold tracking-widest uppercase mb-3">
             <Shield className="w-3.5 h-3.5" /> Acceso Territorial Restringido
@@ -103,7 +144,6 @@
           ) : (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
               
-              {/* Tarjeta del Responsable */}
               <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                   <div>
@@ -133,7 +173,6 @@
                 </div>
               </div>
 
-              {/* Alineación de Equipo (Renderizado Sincronizado) */}
               {teamList.length > 0 ? (
                 <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
                   <div className="flex items-center gap-2 text-[#D4A843] mb-4">
