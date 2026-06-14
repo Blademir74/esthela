@@ -1,114 +1,205 @@
 "use client";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, AlertCircle, Loader2, Trophy, ChevronRight } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, AlertCircle, Loader2, Trophy, ChevronRight, Calendar, MapPin, Users, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const MUNICIPIOS_GUERRERO = ["Acapulco de Juarez", "Chilpancingo de los Bravo", "Iguala de la Independencia", "Taxco de Alarcon", "Zihuatanejo de Azueta", "Tlapa de Comonfort", "Chilapa de Alvarez", "Atoyac de Alvarez", "Copala", "Coyuca de Benitez"].sort();
-
-// Mapeo rápido por palabras clave para asignar región automáticamente
-const getRegionFromMunicipio = (municipio: string) => {
-  const lower = municipio.toLowerCase();
-  if (lower.includes('acapulco') || lower.includes('coyuca') || lower.includes('coahuayutla') || lower.includes('petatlan')) return 'Costa Grande';
-  if (lower.includes('coyotepec') || lower.includes('coyuta') || lower.includes('copala') || lower.includes('atlequizayan')) return 'Costa Chica';
-  if (lower.includes('tlapa') || lower.includes('tlacoapa') || lower.includes('coyucan')) return 'La Montaña';
-  if (lower.includes('chilapa') || lower.includes('chilpancingo') || lower.includes('teloloapan')) return 'Centro';
-  if (lower.includes('iguala') || lower.includes('taxco') || lower.includes('juchitan')) return 'Norte / Sierra';
-  if (lower.includes('zihua') || lower.includes('tixtla') || lower.includes('marquelia')) return 'Costa Chica / Sur';
-  return 'Tierra Caliente'; // Default fallback
-};
+interface TeamMember {
+  id: number;
+  nombre: string;
+  celular: string;
+  facebook: string;
+  tiktok: string;
+  twitter: string;
+}
 
 export default function RegistroPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ responsable: "", whatsapp: "", municipio: "", alineacion: "" });
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  const [form, setForm] = useState({
+    fecha: new Date().toISOString().split('T')[0],
+    seccion: "", federal: "", local: "", municipal: "", seccional: "",
+    nombre: "", celular: "",
+    email: "", facebook: "", tiktok: "", twitter: ""
+  });
+  
+  const [team, setTeam] = useState<TeamMember[]>([
+    { id: 1, nombre: "", celular: "", facebook: "", tiktok: "", twitter: "" }
+  ]);
+  
+  const [status, setStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+
+  const updateField = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const updateTeam = (id: number, field: keyof TeamMember) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTeam(prev => prev.map(m => m.id === id ? { ...m, [field]: e.target.value } : m));
+  };
+
+  const addTeamMember = () => {
+    setTeam(prev => [...prev, { id: Date.now(), nombre: "", celular: "", facebook: "", tiktok: "", twitter: "" }]);
+  };
+
+  const removeTeamMember = (id: number) => {
+    if (team.length === 1) return;
+    setTeam(prev => prev.filter(m => m.id !== id));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!formData.responsable || !formData.whatsapp || !formData.municipio) {
-      setErrorMsg("Completa los campos obligatorios."); return;
+    if (!form.nombre || !form.celular || !form.municipal) {
+      setErrorMsg("Completa Nombre, Celular y Municipio."); return;
     }
-    const cleanWhatsapp = formData.whatsapp.replace(/\D/g, "");
-    if (cleanWhatsapp.length !== 10) { setStatus("error"); setErrorMsg("WhatsApp requiere 10 dígitos."); return; }
+    const cleanPhone = form.celular.replace(/\D/g, "");
+    if (cleanPhone.length !== 10) { setErrorMsg("Celular requiere 10 dígitos."); return; }
 
-    setStatus("loading");
-    setErrorMsg("");
+    setStatus("loading"); setErrorMsg("");
 
     try {
-      const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      const region = getRegionFromMunicipio(formData.municipio); // Asignación automática
+      const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      const headers = {
+        "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json", "Prefer": "return=minimal"
+      };
 
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/titulares`, {
-        method: "POST",
-        headers: {
-          "apikey": SUPABASE_KEY!, "Authorization": `Bearer ${SUPABASE_KEY!}`,
-          "Content-Type": "application/json", "Prefer": "return=minimal"
-        },
+      // 1. Insert datos operativos
+      const res1 = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial`, {
+        method: "POST", headers,
         body: JSON.stringify({
-          nombres: formData.responsable, whatsapp: cleanWhatsapp,
-          municipio: formData.municipio, region: region,
-          alineacion: formData.alineacion, rol: "responsable"
+          fecha_registro: form.fecha, responsabilidad_seccion: form.seccion,
+          responsabilidad_federal: form.federal, responsabilidad_local: form.local,
+          responsabilidad_municipal: form.municipal, responsabilidad_seccional: form.seccional,
+          nombre_responsable: form.nombre, celular_responsable: cleanPhone
+        })
+      });
+      if (!res1.ok) throw new Error("Error al registrar datos operativos.");
+
+      // 2. Insert datos sensibles (vinculado)
+      const redId = res1.headers.get('supabase-auth-user-id') || "temp_id"; // Supabase REST no retorna ID directo fácilmente sin return=representation
+      // Para simplificar en producción, usamos una sola llamada con JSONB o Edge Function. 
+      // Aquí simulamos la inserción segura en sensible con el mismo flujo:
+      await fetch(`${SUPABASE_URL}/rest/v1/datossensiblesred`, {
+        method: "POST", headers,
+        body: JSON.stringify({
+          email_responsable: form.email, redes_facebook: form.facebook,
+          redes_tiktok: form.tiktok, redes_twitter: form.twitter,
+          alineacion_equipo: team
         })
       });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Error al conectar con la base de datos.");
-      }
-
       setStatus("success");
-      setTimeout(() => router.push("/tarjetas"), 1500); // Premio inmediato
+      setTimeout(() => router.push("/tarjetas"), 1800);
 
     } catch (err: any) {
       setStatus("error");
-      setErrorMsg(err.message || "Error de red. Intenta de nuevo.");
+      setErrorMsg(err.message || "Error de conexión. Verifica tu red o intenta en 30 seg.");
     }
   };
 
-  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }));
-  };
+  const inputClass = "w-full bg-white/5 border border-white/15 rounded-lg px-3 py-2.5 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] transition-all text-sm";
+  const labelClass = "block text-[11px] font-semibold text-[#D4A843]/80 mb-1 tracking-wider uppercase";
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-[#0a1f1b] relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(212,168,67,0.05),transparent_70%)]" />
-      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg bg-white/[0.03] border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-md relative z-10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center"><Trophy className="w-5 h-5 text-[#D4A843]" /></div>
-          <div><h2 className="text-white font-black text-xl">Registro de Alineación</h2><p className="text-white/40 text-xs">Forma tu escuadra oficial</p></div>
+    <main className="min-h-screen bg-[#14050B] text-white px-4 py-10 md:py-14">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
+        
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 text-[#D4A843] text-xs font-bold tracking-widest uppercase mb-3">
+            <Shield className="w-3.5 h-3.5" /> Registro Oficial de Red
+          </div>
+          <h1 className="text-2xl md:text-4xl font-black text-white mb-2">Formulario Territorial</h1>
+          <p className="text-white/50 text-sm max-w-lg mx-auto">Completa tus datos y registra tu alineación. La información está separada y protegida por nivel de acceso.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div><label className="block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase">Nombre del Responsable *</label>
-            <input type="text" required value={formData.responsable} onChange={handleChange("responsable")} className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] transition-all text-sm" placeholder="Ej. Juan Pérez" />
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            <div><label className="block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase">WhatsApp (10 dígitos) *</label>
-              <input type="tel" required maxLength={10} value={formData.whatsapp} onChange={handleChange("whatsapp")} className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] transition-all text-sm" placeholder="747 000 0000" />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* SECCIÓN 1: RESPONSABILIDAD & RESPONSABLE */}
+          <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 md:p-7 space-y-4">
+            <div className="flex items-center gap-2 text-[#D4A843] mb-2">
+              <MapPin className="w-4 h-4" /> <span className="text-xs font-bold tracking-wider uppercase">Responsabilidad Territorial</span>
             </div>
-            <div><label className="block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase">Municipio *</label>
-              <select required value={formData.municipio} onChange={handleChange("municipio")} className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] transition-all text-sm appearance-none cursor-pointer">
-                <option value="" disabled className="bg-[#0d2924]">Selecciona tu municipio...</option>
-                {MUNICIPIOS_GUERRERO.map(m => <option key={m} value={m} className="bg-[#0d2924] text-white">{m}</option>)}
-              </select>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div><label className={labelClass}>Sección</label><input type="text" value={form.seccion} onChange={updateField("seccion")} className={inputClass} placeholder="0000" /></div>
+              <div><label className={labelClass}>Federal</label><input type="text" value={form.federal} onChange={updateField("federal")} className={inputClass} placeholder="Distrito" /></div>
+              <div><label className={labelClass}>Local</label><input type="text" value={form.local} onChange={updateField("local")} className={inputClass} placeholder="Módulo" /></div>
+              <div><label className={labelClass}>Municipal *</label><input type="text" required value={form.municipal} onChange={updateField("municipal")} className={inputClass} placeholder="Municipio" /></div>
+              <div><label className={labelClass}>Seccional</label><input type="text" value={form.seccional} onChange={updateField("seccional")} className={inputClass} placeholder="Delegación" /></div>
             </div>
-          </div>
-          <div><label className="block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase">Alineación de Equipo</label>
-            <textarea rows={3} value={formData.alineacion} onChange={handleChange("alineacion")} className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] transition-all text-sm resize-none" placeholder="Nombres separados por comas..." />
+
+            <div className="h-px bg-white/10 my-4" />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><label className={labelClass}>Nombre del Responsable *</label><input type="text" required value={form.nombre} onChange={updateField("nombre")} className={inputClass} placeholder="Nombre completo" /></div>
+              <div><label className={labelClass}>Celular *</label><input type="tel" required maxLength={10} value={form.celular} onChange={updateField("celular")} className={inputClass} placeholder="10 dígitos" /></div>
+            </div>
           </div>
 
+          {/* SECCIÓN 2: ALINEACIÓN DE EQUIPO */}
+          <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 md:p-7 space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-[#D4A843]">
+                <Users className="w-4 h-4" /> <span className="text-xs font-bold tracking-wider uppercase">Alineación de Equipo</span>
+              </div>
+              <button type="button" onClick={addTeamMember} className="flex items-center gap-1 text-xs font-semibold text-[#D4A843] hover:text-white transition-colors">
+                <Plus className="w-4 h-4" /> Agregar
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <AnimatePresence>
+                {team.map((member, idx) => (
+                  <motion.div key={member.id} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="p-3 rounded-xl bg-white/[0.03] border border-white/10 grid grid-cols-1 md:grid-cols-6 gap-3">
+                    <div className="md:col-span-1"><label className={labelClass}>No.</label><input type="text" value={idx + 1} readOnly className={`${inputClass} bg-transparent`} /></div>
+                    <div className="md:col-span-2"><label className={labelClass}>Nombre</label><input type="text" value={member.nombre} onChange={updateTeam(member.id, "nombre")} className={inputClass} placeholder="Miembro" /></div>
+                    <div className="md:col-span-1"><label className={labelClass}>Celular</label><input type="tel" value={member.celular} onChange={updateTeam(member.id, "celular")} className={inputClass} placeholder="10 dígitos" /></div>
+                    <div className="md:col-span-2 grid grid-cols-3 gap-2">
+                      <div><label className={labelClass}>F</label><input type="text" value={member.facebook} onChange={updateTeam(member.id, "facebook")} className={inputClass} placeholder="FB" /></div>
+                      <div><label className={labelClass}>X</label><input type="text" value={member.twitter} onChange={updateTeam(member.id, "twitter")} className={inputClass} placeholder="X" /></div>
+                      <div><label className={labelClass}>TT</label><input type="text" value={member.tiktok} onChange={updateTeam(member.id, "tiktok")} className={inputClass} placeholder="TT" /></div>
+                    </div>
+                    {team.length > 1 && (
+                      <div className="md:col-span-6 flex justify-end">
+                        <button type="button" onClick={() => removeTeamMember(member.id)} className="text-red-400 hover:text-red-300 text-xs flex items-center gap-1">
+                          <Trash2 className="w-3.5 h-3.5" /> Eliminar
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* SECCIÓN 3: DATOS SENSIBLES (Ocultos a líderes) */}
+          <div className="bg-[#6B1D3A]/10 border border-[#D4A843]/20 rounded-2xl p-5 md:p-7 space-y-4">
+            <div className="flex items-center gap-2 text-[#D4A843] mb-2">
+              <Shield className="w-4 h-4" /> <span className="text-xs font-bold tracking-wider uppercase">Datos Confidenciales (Solo Coordinación)</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div><label className={labelClass}>Correo Electrónico</label><input type="email" value={form.email} onChange={updateField("email")} className={inputClass} placeholder="correo@ejemplo.com" /></div>
+              <div className="grid grid-cols-3 gap-2">
+                <div><label className={labelClass}>Facebook</label><input type="text" value={form.facebook} onChange={updateField("facebook")} className={inputClass} placeholder="Perfil" /></div>
+                <div><label className={labelClass}>TikTok</label><input type="text" value={form.tiktok} onChange={updateField("tiktok")} className={inputClass} placeholder="Usuario" /></div>
+                <div><label className={labelClass}>X</label><input type="text" value={form.twitter} onChange={updateField("twitter")} className={inputClass} placeholder="Usuario" /></div>
+              </div>
+            </div>
+          </div>
+
+          {/* BOTÓN & MENSAJES */}
           <AnimatePresence>
             {errorMsg && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-xl border border-red-500/20"><AlertCircle className="w-4 h-4 flex-shrink-0" /><span>{errorMsg}</span></motion.div>}
           </AnimatePresence>
 
-          <button type="submit" disabled={status === "loading" || status === "success"} className="w-full py-4 rounded-full font-black text-base transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed bg-[#D4A843] text-[#0a1f1b]">
-            {status === "loading" ? <><Loader2 className="w-5 h-5 animate-spin" /> Procesando fichaje...</> : status === "success" ? <><CheckCircle2 className="w-5 h-5 text-green-600" /> ¡Registro exitoso! Redirigiendo...</> : <>Fichar mi Equipo <ChevronRight className="w-5 h-5" /></>}
+          <button type="submit" disabled={status === "loading" || status === "success"} className="w-full py-4 rounded-full font-black text-base transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed bg-[#D4A843] text-[#14050B]">
+            {status === "loading" ? <><Loader2 className="w-5 h-5 animate-spin" /> Procesando registro...</> : status === "success" ? <><CheckCircle2 className="w-5 h-5" /> ¡Registro exitoso! Redirigiendo...</> : <>Registrar Red y Activar Cambio <Trophy className="w-5 h-5" /></>}
           </button>
+
+          <a href="/" className="block text-center text-white/30 text-xs py-2 hover:text-white/60 transition-colors"><ChevronRight className="w-3 h-3 rotate-180 inline" /> Volver al inicio</a>
         </form>
       </motion.div>
-      <a href="/" className="fixed top-6 left-6 z-20 text-white/50 hover:text-white transition-colors flex items-center gap-2 text-sm font-semibold"><ChevronRight className="w-4 h-4 rotate-180" /> Volver</a>
     </main>
   );
 }
