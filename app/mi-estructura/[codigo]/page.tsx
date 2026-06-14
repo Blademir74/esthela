@@ -39,36 +39,37 @@ export default function MiEstructuraPage() {
     fetchData();
   }, [codigo]);
 
-  // ═══════════════════════════════════════════════════════
-  // 2. PARSEO ROBUSTO DE JSONB (SOLUCIÓN AL PROBLEMA)
+    // ═══════════════════════════════════════════════════════
+  // PARSE ROBUSTO JSONB (SOLUCIÓN DEFINITIVA)
   // ═══════════════════════════════════════════════════════
   const teamList = useMemo(() => {
     if (!data) return [];
     let raw = data.alineacion_equipo;
     if (!raw) return [];
 
-    // Supabase REST a veces devuelve JSONB como string escapado
+    // 1. Supabase REST a veces devuelve JSONB como string escapado
     if (typeof raw === "string") {
-      try {
-        raw = JSON.parse(raw);
-      } catch (e) {
-        console.warn("⚠️ Error parseando alineacion_equipo (string):", e);
-        return [];
-      }
+      try { raw = JSON.parse(raw); } catch { return []; }
     }
 
-    // Manejo de contenedores inesperados (.value, .array)
+    // 2. Manejo de contenedores inesperados (.value, .array)
     if (raw && typeof raw === "object" && !Array.isArray(raw)) {
       if (Array.isArray(raw.value)) raw = raw.value;
       else if (Array.isArray(raw.array)) raw = raw.array;
       else return [];
     }
 
+    // 3. Validación estricta de array
     if (!Array.isArray(raw)) return [];
 
-    // Filtra objetos vacíos por defecto del formulario
-    const filtered = raw.filter((m: any) => m.nombre || m.celular || m.facebook || m.tiktok || m.twitter);
-    console.log("✅ Alineación parseada correctamente:", filtered);
+    // 4. Filtra solo objetos con al menos un campo con datos reales
+    const filtered = raw.filter((m: any) => {
+      const hasData = m.nombre?.trim() || m.celular?.trim() || m.facebook?.trim() || m.tiktok?.trim() || m.twitter?.trim();
+      return !!hasData;
+    });
+
+    console.log("🔍 RAW desde Supabase:", raw);
+    console.log("✅ EQUIPO PARSEADO Y FILTRADO:", filtered);
     return filtered;
   }, [data]);
 
@@ -174,35 +175,36 @@ export default function MiEstructuraPage() {
               </div>
 
               {teamList.length > 0 ? (
-                <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
-                  <div className="flex items-center gap-2 text-[#D4A843] mb-4">
-                    <Users className="w-4 h-4" /> <span className="text-xs font-bold tracking-wider uppercase">Alineación Registrada ({teamList.length})</span>
-                  </div>
-                  <div className="space-y-3">
-                    {teamList.map((member: any, idx: number) => (
-                      <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 flex items-center justify-center text-xs font-bold text-[#D4A843]">{idx + 1}</span>
-                          <div>
-                            <p className="text-white font-medium">{member.nombre || "Sin nombre"}</p>
-                            <p className="text-white/40 text-xs">{member.celular || "Sin celular"}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-3 text-white/30">
-                          {member.facebook && <a href={`https://facebook.com/${member.facebook}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Facebook className="w-4 h-4" /></a>}
-                          {member.tiktok && <a href={`https://tiktok.com/@${member.tiktok}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Instagram className="w-4 h-4" /></a>}
-                          {member.twitter && <a href={`https://twitter.com/${member.twitter}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Link2 className="w-4 h-4" /></a>}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-10 text-white/40 text-sm bg-white/[0.02] rounded-2xl border border-dashed border-white/10">
-                  <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  No hay integrantes registrados en la alineación.
-                </div>
-              )}
+  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
+    <div className="flex items-center gap-2 text-[#D4A843] mb-4">
+      <Users className="w-4 h-4" /> 
+      <span className="text-xs font-bold tracking-wider uppercase">Alineación Registrada ({teamList.length})</span>
+    </div>
+    <div className="space-y-3">
+      {teamList.map((member: any, idx: number) => (
+        <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="w-8 h-8 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 flex items-center justify-center text-xs font-bold text-[#D4A843]">{idx + 1}</span>
+            <div>
+              <p className="text-white font-medium">{member.nombre || "Sin nombre"}</p>
+              <p className="text-white/40 text-xs">{member.celular || "Sin celular"}</p>
+            </div>
+          </div>
+          <div className="flex gap-3 text-white/30">
+            {member.facebook && <a href={`https://facebook.com/${member.facebook}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Facebook className="w-4 h-4" /></a>}
+            {member.tiktok && <a href={`https://tiktok.com/@${member.tiktok}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Instagram className="w-4 h-4" /></a>}
+            {member.twitter && <a href={`https://twitter.com/${member.twitter}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Link2 className="w-4 h-4" /></a>}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+) : (
+  <div className="text-center py-10 text-white/40 text-sm bg-white/[0.02] rounded-2xl border border-dashed border-white/10">
+    <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+    No hay integrantes registrados en la alineación.
+  </div>
+)}
 
               {csvStatus === "success" && <p className="text-green-400 text-xs text-center mt-2">✓ Archivo CSV descargado correctamente</p>}
               {csvStatus === "error" && <p className="text-red-400 text-xs text-center mt-2">⚠ No hay integrantes para exportar a CSV</p>}

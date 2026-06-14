@@ -48,7 +48,7 @@ export default function RegistroPage() {
     setTeam(prev => prev.filter(m => m.id !== id));
   };
 
-    const handleSubmit = async (e: FormEvent) => {
+      const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.nombre || !form.celular || !form.municipal) {
       setErrorMsg("Completa Nombre, Celular y Municipio."); return;
@@ -63,7 +63,22 @@ export default function RegistroPage() {
       const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
       
-      // Inserción ATÓMICA: Todo en una sola tabla con JSONB
+      // Payload EXACTO a la estructura de la tabla
+      const payload = {
+        fecha_registro: form.fecha,
+        responsabilidad_seccion: form.seccion || null,
+        responsabilidad_federal: form.federal || null,
+        responsabilidad_local: form.local || null,
+        responsabilidad_municipal: form.municipal,
+        responsabilidad_seccional: form.seccional || null,
+        nombre_responsable: form.nombre,
+        celular_responsable: cleanPhone,
+        codigo_acceso: codigoAcceso,
+        email_responsable: form.email || null,
+        redes_sociales: { facebook: form.facebook, tiktok: form.tiktok, twitter: form.twitter },
+        alineacion_equipo: team.filter((m: any) => m.nombre || m.celular) // Envía solo válidos
+      };
+
       const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial`, {
         method: "POST",
         headers: {
@@ -72,30 +87,16 @@ export default function RegistroPage() {
           "Content-Type": "application/json",
           "Prefer": "return=minimal"
         },
-        body: JSON.stringify({
-          fecha_registro: form.fecha,
-          responsabilidad_seccion: form.seccion,
-          responsabilidad_federal: form.federal,
-          responsabilidad_local: form.local,
-          responsabilidad_municipal: form.municipal,
-          responsabilidad_seccional: form.seccional,
-          nombre_responsable: form.nombre,
-          celular_responsable: cleanPhone,
-          codigo_acceso: codigoAcceso,
-          // Guardamos alineación + datos sensibles directamente en JSONB
-          alineacion_equipo: team,
-          email_responsable: form.email,
-          redes_sociales: { facebook: form.facebook, tiktok: form.tiktok, twitter: form.twitter }
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Error al guardar en la base de datos.");
+        throw new Error(err.message || `Error ${res.status}: Verifica campos o permisos RLS.`);
       }
 
       setStatus("success");
-      setTimeout(() => router.push(`/mi-estructura/${codigoAcceso}`), 1200);
+      setTimeout(() => router.push(`/mi-estructura/${codigoAcceso}`), 1000);
     } catch (err: any) {
       setStatus("error");
       setErrorMsg(err.message || "Error de conexión. Verifica tu red o intenta en 30 seg.");
