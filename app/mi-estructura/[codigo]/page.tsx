@@ -1,47 +1,51 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Users, Phone, MapPin, Facebook, Instagram, Link2, Copy, AlertCircle, CheckCircle2, Download } from "lucide-react";
 
 export default function MiEstructuraPage() {
-  const params = useParams();
-  const codigo = typeof params.codigo === "string" ? params.codigo : String(params.codigo);
+  const { codigo } = useParams();
   const router = useRouter();
-  
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [csvStatus, setCsvStatus] = useState<"idle" | "success" | "error">("idle");
+  const [teamList, setTeamList] = useState<any[]>([]);
 
   // ═══════════════════════════════════════════════════════
-  // 1. FETCH BLINDADO (Anti-caché Vercel + Cleanup)
+  // 1. FETCH BLINDADO (Anti-Caché Vercel + Cleanup)
   // ═══════════════════════════════════════════════════════
   useEffect(() => {
     if (!codigo) return;
     let mounted = true;
 
     const fetchData = async () => {
+      setLoading(true);
       try {
         const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error("Variables de entorno de Supabase faltantes");
 
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(codigo)}&select=*`, {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(String(codigo))}&select=*`, {
           headers: {
-            "apikey": SUPABASE_KEY!,
+            "apikey": SUPABASE_KEY,
             "Authorization": `Bearer ${SUPABASE_KEY}`,
             "Content-Type": "application/json"
           },
           cache: "no-store" // CRÍTICO: Evita que Vercel sirva datos vacíos en caché
         });
 
-        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
-        const result = await res.json();
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          throw new Error(errText || `Error HTTP ${res.status}`);
+        }
 
+        const result = await res.json();
         if (!mounted) return;
         if (!Array.isArray(result) || result.length === 0) {
-          throw new Error("Código inválido o estructura no encontrada.");
+          throw new Error("Código inválido o registro no encontrado.");
         }
         setData(result[0]);
       } catch (err: any) {
@@ -56,46 +60,67 @@ export default function MiEstructuraPage() {
   }, [codigo]);
 
   // ═══════════════════════════════════════════════════════
-  // 2. PARSER ROBUSTO JSONB (Sincronizado + Anti-Crash)
+  // 2. PARSER ROBUSTO (Sincronizado con el JSON exacto)
   // ═══════════════════════════════════════════════════════
-  const teamList = useMemo(() => {
-    if (!data?.alineacion_equipo) return [];
+  useEffect(() => {
+    if (!data?.alineacion_equipo) {
+      setTeamList([]);
+      return;
+    }
+
     let raw = data.alineacion_equipo;
+    let parsed: any[] = [];
 
-    // Supabase REST devuelve JSONB a veces como string escapado
-    if (typeof raw === "string") {
-      try { raw = JSON.parse(raw); } catch { return []; }
+    try {
+      // Supabase REST devuelve JSONB a veces como string escapado
+      if (typeof raw === "string") {
+        try { raw = JSON.parse(raw); } catch { /* ya es objeto */ }
+      }
+
+      // Manejo de contenedores inesperados (.value, .array)
+      if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+        if (Array.isArray(raw.value)) raw = raw.value;
+        else if (Array.isArray(raw.array)) raw = raw.array;
+        else if (Array.isArray(raw.data)) raw = raw.data;
+      }
+
+      if (!Array.isArray(raw)) {
+        console.warn("⚠️ alineacion_equipo no es un array válido:", raw);
+        setTeamList([]);
+        return;
+      }
+
+      // Limpieza segura y filtro de vacíos
+      parsed = raw
+        .map((item: any) => ({
+          id: item.id || Math.random().toString(36).substr(2, 9),
+          nombre: String(item.nombre || "").trim(),
+          celular: String(item.celular || "").trim(),
+          facebook: String(item.facebook || "").trim(),
+          tiktok: String(item.tiktok || "").trim(),
+          twitter: String(item.twitter || "").trim(),
+        }))
+        .filter((m: any) => m.nombre || m.celular || m.facebook || m.tiktok || m.twitter);
+
+      console.log("✅ EQUIPO PARSEADO Y LIMPIO:", parsed);
+      setTeamList(parsed);
+    } catch (e) {
+      console.error("❌ Error parseando alineacion_equipo:", e);
+      setTeamList([]);
     }
-
-    // Manejo de contenedores inesperados (.value, .array)
-    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
-      if (Array.isArray(raw.value)) raw = raw.value;
-      else if (Array.isArray(raw.array)) raw = raw.array;
-      else return [];
-    }
-
-    if (!Array.isArray(raw)) return [];
-
-    // Filtra solo objetos con al menos un campo con datos reales
-    const filtered = raw.filter((m: any) => {
-      return m.nombre?.trim() || m.celular?.trim() || m.facebook?.trim() || m.tiktok?.trim() || m.twitter?.trim();
-    });
-
-    console.log("✅ EQUIPO PARSEADO:", filtered);
-    return filtered;
   }, [data]);
 
   // ═══════════════════════════════════════════════════════
   // 3. ACCIONES (COPY & CSV REPARADO)
   // ═══════════════════════════════════════════════════════
-  const handleCopyLink = () => {
+  const handleCopyLink = useCallback(() => {
     const link = `${window.location.origin}/mi-estructura/${codigo}`;
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
+  }, [codigo]);
 
-  const handleDownloadCSV = () => {
+  const handleDownloadCSV = useCallback(() => {
     try {
       if (teamList.length === 0) {
         setCsvStatus("error");
@@ -106,7 +131,7 @@ export default function MiEstructuraPage() {
       const headers = ["Nombre", "Celular", "Facebook", "TikTok", "Twitter"];
       const rows = teamList.map((m: any) =>
         [m.nombre || "", m.celular || "", m.facebook || "", m.tiktok || "", m.twitter || ""]
-          .map((val: string) => `"${String(val).replace(/"/g, '""')}"`) // REGEX REPARADO
+          .map((val: string) => `"${String(val).replace(/"/g, '""')}"`) // REGEX CORREGIDA
           .join(",")
       );
 
@@ -115,7 +140,7 @@ export default function MiEstructuraPage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Estructura_${data.responsabilidad_municipal || "Guerrero"}.csv`;
+      link.download = `Estructura_${data?.responsabilidad_municipal || "Guerrero"}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -127,7 +152,7 @@ export default function MiEstructuraPage() {
       setCsvStatus("error");
       setTimeout(() => setCsvStatus("idle"), 3000);
     }
-  };
+  }, [teamList, data]);
 
   // ═══════════════════════════════════════════════════════
   // 4. RENDERIZADO
@@ -160,11 +185,11 @@ export default function MiEstructuraPage() {
               <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-white">{data.nombre_responsable}</h2>
+                    <h2 className="text-xl font-bold text-white">{data?.nombre_responsable || "Responsable"}</h2>
                     <div className="flex flex-wrap gap-3 mt-2 text-sm">
-                      <span className="flex items-center gap-1 text-white/60"><MapPin className="w-3.5 h-3.5" /> {data.responsabilidad_municipal}</span>
-                      <span className="flex items-center gap-1 text-white/60"><Phone className="w-3.5 h-3.5" /> {data.celular_responsable}</span>
-                      <span className="flex items-center gap-1 text-white/60"><span className="w-3.5 h-3.5 border border-white/40 rounded-sm" /> Sección: {data.responsabilidad_seccion || "N/A"}</span>
+                      <span className="flex items-center gap-1 text-white/60"><MapPin className="w-3.5 h-3.5" /> {data?.responsabilidad_municipal || "-"}</span>
+                      <span className="flex items-center gap-1 text-white/60"><Phone className="w-3.5 h-3.5" /> {data?.celular_responsable || "-"}</span>
+                      <span className="flex items-center gap-1 text-white/60"><span className="w-3.5 h-3.5 border border-white/40 rounded-sm" /> Sección: {data?.responsabilidad_seccion || "N/A"}</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -179,9 +204,9 @@ export default function MiEstructuraPage() {
                 </div>
                 <div className="h-px bg-white/10 my-4" />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-white/40">
-                  <div>Federal: <span className="text-white/70">{data.responsabilidad_federal || "-"}</span></div>
-                  <div>Local: <span className="text-white/70">{data.responsabilidad_local || "-"}</span></div>
-                  <div>Seccional: <span className="text-white/70">{data.responsabilidad_seccional || "-"}</span></div>
+                  <div>Federal: <span className="text-white/70">{data?.responsabilidad_federal || "-"}</span></div>
+                  <div>Local: <span className="text-white/70">{data?.responsabilidad_local || "-"}</span></div>
+                  <div>Seccional: <span className="text-white/70">{data?.responsabilidad_seccional || "-"}</span></div>
                   <div>Código: <span className="text-[#D4A843] font-mono">{codigo}</span></div>
                 </div>
               </div>
@@ -192,8 +217,8 @@ export default function MiEstructuraPage() {
                     <Users className="w-4 h-4" /> <span className="text-xs font-bold tracking-wider uppercase">Alineación Registrada ({teamList.length})</span>
                   </div>
                   <div className="space-y-3">
-                    {teamList.map((member: any, idx: number) => (
-                      <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    {teamList.map((member, idx) => (
+                      <motion.div key={member.id || idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <span className="w-8 h-8 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 flex items-center justify-center text-xs font-bold text-[#D4A843]">{idx + 1}</span>
                           <div>
@@ -202,9 +227,9 @@ export default function MiEstructuraPage() {
                           </div>
                         </div>
                         <div className="flex gap-3 text-white/30">
-                          {member.facebook && <a href={`https://facebook.com/${member.facebook}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Facebook className="w-4 h-4" /></a>}
-                          {member.tiktok && <a href={`https://tiktok.com/@${member.tiktok}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Instagram className="w-4 h-4" /></a>}
-                          {member.twitter && <a href={`https://twitter.com/${member.twitter}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Link2 className="w-4 h-4" /></a>}
+                          {member.facebook && <a href={member.facebook.startsWith("http") ? member.facebook : `https://facebook.com/${member.facebook}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Facebook className="w-4 h-4" /></a>}
+                          {member.tiktok && <a href={member.tiktok.startsWith("http") ? member.tiktok : `https://tiktok.com/@${member.tiktok}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Instagram className="w-4 h-4" /></a>}
+                          {member.twitter && <a href={member.twitter.startsWith("http") ? member.twitter : `https://twitter.com/${member.twitter}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Link2 className="w-4 h-4" /></a>}
                         </div>
                       </motion.div>
                     ))}
