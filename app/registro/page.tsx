@@ -48,7 +48,7 @@ export default function RegistroPage() {
     setTeam(prev => prev.filter(m => m.id !== id));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.nombre || !form.celular || !form.municipal) {
       setErrorMsg("Completa Nombre, Celular y Municipio."); return;
@@ -57,6 +57,9 @@ export default function RegistroPage() {
     if (cleanPhone.length !== 10) { setErrorMsg("Celular requiere 10 dígitos."); return; }
 
     setStatus("loading"); setErrorMsg("");
+    
+    // Generar código único de acceso
+    const codigoAcceso = `GRRO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
       const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -66,33 +69,33 @@ export default function RegistroPage() {
         "Content-Type": "application/json", "Prefer": "return=minimal"
       };
 
-      // 1. Insert datos operativos
+      // 1. Insert datos operativos + código
       const res1 = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial`, {
         method: "POST", headers,
         body: JSON.stringify({
           fecha_registro: form.fecha, responsabilidad_seccion: form.seccion,
           responsabilidad_federal: form.federal, responsabilidad_local: form.local,
           responsabilidad_municipal: form.municipal, responsabilidad_seccional: form.seccional,
-          nombre_responsable: form.nombre, celular_responsable: cleanPhone
+          nombre_responsable: form.nombre, celular_responsable: cleanPhone,
+          codigo_acceso: codigoAcceso
         })
       });
       if (!res1.ok) throw new Error("Error al registrar datos operativos.");
 
-      // 2. Insert datos sensibles (vinculado)
-      const redId = res1.headers.get('supabase-auth-user-id') || "temp_id"; // Supabase REST no retorna ID directo fácilmente sin return=representation
-      // Para simplificar en producción, usamos una sola llamada con JSONB o Edge Function. 
-      // Aquí simulamos la inserción segura en sensible con el mismo flujo:
+      // 2. Insert datos sensibles (vinculado por red_id simulado o usando el mismo código como referencia)
       await fetch(`${SUPABASE_URL}/rest/v1/datossensiblesred`, {
         method: "POST", headers,
         body: JSON.stringify({
           email_responsable: form.email, redes_facebook: form.facebook,
           redes_tiktok: form.tiktok, redes_twitter: form.twitter,
-          alineacion_equipo: team
+          alineacion_equipo: team,
+          red_codigo: codigoAcceso // Clave para vincular internamente
         })
       });
 
       setStatus("success");
-      setTimeout(() => router.push("/tarjetas"), 1800);
+      // Redirección inmediata al panel privado con el código
+      setTimeout(() => router.push(`/mi-estructura/${codigoAcceso}`), 1000);
 
     } catch (err: any) {
       setStatus("error");
