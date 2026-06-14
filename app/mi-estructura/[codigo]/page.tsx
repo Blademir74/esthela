@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Users, Phone, MapPin, Facebook, Instagram, Link2, Copy, AlertCircle, CheckCircle2, Download } from "lucide-react";
@@ -14,9 +14,10 @@ export default function MiEstructuraPage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [csvStatus, setCsvStatus] = useState<"idle" | "success" | "error">("idle");
+  const [teamList, setTeamList] = useState<any[]>([]);
 
   // ═══════════════════════════════════════════════════════
-  // 1. FETCH BLINDADO (Anti-Caché + Limpieza de Estado)
+  // 1. FETCH CON ANTI-CACHÉ (Crítico para Vercel)
   // ═══════════════════════════════════════════════════════
   useEffect(() => {
     if (!codigo) return;
@@ -35,7 +36,7 @@ export default function MiEstructuraPage() {
             "Authorization": `Bearer ${SUPABASE_KEY}`,
             "Content-Type": "application/json"
           },
-          cache: "no-store" // CLAVE: Evita que Vercel sirva datos vacíos en caché
+          cache: "no-store" // ← CLAVE: Obliga a pedir datos frescos a Supabase
         });
 
         if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
@@ -56,49 +57,62 @@ export default function MiEstructuraPage() {
   }, [codigo]);
 
   // ═══════════════════════════════════════════════════════
-  // 2. PARSER 100% RESILIENTE (Soluciona Array(0))
+  // 2. PARSER DEFinitivo (Maneja todos los formatos JSONB)
   // ═══════════════════════════════════════════════════════
-  const teamList = useMemo(() => {
-    if (!data?.alineacion_equipo) return [];
-    let raw = data.alineacion_equipo;
-
-    // 1. Si viene como string (Supabase REST a veces lo escapa)
-    if (typeof raw === "string") {
-      try { raw = JSON.parse(raw); } catch { return []; }
+  useEffect(() => {
+    if (!data?.alineacion_equipo) {
+      setTeamList([]);
+      return;
     }
 
-    // 2. Normalización a array (maneja wrappers inesperados)
+    let raw = data.alineacion_equipo;
+    console.log("📦 RAW TYPE:", typeof raw);
+    console.log("📦 RAW VALUE:", raw);
+
+    // 1. Si viene como string (escapado por PostgREST)
+    if (typeof raw === "string") {
+      try { raw = JSON.parse(raw); } catch (e) {
+        console.error("❌ JSON.parse falló:", e);
+        setTeamList([]);
+        return;
+      }
+    }
+
+    // 2. Normalización a array real
     let arr: any[] = [];
     if (Array.isArray(raw)) {
       arr = raw;
     } else if (raw && typeof raw === "object") {
-      if (Array.isArray(raw.data)) arr = raw.data;
-      else if (Array.isArray(raw.value)) arr = raw.value;
+      if (Array.isArray(raw.value)) arr = raw.value;
       else if (Array.isArray(raw.array)) arr = raw.array;
-      else if (Array.isArray(raw.items)) arr = raw.items;
-      else if (raw.nombre || raw.celular) arr = [raw]; // Fallback: objeto único
+      else if (raw.data && Array.isArray(raw.data)) arr = raw.data;
+      // Fallback para objetos array-like: { "0": {...}, "1": {...} }
+      else arr = Object.values(raw).filter((item: any) => item && typeof item === "object" && !Array.isArray(item));
     }
 
-    if (!Array.isArray(arr)) return [];
+    if (!Array.isArray(arr)) {
+      console.warn("⚠️ No se pudo convertir a array válido");
+      setTeamList([]);
+      return;
+    }
 
-    // 3. Filtro robusto (evita fallos con undefined/null)
-    const filtered = arr.filter((item: any) => {
-      if (!item || typeof item !== "object") return false;
-      const nombre = String(item.nombre || "").trim();
-      const celular = String(item.celular || "").trim();
-      const fb = String(item.facebook || "").trim();
-      const tt = String(item.tiktok || "").trim();
-      const tw = String(item.twitter || "").trim();
-      return nombre || celular || fb || tt || tw;
+    // 3. Filtro robusto (evita crashes con undefined/null)
+    const filtered = arr.filter((m: any) => {
+      if (!m || typeof m !== "object") return false;
+      const n = (m.nombre || "").toString().trim();
+      const c = (m.celular || "").toString().trim();
+      const f = (m.facebook || "").toString().trim();
+      const t = (m.tiktok || "").toString().trim();
+      const w = (m.twitter || "").toString().trim();
+      return n || c || f || t || w;
     });
 
-    console.log("🔍 RAW PROCESADO:", arr);
     console.log("✅ EQUIPO PARSEADO Y LIMPIO:", filtered);
-    return filtered;
+    setTeamList(filtered);
   }, [data]);
 
   // ═══════════════════════════════════════════════════════
-  // 3. ACCIONES (Copy & CSV Reparado)
+  // 3. ACCIONES
   // ═══════════════════════════════════════════════════════
   const handleCopyLink = () => {
     const link = `${window.location.origin}/mi-estructura/${codigo}`;
@@ -117,7 +131,7 @@ export default function MiEstructuraPage() {
       const headers = ["Nombre", "Celular", "Facebook", "TikTok", "Twitter"];
       const rows = teamList.map((m: any) =>
         [m.nombre || "", m.celular || "", m.facebook || "", m.tiktok || "", m.twitter || ""]
-          .map((val: string) => `"${String(val).replace(/"/g, '""')}"`) // REGEX REPARADA
+          .map((val: string) => `"${String(val).replace(/"/g, '""')}"`)
           .join(",")
       );
       const csvContent = [headers.join(","), ...rows].join("\n");
@@ -201,7 +215,7 @@ export default function MiEstructuraPage() {
                     <Users className="w-4 h-4" /> <span className="text-xs font-bold tracking-wider uppercase">Alineación Registrada ({teamList.length})</span>
                   </div>
                   <div className="space-y-3">
-                    {teamList.map((member, idx) => (
+                    {teamList.map((member: any, idx: number) => (
                       <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <span className="w-8 h-8 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 flex items-center justify-center text-xs font-bold text-[#D4A843]">{idx + 1}</span>
