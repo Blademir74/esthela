@@ -11,6 +11,7 @@ export default function MiEstructuraPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [csvStatus, setCsvStatus] = useState<"idle" | "success" | "error">("idle");
 
   useEffect(() => {
     if (!codigo) return;
@@ -19,8 +20,7 @@ export default function MiEstructuraPage() {
         const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
         
-        // Consulta con JOIN seguro
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${codigo}&select=*,datos_sensibles_red(*)`, {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${codigo}&select=*`, {
           headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
         });
         if (!res.ok) throw new Error("Código inválido o no encontrado.");
@@ -44,29 +44,65 @@ export default function MiEstructuraPage() {
   };
 
   const handleDownloadCSV = () => {
-    if (!data?.datos_sensibles_red?.[0]?.alineacion_equipo) return;
-    const headers = ["Nombre", "Celular", "Facebook", "TikTok", "Twitter"];
-    const rows = data.datos_sensibles_red[0].alineacion_equipo.map((m: any) => 
-      [m.nombre, m.celular, m.facebook, m.tiktok, m.twitter].join(",")
-    );
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
-    const link = document.createElement("a");
-    link.href = encodeURI(csvContent);
-    link.download = `Estructura_${data.responsabilidad_municipal}.csv`;
-    link.click();
+    try {
+      // Parseo seguro de JSONB (Supabase a veces devuelve string, a veces array)
+      let equipo = data?.alineacion_equipo || [];
+      if (typeof equipo === "string") {
+        try { equipo = JSON.parse(equipo); } catch { equipo = []; }
+      }
+      if (!Array.isArray(equipo) || equipo.length === 0) {
+        setCsvStatus("error");
+        setTimeout(() => setCsvStatus("idle"), 3000);
+        return;
+      }
+
+      const headers = ["Nombre", "Celular", "Facebook", "TikTok", "Twitter"];
+      const rows = equipo.map((m: any) => 
+        [m.nombre || "", m.celular || "", m.facebook || "", m.tiktok || "", m.twitter || ""]
+          .map((val: string) => `"${val.replace(/"/g, '""')}"`)
+          .join(",")
+      );
+
+      const csvContent = [headers.join(","), ...rows].join("\n");
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" }); // \uFEFF para Excel/UTF8
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Estructura_${data.responsabilidad_municipal || "Guerrero"}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      setCsvStatus("success");
+      setTimeout(() => setCsvStatus("idle"), 3000);
+    } catch {
+      setCsvStatus("error");
+      setTimeout(() => setCsvStatus("idle"), 3000);
+    }
   };
+
+  // Parseo seguro para renderizado
+  const renderTeam = () => {
+    let equipo = data?.alineacion_equipo || [];
+    if (typeof equipo === "string") {
+      try { equipo = JSON.parse(equipo); } catch { equipo = []; }
+    }
+    return Array.isArray(equipo) ? equipo : [];
+  };
+
+  const teamList = renderTeam();
 
   return (
     <main className="min-h-screen bg-[#14050B] text-white px-4 py-10 md:py-14">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
         
-        {/* Header Seguro */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 text-[#D4A843] text-xs font-bold tracking-widest uppercase mb-3">
             <Shield className="w-3.5 h-3.5" /> Acceso Territorial Restringido
           </div>
           <h1 className="text-2xl md:text-4xl font-black text-white mb-2">Tu Estructura en Cancha</h1>
-          <p className="text-white/50 text-sm max-w-lg mx-auto">Comparte este enlace con tus colaboradores. Los datos sensibles están encriptados y solo visibles para coordinación central.</p>
+          <p className="text-white/50 text-sm max-w-lg mx-auto">Comparte este enlace con tus colaboradores. Los datos sensibles están protegidos por código único.</p>
         </div>
 
         <AnimatePresence mode="wait">
@@ -84,7 +120,6 @@ export default function MiEstructuraPage() {
           ) : (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
               
-              {/* Tarjeta del Responsable */}
               <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                   <div>
@@ -114,21 +149,14 @@ export default function MiEstructuraPage() {
                 </div>
               </div>
 
-              {/* Alineación de Equipo */}
-              {data.datos_sensibles_red?.[0]?.alineacion_equipo && data.datos_sensibles_red[0].alineacion_equipo.length > 0 ? (
+              {teamList.length > 0 ? (
                 <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
                   <div className="flex items-center gap-2 text-[#D4A843] mb-4">
-                    <Users className="w-4 h-4" /> <span className="text-xs font-bold tracking-wider uppercase">Alineación Registrada</span>
+                    <Users className="w-4 h-4" /> <span className="text-xs font-bold tracking-wider uppercase">Alineación Registrada ({teamList.length})</span>
                   </div>
                   <div className="space-y-3">
-                    {data.datos_sensibles_red[0].alineacion_equipo.map((member: any, idx: number) => (
-                      <motion.div 
-                        key={idx} 
-                        initial={{ opacity: 0, x: -10 }} 
-                        animate={{ opacity: 1, x: 0 }} 
-                        transition={{ delay: idx * 0.05 }}
-                        className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3"
-                      >
+                    {teamList.map((member: any, idx: number) => (
+                      <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <span className="w-8 h-8 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 flex items-center justify-center text-xs font-bold text-[#D4A843]">{idx + 1}</span>
                           <div>
@@ -152,10 +180,11 @@ export default function MiEstructuraPage() {
                 </div>
               )}
 
+              {csvStatus === "success" && <p className="text-green-400 text-xs text-center mt-2">✓ Archivo CSV descargado correctamente</p>}
+              {csvStatus === "error" && <p className="text-red-400 text-xs text-center mt-2">⚠ No hay integrantes para exportar a CSV</p>}
+
               <div className="text-center pt-4">
-                <a href="/" className="text-white/30 text-xs hover:text-white/60 transition-colors inline-flex items-center gap-1">
-                  ← Volver a la plataforma pública
-                </a>
+                <a href="/" className="text-white/30 text-xs hover:text-white/60 transition-colors inline-flex items-center gap-1">← Volver a la plataforma pública</a>
               </div>
             </motion.div>
           )}

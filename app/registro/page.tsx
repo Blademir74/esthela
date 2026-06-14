@@ -57,46 +57,45 @@ export default function RegistroPage() {
     if (cleanPhone.length !== 10) { setErrorMsg("Celular requiere 10 dígitos."); return; }
 
     setStatus("loading"); setErrorMsg("");
-    
-    // Generar código único de acceso
     const codigoAcceso = `GRRO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
       const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-      const headers = {
-        "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json", "Prefer": "return=minimal"
-      };
-
-      // 1. Insert datos operativos + código
-      const res1 = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial`, {
-        method: "POST", headers,
+      
+      // Inserción ATÓMICA: Todo en una sola tabla con JSONB
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
         body: JSON.stringify({
-          fecha_registro: form.fecha, responsabilidad_seccion: form.seccion,
-          responsabilidad_federal: form.federal, responsabilidad_local: form.local,
-          responsabilidad_municipal: form.municipal, responsabilidad_seccional: form.seccional,
-          nombre_responsable: form.nombre, celular_responsable: cleanPhone,
-          codigo_acceso: codigoAcceso
-        })
-      });
-      if (!res1.ok) throw new Error("Error al registrar datos operativos.");
-
-      // 2. Insert datos sensibles (vinculado por red_id simulado o usando el mismo código como referencia)
-      await fetch(`${SUPABASE_URL}/rest/v1/datossensiblesred`, {
-        method: "POST", headers,
-        body: JSON.stringify({
-          email_responsable: form.email, redes_facebook: form.facebook,
-          redes_tiktok: form.tiktok, redes_twitter: form.twitter,
+          fecha_registro: form.fecha,
+          responsabilidad_seccion: form.seccion,
+          responsabilidad_federal: form.federal,
+          responsabilidad_local: form.local,
+          responsabilidad_municipal: form.municipal,
+          responsabilidad_seccional: form.seccional,
+          nombre_responsable: form.nombre,
+          celular_responsable: cleanPhone,
+          codigo_acceso: codigoAcceso,
+          // Guardamos alineación + datos sensibles directamente en JSONB
           alineacion_equipo: team,
-          red_codigo: codigoAcceso // Clave para vincular internamente
+          email_responsable: form.email,
+          redes_sociales: { facebook: form.facebook, tiktok: form.tiktok, twitter: form.twitter }
         })
       });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Error al guardar en la base de datos.");
+      }
 
       setStatus("success");
-      // Redirección inmediata al panel privado con el código
-      setTimeout(() => router.push(`/mi-estructura/${codigoAcceso}`), 1000);
-
+      setTimeout(() => router.push(`/mi-estructura/${codigoAcceso}`), 1200);
     } catch (err: any) {
       setStatus("error");
       setErrorMsg(err.message || "Error de conexión. Verifica tu red o intenta en 30 seg.");
