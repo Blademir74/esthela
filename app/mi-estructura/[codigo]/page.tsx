@@ -1,21 +1,22 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Users, Phone, MapPin, Facebook, Instagram, Link2, Copy, AlertCircle, CheckCircle2, Download } from "lucide-react";
 
 export default function MiEstructuraPage() {
-  const { codigo } = useParams();
+  const params = useParams();
+  const codigo = typeof params.codigo === "string" ? params.codigo : String(params.codigo || "");
   const router = useRouter();
+  
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [csvStatus, setCsvStatus] = useState<"idle" | "success" | "error">("idle");
-  const [teamList, setTeamList] = useState<any[]>([]);
 
   // ═══════════════════════════════════════════════════════
-  // 1. FETCH BLINDADO (Anti-Caché Vercel + Cleanup)
+  // 1. FETCH BLINDADO (Anti-Caché + Limpieza de Estado)
   // ═══════════════════════════════════════════════════════
   useEffect(() => {
     if (!codigo) return;
@@ -26,27 +27,22 @@ export default function MiEstructuraPage() {
       try {
         const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error("Variables de entorno de Supabase faltantes");
+        if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error("Config de Supabase faltante");
 
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(String(codigo))}&select=*`, {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(codigo)}&select=*`, {
           headers: {
             "apikey": SUPABASE_KEY,
             "Authorization": `Bearer ${SUPABASE_KEY}`,
             "Content-Type": "application/json"
           },
-          cache: "no-store" // CRÍTICO: Evita que Vercel sirva datos vacíos en caché
+          cache: "no-store" // CLAVE: Evita que Vercel sirva datos vacíos en caché
         });
 
-        if (!res.ok) {
-          const errText = await res.text().catch(() => "");
-          throw new Error(errText || `Error HTTP ${res.status}`);
-        }
-
+        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
         const result = await res.json();
+
         if (!mounted) return;
-        if (!Array.isArray(result) || result.length === 0) {
-          throw new Error("Código inválido o registro no encontrado.");
-        }
+        if (!Array.isArray(result) || result.length === 0) throw new Error("Código inválido o registro no encontrado.");
         setData(result[0]);
       } catch (err: any) {
         if (mounted) setError(err.message || "Error al cargar la estructura.");
@@ -60,81 +56,70 @@ export default function MiEstructuraPage() {
   }, [codigo]);
 
   // ═══════════════════════════════════════════════════════
-  // 2. PARSER ROBUSTO (Sincronizado con el JSON exacto)
+  // 2. PARSER 100% RESILIENTE (Soluciona Array(0))
   // ═══════════════════════════════════════════════════════
-  useEffect(() => {
-    if (!data?.alineacion_equipo) {
-      setTeamList([]);
-      return;
-    }
-
+  const teamList = useMemo(() => {
+    if (!data?.alineacion_equipo) return [];
     let raw = data.alineacion_equipo;
-    let parsed: any[] = [];
 
-    try {
-      // Supabase REST devuelve JSONB a veces como string escapado
-      if (typeof raw === "string") {
-        try { raw = JSON.parse(raw); } catch { /* ya es objeto */ }
-      }
-
-      // Manejo de contenedores inesperados (.value, .array)
-      if (raw && typeof raw === "object" && !Array.isArray(raw)) {
-        if (Array.isArray(raw.value)) raw = raw.value;
-        else if (Array.isArray(raw.array)) raw = raw.array;
-        else if (Array.isArray(raw.data)) raw = raw.data;
-      }
-
-      if (!Array.isArray(raw)) {
-        console.warn("⚠️ alineacion_equipo no es un array válido:", raw);
-        setTeamList([]);
-        return;
-      }
-
-      // Limpieza segura y filtro de vacíos
-      parsed = raw
-        .map((item: any) => ({
-          id: item.id || Math.random().toString(36).substr(2, 9),
-          nombre: String(item.nombre || "").trim(),
-          celular: String(item.celular || "").trim(),
-          facebook: String(item.facebook || "").trim(),
-          tiktok: String(item.tiktok || "").trim(),
-          twitter: String(item.twitter || "").trim(),
-        }))
-        .filter((m: any) => m.nombre || m.celular || m.facebook || m.tiktok || m.twitter);
-
-      console.log("✅ EQUIPO PARSEADO Y LIMPIO:", parsed);
-      setTeamList(parsed);
-    } catch (e) {
-      console.error("❌ Error parseando alineacion_equipo:", e);
-      setTeamList([]);
+    // 1. Si viene como string (Supabase REST a veces lo escapa)
+    if (typeof raw === "string") {
+      try { raw = JSON.parse(raw); } catch { return []; }
     }
+
+    // 2. Normalización a array (maneja wrappers inesperados)
+    let arr: any[] = [];
+    if (Array.isArray(raw)) {
+      arr = raw;
+    } else if (raw && typeof raw === "object") {
+      if (Array.isArray(raw.data)) arr = raw.data;
+      else if (Array.isArray(raw.value)) arr = raw.value;
+      else if (Array.isArray(raw.array)) arr = raw.array;
+      else if (Array.isArray(raw.items)) arr = raw.items;
+      else if (raw.nombre || raw.celular) arr = [raw]; // Fallback: objeto único
+    }
+
+    if (!Array.isArray(arr)) return [];
+
+    // 3. Filtro robusto (evita fallos con undefined/null)
+    const filtered = arr.filter((item: any) => {
+      if (!item || typeof item !== "object") return false;
+      const nombre = String(item.nombre || "").trim();
+      const celular = String(item.celular || "").trim();
+      const fb = String(item.facebook || "").trim();
+      const tt = String(item.tiktok || "").trim();
+      const tw = String(item.twitter || "").trim();
+      return nombre || celular || fb || tt || tw;
+    });
+
+    console.log("🔍 RAW PROCESADO:", arr);
+    console.log("✅ EQUIPO PARSEADO Y LIMPIO:", filtered);
+    return filtered;
   }, [data]);
 
   // ═══════════════════════════════════════════════════════
-  // 3. ACCIONES (COPY & CSV REPARADO)
+  // 3. ACCIONES (Copy & CSV Reparado)
   // ═══════════════════════════════════════════════════════
-  const handleCopyLink = useCallback(() => {
+  const handleCopyLink = () => {
     const link = `${window.location.origin}/mi-estructura/${codigo}`;
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [codigo]);
+  };
 
-  const handleDownloadCSV = useCallback(() => {
+  const handleDownloadCSV = () => {
     try {
       if (teamList.length === 0) {
         setCsvStatus("error");
         setTimeout(() => setCsvStatus("idle"), 3000);
         return;
       }
-
       const headers = ["Nombre", "Celular", "Facebook", "TikTok", "Twitter"];
       const rows = teamList.map((m: any) =>
         [m.nombre || "", m.celular || "", m.facebook || "", m.tiktok || "", m.twitter || ""]
-          .map((val: string) => `"${String(val).replace(/"/g, '""')}"`) // REGEX CORREGIDA
+          .map((val: string) => `"${String(val).replace(/"/g, '""')}"`) // REGEX REPARADA
           .join(",")
       );
-
       const csvContent = [headers.join(","), ...rows].join("\n");
       const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -145,14 +130,13 @@ export default function MiEstructuraPage() {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-
       setCsvStatus("success");
       setTimeout(() => setCsvStatus("idle"), 3000);
     } catch {
       setCsvStatus("error");
       setTimeout(() => setCsvStatus("idle"), 3000);
     }
-  }, [teamList, data]);
+  };
 
   // ═══════════════════════════════════════════════════════
   // 4. RENDERIZADO
@@ -218,7 +202,7 @@ export default function MiEstructuraPage() {
                   </div>
                   <div className="space-y-3">
                     {teamList.map((member, idx) => (
-                      <motion.div key={member.id || idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <span className="w-8 h-8 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 flex items-center justify-center text-xs font-bold text-[#D4A843]">{idx + 1}</span>
                           <div>
