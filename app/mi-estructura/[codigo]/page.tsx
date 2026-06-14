@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Users, Phone, MapPin, Facebook, Instagram, Link2, Copy, AlertCircle, CheckCircle2, Download } from "lucide-react";
 
 export default function MiEstructuraPage() {
-  const { codigo } = useParams();
+  const params = useParams();
+  const codigo = typeof params.codigo === "string" ? params.codigo : String(params.codigo);
   const router = useRouter();
+  
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -14,67 +16,77 @@ export default function MiEstructuraPage() {
   const [csvStatus, setCsvStatus] = useState<"idle" | "success" | "error">("idle");
 
   // ═══════════════════════════════════════════════════════
-  // 1. FETCH DE DATOS
+  // 1. FETCH BLINDADO (Anti-caché Vercel + Cleanup)
   // ═══════════════════════════════════════════════════════
   useEffect(() => {
     if (!codigo) return;
+    let mounted = true;
+
     const fetchData = async () => {
       try {
         const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${codigo}&select=*`, {
-          headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(codigo)}&select=*`, {
+          headers: {
+            "apikey": SUPABASE_KEY!,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          },
+          cache: "no-store" // CRÍTICO: Evita que Vercel sirva datos vacíos en caché
         });
-        if (!res.ok) throw new Error("Código inválido o no encontrado.");
+
+        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
         const result = await res.json();
-        if (result.length === 0) throw new Error("No se encontró la estructura.");
+
+        if (!mounted) return;
+        if (!Array.isArray(result) || result.length === 0) {
+          throw new Error("Código inválido o estructura no encontrada.");
+        }
         setData(result[0]);
-      } catch (e: any) {
-        setError(e.message || "Error al cargar la estructura.");
+      } catch (err: any) {
+        if (mounted) setError(err.message || "Error al cargar la estructura.");
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
+
     fetchData();
+    return () => { mounted = false; };
   }, [codigo]);
 
-    // ═══════════════════════════════════════════════════════
-  // PARSE ROBUSTO JSONB (SOLUCIÓN DEFINITIVA)
+  // ═══════════════════════════════════════════════════════
+  // 2. PARSER ROBUSTO JSONB (Sincronizado + Anti-Crash)
   // ═══════════════════════════════════════════════════════
   const teamList = useMemo(() => {
-    if (!data) return [];
+    if (!data?.alineacion_equipo) return [];
     let raw = data.alineacion_equipo;
-    if (!raw) return [];
 
-    // 1. Supabase REST a veces devuelve JSONB como string escapado
+    // Supabase REST devuelve JSONB a veces como string escapado
     if (typeof raw === "string") {
       try { raw = JSON.parse(raw); } catch { return []; }
     }
 
-    // 2. Manejo de contenedores inesperados (.value, .array)
+    // Manejo de contenedores inesperados (.value, .array)
     if (raw && typeof raw === "object" && !Array.isArray(raw)) {
       if (Array.isArray(raw.value)) raw = raw.value;
       else if (Array.isArray(raw.array)) raw = raw.array;
       else return [];
     }
 
-    // 3. Validación estricta de array
     if (!Array.isArray(raw)) return [];
 
-    // 4. Filtra solo objetos con al menos un campo con datos reales
+    // Filtra solo objetos con al menos un campo con datos reales
     const filtered = raw.filter((m: any) => {
-      const hasData = m.nombre?.trim() || m.celular?.trim() || m.facebook?.trim() || m.tiktok?.trim() || m.twitter?.trim();
-      return !!hasData;
+      return m.nombre?.trim() || m.celular?.trim() || m.facebook?.trim() || m.tiktok?.trim() || m.twitter?.trim();
     });
 
-    console.log("🔍 RAW desde Supabase:", raw);
-    console.log("✅ EQUIPO PARSEADO Y FILTRADO:", filtered);
+    console.log("✅ EQUIPO PARSEADO:", filtered);
     return filtered;
   }, [data]);
 
   // ═══════════════════════════════════════════════════════
-  // 3. ACCIONES (COPY & CSV)
+  // 3. ACCIONES (COPY & CSV REPARADO)
   // ═══════════════════════════════════════════════════════
   const handleCopyLink = () => {
     const link = `${window.location.origin}/mi-estructura/${codigo}`;
@@ -90,12 +102,14 @@ export default function MiEstructuraPage() {
         setTimeout(() => setCsvStatus("idle"), 3000);
         return;
       }
+
       const headers = ["Nombre", "Celular", "Facebook", "TikTok", "Twitter"];
-      const rows = teamList.map((m: any) => 
+      const rows = teamList.map((m: any) =>
         [m.nombre || "", m.celular || "", m.facebook || "", m.tiktok || "", m.twitter || ""]
-          .map((val: string) => `"${val.replace(/"/g, '""')}"`)
+          .map((val: string) => `"${String(val).replace(/"/g, '""')}"`) // REGEX REPARADO
           .join(",")
       );
+
       const csvContent = [headers.join(","), ...rows].join("\n");
       const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -106,7 +120,7 @@ export default function MiEstructuraPage() {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      
+
       setCsvStatus("success");
       setTimeout(() => setCsvStatus("idle"), 3000);
     } catch {
@@ -121,7 +135,6 @@ export default function MiEstructuraPage() {
   return (
     <main className="min-h-screen bg-[#14050B] text-white px-4 py-10 md:py-14">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
-        
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 text-[#D4A843] text-xs font-bold tracking-widest uppercase mb-3">
             <Shield className="w-3.5 h-3.5" /> Acceso Territorial Restringido
@@ -144,7 +157,6 @@ export default function MiEstructuraPage() {
             </motion.div>
           ) : (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              
               <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                   <div>
@@ -175,36 +187,35 @@ export default function MiEstructuraPage() {
               </div>
 
               {teamList.length > 0 ? (
-  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
-    <div className="flex items-center gap-2 text-[#D4A843] mb-4">
-      <Users className="w-4 h-4" /> 
-      <span className="text-xs font-bold tracking-wider uppercase">Alineación Registrada ({teamList.length})</span>
-    </div>
-    <div className="space-y-3">
-      {teamList.map((member: any, idx: number) => (
-        <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="w-8 h-8 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 flex items-center justify-center text-xs font-bold text-[#D4A843]">{idx + 1}</span>
-            <div>
-              <p className="text-white font-medium">{member.nombre || "Sin nombre"}</p>
-              <p className="text-white/40 text-xs">{member.celular || "Sin celular"}</p>
-            </div>
-          </div>
-          <div className="flex gap-3 text-white/30">
-            {member.facebook && <a href={`https://facebook.com/${member.facebook}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Facebook className="w-4 h-4" /></a>}
-            {member.tiktok && <a href={`https://tiktok.com/@${member.tiktok}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Instagram className="w-4 h-4" /></a>}
-            {member.twitter && <a href={`https://twitter.com/${member.twitter}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Link2 className="w-4 h-4" /></a>}
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  </div>
-) : (
-  <div className="text-center py-10 text-white/40 text-sm bg-white/[0.02] rounded-2xl border border-dashed border-white/10">
-    <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
-    No hay integrantes registrados en la alineación.
-  </div>
-)}
+                <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
+                  <div className="flex items-center gap-2 text-[#D4A843] mb-4">
+                    <Users className="w-4 h-4" /> <span className="text-xs font-bold tracking-wider uppercase">Alineación Registrada ({teamList.length})</span>
+                  </div>
+                  <div className="space-y-3">
+                    {teamList.map((member: any, idx: number) => (
+                      <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <span className="w-8 h-8 rounded-full bg-[#6B1D3A]/30 border border-[#D4A843]/30 flex items-center justify-center text-xs font-bold text-[#D4A843]">{idx + 1}</span>
+                          <div>
+                            <p className="text-white font-medium">{member.nombre || "Sin nombre"}</p>
+                            <p className="text-white/40 text-xs">{member.celular || "Sin celular"}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 text-white/30">
+                          {member.facebook && <a href={`https://facebook.com/${member.facebook}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Facebook className="w-4 h-4" /></a>}
+                          {member.tiktok && <a href={`https://tiktok.com/@${member.tiktok}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Instagram className="w-4 h-4" /></a>}
+                          {member.twitter && <a href={`https://twitter.com/${member.twitter}`} target="_blank" rel="noreferrer" className="hover:text-[#D4A843]"><Link2 className="w-4 h-4" /></a>}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-10 text-white/40 text-sm bg-white/[0.02] rounded-2xl border border-dashed border-white/10">
+                  <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  No hay integrantes registrados en la alineación.
+                </div>
+              )}
 
               {csvStatus === "success" && <p className="text-green-400 text-xs text-center mt-2">✓ Archivo CSV descargado correctamente</p>}
               {csvStatus === "error" && <p className="text-red-400 text-xs text-center mt-2">⚠ No hay integrantes para exportar a CSV</p>}
