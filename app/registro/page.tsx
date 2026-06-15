@@ -1,5 +1,5 @@
 "use client";
-import { useState, FormEvent } from "react";
+import { Suspense, useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, CheckCircle2, AlertCircle, Loader2, Trophy, ChevronRight, MapPin, Users, Shield } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -13,10 +13,13 @@ interface TeamMember {
   twitter: string;
 }
 
-export default function RegistroPage() {
+// ═══════════════════════════════════════════════════════
+// COMPONENTE QUE LEE LA URL (Aislado para Suspense)
+// ═══════════════════════════════════════════════════════
+function RegistroContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const liderRef = searchParams.get("lider")?.trim(); // Detecta ?lider=GRRO-XXXX
+  const liderRef = searchParams.get("lider")?.trim();
 
   const [form, setForm] = useState({
     fecha: new Date().toISOString().split('T')[0],
@@ -35,8 +38,12 @@ export default function RegistroPage() {
   const updateTeam = (id: number, field: keyof TeamMember) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setTeam(prev => prev.map(m => m.id === id ? { ...m, [field]: e.target.value } : m));
 
-  const addTeamMember = () => setTeam(prev => [...prev, { id: Date.now(), nombre: "", celular: "", facebook: "", tiktok: "", twitter: "" }]);
-  const removeTeamMember = (id: number) => { if (team.length > 1) setTeam(prev => prev.filter(m => m.id !== id)); };
+  const addTeamMember = () =>
+    setTeam(prev => [...prev, { id: Date.now(), nombre: "", celular: "", facebook: "", tiktok: "", twitter: "" }]);
+
+  const removeTeamMember = (id: number) => {
+    if (team.length > 1) setTeam(prev => prev.filter(m => m.id !== id));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,33 +51,40 @@ export default function RegistroPage() {
     const cleanPhone = form.celular.replace(/\D/g, "");
     if (cleanPhone.length !== 10) { setErrorMsg("Celular requiere 10 dígitos."); return; }
 
-    setStatus("loading"); setErrorMsg("");
+    setStatus("loading");
+    setErrorMsg("");
 
     try {
-      const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-      const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-      const headers = { "apikey": KEY, "Authorization": `Bearer ${KEY}`, "Content-Type": "application/json" };
+      const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      const headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      };
 
       if (liderRef) {
         // 🔵 FLUJO INTEGRANTE: Actualiza alineacion_equipo del líder existente
-        const res = await fetch(`${URL}/rest/v1/red_territorial?codigo_acceso=eq.${liderRef}&select=alineacion_equipo`, { headers });
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(liderRef)}&select=alineacion_equipo`, { headers });
         if (!res.ok) throw new Error("Código de líder inválido o no encontrado.");
         const existing = await res.json();
         
-        let currentTeam = existing[0]?.alineacion_equipo || [];
+        let currentTeam: any[] = existing[0]?.alineacion_equipo || [];
         if (typeof currentTeam === "string") {
           try { currentTeam = JSON.parse(currentTeam); } catch { currentTeam = []; }
         }
 
         const updatedTeam = [
-          ...currentTeam, 
+          ...currentTeam,
           { id: Date.now(), nombre: form.nombre, celular: cleanPhone, facebook: form.facebook, tiktok: form.tiktok, twitter: form.twitter }
         ];
 
-        const patchRes = await fetch(`${URL}/rest/v1/red_territorial?codigo_acceso=eq.${liderRef}`, {
-          method: "PATCH", headers, body: JSON.stringify({ alineacion_equipo: updatedTeam })
+        const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(liderRef)}`, {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ alineacion_equipo: updatedTeam })
         });
-        if (!patchRes.ok) throw new Error("Error al unirte al equipo. Intenta de nuevo.");
+        if (!patchRes.ok) throw new Error("Error al unirte al equipo.");
         setStatus("success");
         setTimeout(() => router.push("/"), 1500);
 
@@ -82,7 +96,7 @@ export default function RegistroPage() {
           responsabilidad_seccion: form.seccion || null,
           responsabilidad_federal: form.federal || null,
           responsabilidad_local: form.local || null,
-          responsabilidad_municipal: form.municipal,
+          responsabilidad_municipal: form.municipal || null,
           responsabilidad_seccional: form.seccional || null,
           nombre_responsable: form.nombre,
           celular_responsable: cleanPhone,
@@ -92,8 +106,10 @@ export default function RegistroPage() {
           alineacion_equipo: team.filter(m => m.nombre?.trim() || m.celular?.trim())
         };
 
-        const res = await fetch(`${URL}/rest/v1/red_territorial`, {
-          method: "POST", headers, body: JSON.stringify(payload)
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial`, {
+          method: "POST",
+          headers: { ...headers, "Prefer": "return=minimal" },
+          body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error("Error al registrar líder.");
         setStatus("success");
@@ -101,7 +117,7 @@ export default function RegistroPage() {
       }
     } catch (err: any) {
       setStatus("error");
-      setErrorMsg(err.message || "Error de conexión. Verifica tu red.");
+      setErrorMsg(err.message || "Error de conexión.");
     }
   };
 
@@ -208,5 +224,20 @@ export default function RegistroPage() {
         </form>
       </motion.div>
     </main>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT CON SUSPENSE (Soluciona prerender-error)
+// ═══════════════════════════════════════════════════════
+export default function RegistroPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#14050B] flex items-center justify-center text-[#D4A843] font-bold">
+        Cargando formulario...
+      </div>
+    }>
+      <RegistroContent />
+    </Suspense>
   );
 }
