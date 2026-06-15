@@ -59,29 +59,32 @@ export default function RegistroPage() {
     setStatus("loading"); setErrorMsg("");
     const codigoAcceso = `GRRO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
+    // Filtramos filas vacías por defecto del formulario
+    const equipoValido = team.filter((m: any) => 
+      (m.nombre || "").trim() !== "" || (m.celular || "").trim() !== ""
+    );
+
+    const payload = {
+      fecha_registro: form.fecha,
+      responsabilidad_seccion: form.seccion || null,
+      responsabilidad_federal: form.federal || null,
+      responsabilidad_local: form.local || null,
+      responsabilidad_municipal: form.municipal,
+      responsabilidad_seccional: form.seccional || null,
+      nombre_responsable: form.nombre,
+      celular_responsable: cleanPhone,
+      codigo_acceso: codigoAcceso,
+      email_responsable: form.email || null,
+      redes_sociales: { facebook: form.facebook, tiktok: form.tiktok, twitter: form.twitter },
+      alineacion_equipo: equipoValido.length > 0 ? equipoValido : [] // ← Nunca null/undefined
+    };
+
+    console.log("🚀 PAYLOAD ENVÍO A SUPABASE:", JSON.stringify(payload, null, 2)); // DEBUG
+
     try {
       const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
       
-      // Filtramos solo miembros válidos antes de enviar
-      const equipoValido = team.filter((m: any) => m.nombre?.trim() || m.celular?.trim());
-      
-      // CRÍTICO: Supabase REST requiere JSONB enviado como string explícito
-      const payload = {
-        fecha_registro: form.fecha,
-        responsabilidad_seccion: form.seccion || null,
-        responsabilidad_federal: form.federal || null,
-        responsabilidad_local: form.local || null,
-        responsabilidad_municipal: form.municipal,
-        responsabilidad_seccional: form.seccional || null,
-        nombre_responsable: form.nombre,
-        celular_responsable: cleanPhone,
-        codigo_acceso: codigoAcceso,
-        email_responsable: form.email || null,
-        redes_sociales: { facebook: form.facebook, tiktok: form.tiktok, twitter: form.twitter },
-        alineacion_equipo: JSON.stringify(equipoValido) // ← FIX DEFINITIVO PARA REST
-      };
-
       const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial`, {
         method: "POST",
         headers: {
