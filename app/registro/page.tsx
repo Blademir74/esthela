@@ -13,9 +13,6 @@ interface TeamMember {
   twitter: string;
 }
 
-// ═══════════════════════════════════════════════════════
-// COMPONENTE QUE LEE LA URL (Aislado para Suspense)
-// ═══════════════════════════════════════════════════════
 function RegistroContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,41 +52,55 @@ function RegistroContent() {
     setErrorMsg("");
 
     try {
-      const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-      const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      const URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      // HEADERS EXACTOS (sin espacios)
       const headers = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "apikey": KEY,
+        "Authorization": `Bearer ${KEY}`,
         "Content-Type": "application/json"
       };
 
       if (liderRef) {
-        // 🔵 FLUJO INTEGRANTE: Actualiza alineacion_equipo del líder existente
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(liderRef)}&select=alineacion_equipo`, { headers });
-        if (!res.ok) throw new Error("Código de líder inválido o no encontrado.");
-        const existing = await res.json();
+        console.log("🔹 FLUJO INTEGRANTE → Líder:", liderRef);
+        
+        // 1. Leer array actual del líder
+        const fetchRes = await fetch(`${URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(liderRef)}&select=alineacion_equipo`, { headers });
+        if (!fetchRes.ok) throw new Error(`Error leyendo líder (${fetchRes.status})`);
+        const existing = await fetchRes.json();
         
         let currentTeam: any[] = existing[0]?.alineacion_equipo || [];
         if (typeof currentTeam === "string") {
           try { currentTeam = JSON.parse(currentTeam); } catch { currentTeam = []; }
         }
 
+        // 2. Agregar nuevo integrante
         const updatedTeam = [
           ...currentTeam,
-          { id: Date.now(), nombre: form.nombre, celular: cleanPhone, facebook: form.facebook, tiktok: form.tiktok, twitter: form.twitter }
+          { id: Date.now(), nombre: form.nombre.trim(), celular: cleanPhone, facebook: form.facebook, tiktok: form.tiktok, twitter: form.twitter }
         ];
 
-        const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(liderRef)}`, {
+        console.log("📤 PATCH PAYLOAD:", JSON.stringify(updatedTeam));
+
+        // 3. Actualizar JSONB en Supabase
+        const patchRes = await fetch(`${URL}/rest/v1/red_territorial?codigo_acceso=eq.${encodeURIComponent(liderRef)}`, {
           method: "PATCH",
-          headers,
+          headers: { ...headers, "Prefer": "return=minimal" },
           body: JSON.stringify({ alineacion_equipo: updatedTeam })
         });
-        if (!patchRes.ok) throw new Error("Error al unirte al equipo.");
+
+        if (!patchRes.ok) {
+          const errText = await patchRes.text().catch(() => "");
+          console.error("❌ PATCH FALLÓ:", patchRes.status, errText);
+          throw new Error("No se pudo añadir al equipo. Verifica el código del líder o RLS.");
+        }
+
+        console.log("✅ INTEGRANTE AÑADIDO CORRECTAMENTE");
         setStatus("success");
         setTimeout(() => router.push("/"), 1500);
 
       } else {
-        // 🟢 FLUJO LÍDER: Crea nuevo registro territorial
+        // 🟢 FLUJO LÍDER: Crea nuevo registro
         const codigoAcceso = `GRRO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
         const payload = {
           fecha_registro: form.fecha,
@@ -98,7 +109,7 @@ function RegistroContent() {
           responsabilidad_local: form.local || null,
           responsabilidad_municipal: form.municipal || null,
           responsabilidad_seccional: form.seccional || null,
-          nombre_responsable: form.nombre,
+          nombre_responsable: form.nombre.trim(),
           celular_responsable: cleanPhone,
           codigo_acceso: codigoAcceso,
           email_responsable: form.email || null,
@@ -106,18 +117,20 @@ function RegistroContent() {
           alineacion_equipo: team.filter(m => m.nombre?.trim() || m.celular?.trim())
         };
 
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial`, {
+        const res = await fetch(`${URL}/rest/v1/red_territorial`, {
           method: "POST",
           headers: { ...headers, "Prefer": "return=minimal" },
           body: JSON.stringify(payload)
         });
+
         if (!res.ok) throw new Error("Error al registrar líder.");
         setStatus("success");
         setTimeout(() => router.push(`/mi-estructura/${codigoAcceso}`), 1500);
       }
     } catch (err: any) {
+      console.error("❌ ERROR GENERAL:", err);
       setStatus("error");
-      setErrorMsg(err.message || "Error de conexión.");
+      setErrorMsg(err.message || "Error de conexión. Verifica tu red.");
     }
   };
 
@@ -227,9 +240,6 @@ function RegistroContent() {
   );
 }
 
-// ═══════════════════════════════════════════════════════
-// EXPORT CON SUSPENSE (Soluciona prerender-error)
-// ═══════════════════════════════════════════════════════
 export default function RegistroPage() {
   return (
     <Suspense fallback={
