@@ -48,7 +48,7 @@ export default function RegistroPage() {
     setTeam(prev => prev.filter(m => m.id !== id));
   };
 
-      const handleSubmit = async (e: FormEvent) => {
+        const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.nombre || !form.celular || !form.municipal) {
       setErrorMsg("Completa Nombre, Celular y Municipio."); return;
@@ -63,7 +63,10 @@ export default function RegistroPage() {
       const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
       
-      // Payload EXACTO a la estructura de la tabla
+      // Filtramos solo miembros válidos antes de enviar
+      const equipoValido = team.filter((m: any) => m.nombre?.trim() || m.celular?.trim());
+      
+      // CRÍTICO: Supabase REST requiere JSONB enviado como string explícito
       const payload = {
         fecha_registro: form.fecha,
         responsabilidad_seccion: form.seccion || null,
@@ -76,7 +79,7 @@ export default function RegistroPage() {
         codigo_acceso: codigoAcceso,
         email_responsable: form.email || null,
         redes_sociales: { facebook: form.facebook, tiktok: form.tiktok, twitter: form.twitter },
-        alineacion_equipo: team.filter((m: any) => m.nombre || m.celular) // Envía solo válidos
+        alineacion_equipo: JSON.stringify(equipoValido) // ← FIX DEFINITIVO PARA REST
       };
 
       const res = await fetch(`${SUPABASE_URL}/rest/v1/red_territorial`, {
@@ -92,11 +95,11 @@ export default function RegistroPage() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || `Error ${res.status}: Verifica campos o permisos RLS.`);
+        throw new Error(err.message || `Error ${res.status}: Revisa columnas o RLS.`);
       }
 
       setStatus("success");
-      setTimeout(() => router.push(`/mi-estructura/${codigoAcceso}`), 1000);
+      setTimeout(() => router.push(`/mi-estructura/${codigoAcceso}`), 1200);
     } catch (err: any) {
       setStatus("error");
       setErrorMsg(err.message || "Error de conexión. Verifica tu red o intenta en 30 seg.");

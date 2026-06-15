@@ -16,8 +16,8 @@ export default function MiEstructuraPage() {
   const [csvStatus, setCsvStatus] = useState<"idle" | "success" | "error">("idle");
   const [teamList, setTeamList] = useState<any[]>([]);
 
-  // ═══════════════════════════════════════════════════════
-  // 1. FETCH CON ANTI-CACHÉ (Crítico para Vercel)
+    // ═══════════════════════════════════════════════════════
+  // 1. FETCH CON INVALIDACIÓN DE CACHÉ
   // ═══════════════════════════════════════════════════════
   useEffect(() => {
     if (!codigo) return;
@@ -36,7 +36,7 @@ export default function MiEstructuraPage() {
             "Authorization": `Bearer ${SUPABASE_KEY}`,
             "Content-Type": "application/json"
           },
-          cache: "no-store" // ← CLAVE: Obliga a pedir datos frescos a Supabase
+          cache: "no-store" // Obliga a leer desde BD, no desde caché de Vercel
         });
 
         if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
@@ -57,55 +57,46 @@ export default function MiEstructuraPage() {
   }, [codigo]);
 
   // ═══════════════════════════════════════════════════════
-  // 2. PARSER DEFinitivo (Maneja todos los formatos JSONB)
+  // 2. PARSER AUTO-CORRECTIVO (Maneja String/Array/Objeto)
   // ═══════════════════════════════════════════════════════
   useEffect(() => {
-    if (!data?.alineacion_equipo) {
-      setTeamList([]);
-      return;
-    }
-
+    if (!data) return;
+    
     let raw = data.alineacion_equipo;
     console.log("📦 RAW TYPE:", typeof raw);
     console.log("📦 RAW VALUE:", raw);
 
-    // 1. Si viene como string (escapado por PostgREST)
+    // 1. Si viene como string (formato común de PostgREST para JSONB)
     if (typeof raw === "string") {
-      try { raw = JSON.parse(raw); } catch (e) {
-        console.error("❌ JSON.parse falló:", e);
-        setTeamList([]);
-        return;
-      }
+      try { raw = JSON.parse(raw); } catch { /* sigue como string */ }
     }
 
-    // 2. Normalización a array real
+    // 2. Normalización forzada a array
     let arr: any[] = [];
     if (Array.isArray(raw)) {
       arr = raw;
     } else if (raw && typeof raw === "object") {
+      // Supabase a veces devuelve { "0": {...}, "1": {...}, length: 2 }
       if (Array.isArray(raw.value)) arr = raw.value;
-      else if (Array.isArray(raw.array)) arr = raw.array;
-      else if (raw.data && Array.isArray(raw.data)) arr = raw.data;
-      // Fallback para objetos array-like: { "0": {...}, "1": {...} }
-      else arr = Object.values(raw).filter((item: any) => item && typeof item === "object" && !Array.isArray(item));
+      else if (Array.isArray(raw.data)) arr = raw.data;
+      else if (raw.length && typeof raw.length === "number") {
+        arr = Array.from({ length: raw.length }, (_, i) => raw[i]);
+      } else {
+        arr = Object.values(raw).filter((v: any) => v && typeof v === "object" && !Array.isArray(v));
+      }
     }
 
-    if (!Array.isArray(arr)) {
-      console.warn("⚠️ No se pudo convertir a array válido");
-      setTeamList([]);
-      return;
-    }
-
-    // 3. Filtro robusto (evita crashes con undefined/null)
-    const filtered = arr.filter((m: any) => {
-      if (!m || typeof m !== "object") return false;
-      const n = (m.nombre || "").toString().trim();
-      const c = (m.celular || "").toString().trim();
-      const f = (m.facebook || "").toString().trim();
-      const t = (m.tiktok || "").toString().trim();
-      const w = (m.twitter || "").toString().trim();
-      return n || c || f || t || w;
-    });
+    // 3. Limpieza y filtrado seguro
+    const filtered = (Array.isArray(arr) ? arr : [])
+      .map((item: any) => ({
+        id: item.id || Math.random().toString(36).substr(2, 9),
+        nombre: String(item.nombre || "").trim(),
+        celular: String(item.celular || "").trim(),
+        facebook: String(item.facebook || "").trim(),
+        tiktok: String(item.tiktok || "").trim(),
+        twitter: String(item.twitter || "").trim(),
+      }))
+      .filter((m: any) => m.nombre || m.celular || m.facebook || m.tiktok || m.twitter);
 
     console.log("✅ EQUIPO PARSEADO Y LIMPIO:", filtered);
     setTeamList(filtered);
