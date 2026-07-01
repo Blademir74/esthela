@@ -749,7 +749,7 @@ export default function TarjetasPage() {
     drawGlassPanel(ctx, 54, 54, W - 108, H - 108, 40);
 
     drawMainTitle(ctx, heroText, W / 2, 78, '#FFF5D0');
-    drawCitizenCaption(ctx, 'ESTHELA VA EN MI ENCUESTA', W / 2, 135, '#D4A843');
+    drawCitizenCaption(ctx, ' Y EN LA ENCUESTA ESTHELA VA', W / 2, 135, '#D4A843');
 
     await drawEsthelaPhoto(ctx, 95, 175, 410, 530, 26);
     await drawUserPhoto(ctx, fotoUrl, W - 505, 175, 410, 530);
@@ -786,7 +786,7 @@ export default function TarjetasPage() {
     drawGlassPanel(ctx, 54, 54, W - 108, H - 108, 40);
 
     drawMainTitle(ctx, heroText, W / 2, 78, '#FFF5D0');
-    drawCitizenCaption(ctx, 'ESTHELA VA EN MI ENCUESTA', W / 2, 135, '#D4A843');
+    drawCitizenCaption(ctx, 'Y EN LA ENCUESTA ESTHELA VA', W / 2, 135, '#D4A843');
 
     await drawEsthelaPhoto(ctx, 95, 175, 410, 530, 26);
     await drawUserPhoto(ctx, fotoUrl, W - 505, 175, 410, 530);
@@ -809,7 +809,7 @@ export default function TarjetasPage() {
     drawGlassPanel(ctx, 54, 54, W - 108, H - 108, 40);
 
     drawMainTitle(ctx, heroText, W / 2, 78, '#3D0A1F');
-    drawCitizenCaption(ctx, 'ESTHELA VA EN MI ENCUESTA', W / 2, 135, '#8A6417');
+    drawCitizenCaption(ctx, 'Y EN LA ENCUESTA ESTHELA VA', W / 2, 135, '#8A6417');
 
     await drawEsthelaPhoto(ctx, 95, 175, 410, 530, 26);
     await drawUserPhoto(ctx, fotoUrl, W - 505, 175, 410, 530);
@@ -937,7 +937,7 @@ export default function TarjetasPage() {
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           title: 'Mi Insignia Oficial - Esthela Damián',
-          text: `Soy ${nombre || 'ciudadano'} de ${municipio || 'Guerrero'}. Esthela va en mi encuesta por la esperanza de Guerrero.`,
+          text: `Soy ${nombre || 'ciudadano'} de ${municipio || 'Guerrero'}. En la encuesta Esthela va por la esperanza de Guerrero.`,
           files: [file],
         });
       } else {
