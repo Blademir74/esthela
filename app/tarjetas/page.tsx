@@ -34,30 +34,35 @@ const inject300DpiToBlob = async (blob: Blob): Promise<Blob> => {
   const arrayBuffer = await blob.arrayBuffer();
   const originalBytes = new Uint8Array(arrayBuffer);
 
-  const chunkData = new Uint8Array([
+  // Tipo de chunk (4 bytes: "pHYs") mas los datos (9 bytes: X, Y, unidad)
+  const chunkTypeAndData = new Uint8Array([
     112, 72, 89, 115,
     0, 0, 46, 35,
     0, 0, 46, 35,
     1,
   ]);
 
-  const crcVal = calculateCrc(chunkData);
-  const pHYsChunk = new Uint8Array(17);
+  const crcVal = calculateCrc(chunkTypeAndData);
+
+  // Un chunk PNG completo es: longitud (4) + tipo (4) + datos (9) + CRC (4) = 21 bytes
+  const pHYsChunk = new Uint8Array(4 + chunkTypeAndData.length + 4);
 
   pHYsChunk[0] = 0;
   pHYsChunk[1] = 0;
   pHYsChunk[2] = 0;
   pHYsChunk[3] = 9;
-  pHYsChunk.set(chunkData, 4);
-  pHYsChunk[13] = (crcVal >>> 24) & 0xff;
-  pHYsChunk[14] = (crcVal >>> 16) & 0xff;
-  pHYsChunk[15] = (crcVal >>> 8) & 0xff;
-  pHYsChunk[16] = crcVal & 0xff;
 
-  const newBytes = new Uint8Array(originalBytes.length + 17);
+  pHYsChunk.set(chunkTypeAndData, 4);
+
+  pHYsChunk[17] = (crcVal >>> 24) & 0xff;
+  pHYsChunk[18] = (crcVal >>> 16) & 0xff;
+  pHYsChunk[19] = (crcVal >>> 8) & 0xff;
+  pHYsChunk[20] = crcVal & 0xff;
+
+  const newBytes = new Uint8Array(originalBytes.length + pHYsChunk.length);
   newBytes.set(originalBytes.subarray(0, 33), 0);
   newBytes.set(pHYsChunk, 33);
-  newBytes.set(originalBytes.subarray(33), 50);
+  newBytes.set(originalBytes.subarray(33), 33 + pHYsChunk.length);
 
   return new Blob([newBytes], { type: 'image/png' });
 };
@@ -100,6 +105,10 @@ export default function TarjetasPage() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  // Mensaje central de la tarjeta: el ciudadano es el protagonista,
+  // Esthela aparece como la apuesta que ese ciudadano respalda.
+  const heroText = nombre.trim() ? `SOY ${nombre.trim().toUpperCase()}` : 'TU NOMBRE AQUÍ';
 
   // ─────────────────────────────────────────────────────────────
   // CARGA DE ACTIVOS
@@ -421,63 +430,11 @@ export default function TarjetasPage() {
     ctx.restore();
   };
 
-  const drawMetallicSeal = (ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) => {
-    ctx.save();
-
-    ctx.shadowColor = 'rgba(0,0,0,0.38)';
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 7;
-    ctx.shadowOffsetY = 10;
-
-    const metallic = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
-    metallic.addColorStop(0, '#FFF0B5');
-    metallic.addColorStop(0.28, '#E2BC62');
-    metallic.addColorStop(0.62, '#9D7623');
-    metallic.addColorStop(0.86, '#F7DC88');
-    metallic.addColorStop(1, '#7D5A12');
-
-    ctx.fillStyle = metallic;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.shadowColor = 'transparent';
-
-    ctx.strokeStyle = 'rgba(255,255,255,0.42)';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.strokeStyle = '#7D5A12';
-    ctx.lineWidth = 2.2;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 8, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.fillStyle = '#3D0A1F';
-    ctx.font = "800 14px 'Montserrat', system-ui, sans-serif";
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('ASPIRANTE', cx, cy - 15);
-    ctx.fillText('REGISTRADA', cx, cy + 2);
-
-    ctx.font = "800 11px 'Montserrat', system-ui, sans-serif";
-    ctx.fillStyle = '#6B1D3A';
-    ctx.fillText('MORENA GUERRERO', cx, cy + 20);
-
-    ctx.fillStyle = '#D4A843';
-    ctx.font = '16px system-ui, sans-serif';
-    ctx.fillText('★', cx, cy + 34);
-
-    ctx.restore();
-  };
-
   // ─────────────────────────────────────────────────────────────
   // TIPOGRAFÍA PREMIUM ESCALADA PARA FACEBOOK
   // ─────────────────────────────────────────────────────────────
-  // Jerarquia de encabezado: Esthela es el mensaje central y dominante.
-  // El resto de la informacion del ciudadano queda subordinada, mas pequena, debajo.
+  // Jerarquia de encabezado: el nombre del ciudadano es el mensaje central.
+  // El auto ajuste evita que un nombre largo rompa la composicion de la tarjeta.
   const drawMainTitle = (
     ctx: CanvasRenderingContext2D,
     text: string,
@@ -488,13 +445,32 @@ export default function TarjetasPage() {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = "800 60px 'Playfair Display', 'Georgia', serif";
+
+    const maxWidth = 900;
+    const maxSize = 72;
+    const minSize = 38;
+
+    const measureAt = (fontSize: number, spacing: number) => {
+      ctx.font = `800 ${fontSize}px 'Playfair Display', 'Georgia', serif`;
+      const chars = text.split('');
+      const widths = chars.map((char) => ctx.measureText(char).width);
+      return widths.reduce((sum, w) => sum + w, 0) + spacing * (chars.length - 1);
+    };
+
+    let size = maxSize;
+    let spacing = size * 0.045;
+    while (size > minSize && measureAt(size, spacing) > maxWidth) {
+      size -= 2;
+      spacing = size * 0.045;
+    }
+
+    ctx.font = `800 ${size}px 'Playfair Display', 'Georgia', serif`;
 
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
-    drawTextWithTracking(ctx, text, x + 3, y + 3, 2.5, 'center');
+    drawTextWithTracking(ctx, text, x + 3, y + 3, spacing, 'center');
 
     ctx.fillStyle = color;
-    drawTextWithTracking(ctx, text, x, y, 2.5, 'center');
+    drawTextWithTracking(ctx, text, x, y, spacing, 'center');
     ctx.restore();
   };
 
@@ -508,13 +484,13 @@ export default function TarjetasPage() {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = "600 23px 'Montserrat', 'Arial', sans-serif";
+    ctx.font = "700 26px 'Montserrat', 'Arial', sans-serif";
 
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    drawTextWithTracking(ctx, text, x + 1.2, y + 1.2, 3, 'center');
+    drawTextWithTracking(ctx, text, x + 1.4, y + 1.4, 3.5, 'center');
 
     ctx.fillStyle = color;
-    drawTextWithTracking(ctx, text, x, y, 3, 'center');
+    drawTextWithTracking(ctx, text, x, y, 3.5, 'center');
     ctx.restore();
   };
 
@@ -772,20 +748,18 @@ export default function TarjetasPage() {
     drawGuerreroRelief(ctx, W, H);
     drawGlassPanel(ctx, 54, 54, W - 108, H - 108, 40);
 
-    drawMainTitle(ctx, 'ESTHELA DAMIÁN', W / 2, 78, '#FFF5D0');
-    drawCitizenCaption(ctx, `JUNTO A ${nombre ? nombre.toUpperCase() : 'TI'}`, W / 2, 135, '#D4A843');
+    drawMainTitle(ctx, heroText, W / 2, 78, '#FFF5D0');
+    drawCitizenCaption(ctx, 'ESTHELA VA EN MI ENCUESTA', W / 2, 135, '#D4A843');
 
     await drawEsthelaPhoto(ctx, 95, 175, 410, 530, 26);
     await drawUserPhoto(ctx, fotoUrl, W - 505, 175, 410, 530);
-
-    drawMetallicSeal(ctx, W - 145, H - 145, 74);
 
     drawSectionTitle(ctx, 'SOBERANÍA Y TERRITORIO', W / 2, 760, '#FFFFFF');
     drawLemaText(ctx, 'La soberanía se defiende con el pueblo.\nLa respuesta nace desde Guerrero.', W / 2, 835, '#F6DE97');
 
     const mun = municipio ? municipio.toUpperCase() : 'GUERRERO';
-    drawLocationText(ctx, `SOY ${nombre ? nombre.toUpperCase() : 'CIUDADANO'} DE ${mun}`, W / 2, 965, '#FFFFFF');
-    drawSmallText(ctx, 'ESTHELA VA EN MI ENCUESTA POR LA RESPUESTA DE GUERRERO', W / 2, 1022, 'rgba(255,255,255,0.95)');
+    drawLocationText(ctx, `DESDE ${mun}, GUERRERO`, W / 2, 965, '#FFFFFF');
+    drawSmallText(ctx, 'POR LA RESPUESTA DE GUERRERO', W / 2, 1022, 'rgba(255,255,255,0.95)');
   };
 
   const drawModelVozPueblo = async (ctx: CanvasRenderingContext2D, W: number, H: number) => {
@@ -811,18 +785,16 @@ export default function TarjetasPage() {
 
     drawGlassPanel(ctx, 54, 54, W - 108, H - 108, 40);
 
-    drawMainTitle(ctx, 'ESTHELA DAMIÁN', W / 2, 78, '#FFF5D0');
-    drawCitizenCaption(ctx, `JUNTO A ${nombre ? nombre.toUpperCase() : 'TI'}`, W / 2, 135, '#D4A843');
+    drawMainTitle(ctx, heroText, W / 2, 78, '#FFF5D0');
+    drawCitizenCaption(ctx, 'ESTHELA VA EN MI ENCUESTA', W / 2, 135, '#D4A843');
 
     await drawEsthelaPhoto(ctx, 95, 175, 410, 530, 26);
     await drawUserPhoto(ctx, fotoUrl, W - 505, 175, 410, 530);
 
-    drawMetallicSeal(ctx, W - 145, H - 145, 74);
-
     drawSectionTitle(ctx, 'VOZ DEL PUEBLO', W / 2, 760, '#FFFFFF');
     drawLemaText(
       ctx,
-      `Soy ${nombre || 'un ciudadano'} de ${municipio || 'Guerrero'}\ny Esthela va en mi encuesta por la justicia social.`,
+      `De ${municipio || 'Guerrero'}, por la justicia social.`,
       W / 2,
       835,
       '#F1D98B'
@@ -836,20 +808,18 @@ export default function TarjetasPage() {
     drawGuerreroRelief(ctx, W, H);
     drawGlassPanel(ctx, 54, 54, W - 108, H - 108, 40);
 
-    drawMainTitle(ctx, 'ESTHELA DAMIÁN', W / 2, 78, '#3D0A1F');
-    drawCitizenCaption(ctx, `JUNTO A ${nombre ? nombre.toUpperCase() : 'TI'}`, W / 2, 135, '#8A6417');
+    drawMainTitle(ctx, heroText, W / 2, 78, '#3D0A1F');
+    drawCitizenCaption(ctx, 'ESTHELA VA EN MI ENCUESTA', W / 2, 135, '#8A6417');
 
     await drawEsthelaPhoto(ctx, 95, 175, 410, 530, 26);
     await drawUserPhoto(ctx, fotoUrl, W - 505, 175, 410, 530);
-
-    drawMetallicSeal(ctx, W - 145, H - 145, 74);
 
     drawSectionTitle(ctx, 'UNIDAD Y ESPERANZA', W / 2, 760, '#3D0A1F');
     drawLemaText(ctx, 'Con el pueblo todo,\nsin el pueblo nada.', W / 2, 835, '#8A6417');
 
     drawLocationText(
       ctx,
-      `Soy ${nombre || 'ciudadano'}, orgullosamente ${gentilicio || 'Guerrerense'}.`,
+      `Orgullosamente ${gentilicio || 'Guerrerense'}.`,
       W / 2,
       960,
       '#3D0A1F'
@@ -857,7 +827,7 @@ export default function TarjetasPage() {
 
     drawSmallText(
       ctx,
-      'ESTHELA VA EN MI ENCUESTA POR LA ESPERANZA DE GUERRERO',
+      'POR LA ESPERANZA DE GUERRERO',
       W / 2,
       1018,
       'rgba(61,10,31,0.92)'
