@@ -476,24 +476,45 @@ export default function TarjetasPage() {
   // ─────────────────────────────────────────────────────────────
   // TIPOGRAFÍA PREMIUM ESCALADA PARA FACEBOOK
   // ─────────────────────────────────────────────────────────────
-  const drawCitizenName = (
+  // Jerarquia de encabezado: Esthela es el mensaje central y dominante.
+  // El resto de la informacion del ciudadano queda subordinada, mas pequena, debajo.
+  const drawMainTitle = (
     ctx: CanvasRenderingContext2D,
     text: string,
     x: number,
     y: number,
-    color = '#FFFFFF',
-    align: CanvasTextAlign = 'center'
+    color = '#FFFFFF'
   ) => {
     ctx.save();
-    ctx.textAlign = align;
+    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = "700 52px 'Playfair Display', 'Georgia', serif";
+    ctx.font = "800 60px 'Playfair Display', 'Georgia', serif";
 
-    ctx.fillStyle = 'rgba(0,0,0,0.65)';
-    drawTextWithTracking(ctx, text, x + 2.2, y + 2.2, 2.6, align);
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    drawTextWithTracking(ctx, text, x + 3, y + 3, 2.5, 'center');
 
     ctx.fillStyle = color;
-    drawTextWithTracking(ctx, text, x, y, 2.6, align);
+    drawTextWithTracking(ctx, text, x, y, 2.5, 'center');
+    ctx.restore();
+  };
+
+  const drawCitizenCaption = (
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    color = '#D4A843'
+  ) => {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = "600 23px 'Montserrat', 'Arial', sans-serif";
+
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    drawTextWithTracking(ctx, text, x + 1.2, y + 1.2, 3, 'center');
+
+    ctx.fillStyle = color;
+    drawTextWithTracking(ctx, text, x, y, 3, 'center');
     ctx.restore();
   };
 
@@ -751,11 +772,11 @@ export default function TarjetasPage() {
     drawGuerreroRelief(ctx, W, H);
     drawGlassPanel(ctx, 54, 54, W - 108, H - 108, 40);
 
-    await drawEsthelaPhoto(ctx, 95, 145, 410, 560, 26);
-    await drawUserPhoto(ctx, fotoUrl, W - 505, 145, 410, 560);
+    drawMainTitle(ctx, 'ESTHELA DAMIÁN', W / 2, 78, '#FFF5D0');
+    drawCitizenCaption(ctx, `JUNTO A ${nombre ? nombre.toUpperCase() : 'TI'}`, W / 2, 135, '#D4A843');
 
-    drawCitizenName(ctx, 'ESTHELA DAMIÁN', 300, 92, '#FFF5D0');
-    drawCitizenName(ctx, nombre ? nombre.toUpperCase() : 'TÚ', W - 300, 92, '#D4A843');
+    await drawEsthelaPhoto(ctx, 95, 175, 410, 530, 26);
+    await drawUserPhoto(ctx, fotoUrl, W - 505, 175, 410, 530);
 
     drawMetallicSeal(ctx, W - 145, H - 145, 74);
 
@@ -790,11 +811,11 @@ export default function TarjetasPage() {
 
     drawGlassPanel(ctx, 54, 54, W - 108, H - 108, 40);
 
-    await drawEsthelaPhoto(ctx, 95, 145, 410, 560, 26);
-    await drawUserPhoto(ctx, fotoUrl, W - 505, 145, 410, 560);
+    drawMainTitle(ctx, 'ESTHELA DAMIÁN', W / 2, 78, '#FFF5D0');
+    drawCitizenCaption(ctx, `JUNTO A ${nombre ? nombre.toUpperCase() : 'TI'}`, W / 2, 135, '#D4A843');
 
-    drawCitizenName(ctx, 'ESTHELA DAMIÁN', 300, 92, '#FFF5D0');
-    drawCitizenName(ctx, nombre ? nombre.toUpperCase() : 'TÚ', W - 300, 92, '#D4A843');
+    await drawEsthelaPhoto(ctx, 95, 175, 410, 530, 26);
+    await drawUserPhoto(ctx, fotoUrl, W - 505, 175, 410, 530);
 
     drawMetallicSeal(ctx, W - 145, H - 145, 74);
 
@@ -815,11 +836,11 @@ export default function TarjetasPage() {
     drawGuerreroRelief(ctx, W, H);
     drawGlassPanel(ctx, 54, 54, W - 108, H - 108, 40);
 
-    await drawEsthelaPhoto(ctx, 95, 145, 410, 560, 26);
-    await drawUserPhoto(ctx, fotoUrl, W - 505, 145, 410, 560);
+    drawMainTitle(ctx, 'ESTHELA DAMIÁN', W / 2, 78, '#3D0A1F');
+    drawCitizenCaption(ctx, `JUNTO A ${nombre ? nombre.toUpperCase() : 'TI'}`, W / 2, 135, '#8A6417');
 
-    drawCitizenName(ctx, 'ESTHELA DAMIÁN', 300, 92, '#3D0A1F');
-    drawCitizenName(ctx, nombre ? nombre.toUpperCase() : 'TÚ', W - 300, 92, '#8A6417');
+    await drawEsthelaPhoto(ctx, 95, 175, 410, 530, 26);
+    await drawUserPhoto(ctx, fotoUrl, W - 505, 175, 410, 530);
 
     drawMetallicSeal(ctx, W - 145, H - 145, 74);
 
