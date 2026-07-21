@@ -732,15 +732,17 @@ export default function TarjetasPage() {
                   <div className="pointer-events-none absolute inset-[59px] rounded-[30px] border border-black/25" />
 
                   {/* Encabezado */}
-                  <div className="absolute left-[72px] right-[72px] top-[65px] z-30 flex items-center justify-between">
-                    <div className="flex items-center gap-5">
-                      <div className="relative h-[85px] w-[85px] overflow-hidden rounded-full border border-[#D4A843]/75 bg-black/20 shadow-[0_10px_24px_rgba(0,0,0,0.32)]">
+                  <div className="absolute left-[68px] right-[72px] top-[58px] z-30 flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <div className="relative h-[112px] w-[112px] overflow-hidden rounded-full border border-[#D4A843]/85 bg-[#210A12]/80 shadow-[0_12px_28px_rgba(0,0,0,0.42),inset_0_0_0_7px_rgba(0,0,0,0.18)]">
+                        <div className="absolute inset-[7px] rounded-full border border-[#F8E8B9]/20" />
+
                         <Image
                           src="/assets/img/logo.png"
                           alt="Por los Caminos del Sur"
                           fill
-                          sizes="90px"
-                          className="object-contain p-2"
+                          sizes="112px"
+                          className="object-contain p-1.5"
                         />
                       </div>
 
@@ -766,14 +768,37 @@ export default function TarjetasPage() {
                   </div>
 
                   {/* Mapa en bajo relieve */}
-                  <div
-                    className="absolute right-[70px] top-[225px] z-10 h-[205px] w-[275px] text-[#D4A843]/42 transition-transform duration-300"
-                    style={{
-                      transform: `translate(${tilt.x * 12}px, ${tilt.y * 10}px) rotate(${tilt.x * 1.1}deg)`,
-                    }}
-                  >
-                    <GuerreroMap />
-                  </div>
+                  {/* Mapa topográfico editorial: aprovecha el espacio alto derecho */}
+<div
+  className="absolute right-[67px] top-[286px] z-10 h-[260px] w-[350px] transition-transform duration-300"
+  style={{
+    transform: `translate(${tilt.x * 10}px, ${tilt.y * 8}px) rotate(${tilt.x * 0.75}deg)`,
+  }}
+>
+  {/* Base en relieve */}
+  <div className="absolute inset-0 text-[#0A1711]/80 drop-shadow-[0_15px_18px_rgba(0,0,0,0.38)]">
+    <GuerreroMap />
+  </div>
+
+  {/* Contorno dorado fino */}
+  <div className="absolute inset-0 text-[#D4A843]/65">
+    <GuerreroMap />
+  </div>
+
+  {/* Velo para profundidad */}
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(212,168,67,0.14),transparent_59%)]" />
+
+  {/* Leyenda editorial */}
+  <div className="absolute bottom-[-12px] left-[24px] border-l border-[#D4A843]/55 pl-3">
+    <p className="text-[11px] font-black uppercase tracking-[0.20em] text-[#F8E8B9]/75">
+      Territorio guerrerense
+    </p>
+
+    <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/42">
+      Organización desde la comunidad
+    </p>
+  </div>
+</div>
 
                   {/* Sombra de contacto del retrato */}
                   <div
@@ -852,7 +877,7 @@ export default function TarjetasPage() {
                         {displayName}
                       </p>
 
-                      <div className="mt-4 inline-flex max-w-full items-center gap-3 rounded-full border border-[#D4A843]/60 bg-[#16060A]/85 px-4 py-3 shadow-[0_8px_21px_rgba(0,0,0,0.46)]">
+                      <div className="mt-4 inline-flex max-w-full items-center gap-3 rounded-full border border-[#D4A843]/75 bg-[linear-gradient(135deg,rgba(107,29,58,0.94),rgba(27,7,12,0.97))] px-4 py-3 shadow-[0_10px_24px_rgba(0,0,0,0.54),inset_0_1px_0_rgba(255,239,193,0.10)]">
                         <MapPin
                           size={18}
                           strokeWidth={2.5}
@@ -860,12 +885,21 @@ export default function TarjetasPage() {
                         />
 
                         <p
-                          className="text-[14px] font-black uppercase leading-tight tracking-[0.11em] text-[#FFF5D7]"
+                          className="text-[14px] font-black uppercase leading-tight tracking-[0.10em] text-[#FFF7DD]"
                           style={{
-                            textShadow: "0 2px 8px rgba(0,0,0,0.85)",
+                            textShadow: "0 2px 8px rgba(0,0,0,0.92)",
                           }}
                         >
                           {municipio}, Guerrero
+                        </p>
+                      </div>
+
+                      {/* Línea de cierre: va exactamente debajo del municipio */}
+                      <div className="mt-6 flex items-center gap-3">
+                        <span className="h-px w-12 bg-[#D4A843]/70" />
+
+                        <p className="text-[11px] font-bold uppercase tracking-[0.19em] text-[#F8E8B9]/70">
+                          Diálogo · Comunidad · Soberanía
                         </p>
                       </div>
                     </div>
