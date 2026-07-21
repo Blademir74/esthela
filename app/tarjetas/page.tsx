@@ -770,35 +770,20 @@ export default function TarjetasPage() {
 
                   {/* Mapa en bajo relieve */}
                   {/* Mapa topográfico editorial: aprovecha el espacio alto derecho */}
+{/* Mapa real de Guerrero en imagen */}
 <div
-  className="absolute right-[67px] top-[286px] z-10 h-[260px] w-[350px] transition-transform duration-300"
+  className="absolute right-[64px] top-[210px] z-10 h-[250px] w-[335px] opacity-[0.33] transition-transform duration-300"
   style={{
-    transform: `translate(${tilt.x * 10}px, ${tilt.y * 8}px) rotate(${tilt.x * 0.75}deg)`,
+    transform: `translate(${tilt.x * 8}px, ${tilt.y * 6}px) rotate(${tilt.x * 0.55}deg)`,
+    filter: "drop-shadow(0 12px 20px rgba(0,0,0,0.30))",
   }}
 >
-  {/* Base en relieve */}
-  <div className="absolute inset-0 text-[#0A1711]/80 drop-shadow-[0_15px_18px_rgba(0,0,0,0.38)]">
-    <GuerreroMap />
-  </div>
-
-  {/* Contorno dorado fino */}
-  <div className="absolute inset-0 text-[#D4A843]/65">
-    <GuerreroMap />
-  </div>
-
-  {/* Velo para profundidad */}
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(212,168,67,0.14),transparent_59%)]" />
-
-  {/* Leyenda editorial */}
-  <div className="absolute bottom-[-12px] left-[24px] border-l border-[#D4A843]/55 pl-3">
-    <p className="text-[11px] font-black uppercase tracking-[0.20em] text-[#F8E8B9]/75">
-      Territorio guerrerense
-    </p>
-
-    <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/42">
-      Organización desde la comunidad
-    </p>
-  </div>
+  <img
+    src="/assets/img/mapa.jpg"
+    alt=""
+    crossOrigin="anonymous"
+    className="h-full w-full object-contain"
+  />
 </div>
 
                   {/* Sombra de contacto del retrato */}
