@@ -118,30 +118,31 @@ const esthelaPhotos = [
 function GuerreroMap() {
   return (
     <svg
-      viewBox="0 0 260 190"
+      viewBox="0 0 340 170"
       fill="none"
       aria-hidden="true"
       className="h-full w-full"
     >
       <path
-        d="M23 76C42 58 63 51 89 45C108 40 116 23 135 31C151 37 150 52 166 55C181 58 187 48 204 58C215 66 207 82 218 91C225 98 222 112 206 117C195 120 198 139 181 140C166 141 157 130 147 141C135 155 117 146 107 136C93 122 87 142 69 137C55 133 62 115 46 109C31 104 19 93 23 76Z"
+        d="M26 93C41 73 58 67 79 62C96 58 109 48 123 49C139 50 147 42 163 45C180 48 191 57 207 59C224 61 236 55 253 58C270 61 283 72 294 79C305 87 314 99 311 111C308 123 296 128 286 132C276 136 270 146 257 146C243 146 234 139 221 141C207 143 195 150 181 147C167 144 158 136 146 136C132 136 123 144 110 143C94 141 83 131 69 129C54 126 38 122 29 112C24 107 22 100 26 93Z"
         stroke="currentColor"
         strokeWidth="5"
         strokeLinejoin="round"
+        strokeLinecap="round"
       />
       <path
-        d="M68 65C86 72 90 88 108 91C125 93 131 75 151 79C169 83 171 101 190 105"
+        d="M92 85C108 87 118 96 132 99C149 102 160 90 177 91C193 92 202 102 220 105"
         stroke="currentColor"
-        strokeWidth="3.5"
+        strokeWidth="3.2"
         strokeLinecap="round"
-        opacity="0.7"
+        opacity="0.72"
       />
       <path
-        d="M79 113C95 102 111 115 125 120C144 127 159 111 179 119"
+        d="M118 120C135 111 149 118 162 123C177 129 193 121 210 125C223 128 232 135 245 136"
         stroke="currentColor"
-        strokeWidth="3.5"
+        strokeWidth="3.2"
         strokeLinecap="round"
-        opacity="0.7"
+        opacity="0.62"
       />
     </svg>
   );
@@ -846,64 +847,56 @@ export default function TarjetasPage() {
 
                   {/* Segundo foco: manifiesto comunitario */}
                   <div
-                    className="absolute bottom-[157px] left-[580px] right-[72px] z-30"
-                    style={{
-                      transform: `translate(${tilt.x * 4}px, ${tilt.y * 2}px)`,
-                    }}
-                  >
-                    <p className="text-[15px] font-black uppercase tracking-[0.21em] text-[#F8E8B9]">
-                      Voz del territorio
-                    </p>
+  className="absolute bottom-[178px] left-[582px] right-[78px] z-30"
+  style={{
+    transform: `translate(${tilt.x * 4}px, ${tilt.y * 2}px)`,
+  }}
+>
+  <p className="text-[15px] font-black uppercase tracking-[0.21em] text-[#F8E8B9]">
+    Voz del territorio
+  </p>
 
-                    <div className="mt-5 h-[3px] w-[132px] rounded-full bg-[#D4A843] shadow-[0_2px_5px_rgba(0,0,0,0.35)]" />
+  <div className="mt-5 h-[3px] w-[126px] rounded-full bg-[#D4A843]" />
 
-                    <h2
-                      className="mt-7 font-serif text-[50px] leading-[0.95] text-[#FFF9E8]"
-                      style={{
-                        textShadow:
-                          "0 4px 0 rgba(35,7,15,0.52), 0 13px 28px rgba(0,0,0,0.46)",
-                      }}
-                    >
-                      {phrase}
-                    </h2>
+  <h2
+    className="mt-7 font-serif text-[50px] leading-[0.95] text-[#FFF9E8]"
+    style={{
+      textShadow:
+        "0 4px 0 rgba(35,7,15,0.52), 0 13px 28px rgba(0,0,0,0.46)",
+    }}
+  >
+    {phrase}
+  </h2>
 
-                    <div className="mt-8 border-l-2 border-[#D4A843] pl-5">
-                      <p
-                        className="text-[19px] font-bold uppercase tracking-[0.12em] text-[#F8E8B9]"
-                        style={{
-                          textShadow: "0 2px 10px rgba(0,0,0,0.72)",
-                        }}
-                      >
-                        {displayName}
-                      </p>
+  <div className="mt-8 border-l-2 border-[#D4A843] pl-5">
+    <p
+      className="text-[19px] font-bold uppercase tracking-[0.12em] text-[#F8E8B9]"
+      style={{
+        textShadow: "0 2px 10px rgba(0,0,0,0.72)",
+      }}
+    >
+      {displayName}
+    </p>
 
-                      <div className="mt-4 inline-flex max-w-full items-center gap-3 rounded-full border border-[#D4A843]/75 bg-[linear-gradient(135deg,rgba(107,29,58,0.94),rgba(27,7,12,0.97))] px-4 py-3 shadow-[0_10px_24px_rgba(0,0,0,0.54),inset_0_1px_0_rgba(255,239,193,0.10)]">
-                        <MapPin
-                          size={18}
-                          strokeWidth={2.5}
-                          className="shrink-0 text-[#F2CF8B]"
-                        />
+    <p className="mt-4 text-[15px] font-black uppercase tracking-[0.20em] text-[#F8E8B9]">
+      Voz comunitaria
+    </p>
 
-                        <p
-                          className="text-[14px] font-black uppercase leading-tight tracking-[0.10em] text-[#FFF7DD]"
-                          style={{
-                            textShadow: "0 2px 8px rgba(0,0,0,0.92)",
-                          }}
-                        >
-                          {municipio}, Guerrero
-                        </p>
-                      </div>
+    <div className="mt-4 flex items-center gap-3">
+      <span className="h-[1px] w-10 bg-[#D4A843]/75" />
+      <p
+        className="text-[14px] font-bold uppercase tracking-[0.14em] text-[#F3DEB0]"
+        style={{
+          textShadow: "0 2px 8px rgba(0,0,0,0.82)",
+        }}
+      >
+        {municipio}, Guerrero
+      </p>
+    </div>
+  </div>
+</div>
 
-                      {/* Línea de cierre: va exactamente debajo del municipio */}
-                      <div className="mt-6 flex items-center gap-3">
-                        <span className="h-px w-12 bg-[#D4A843]/70" />
-
-                        <p className="text-[11px] font-bold uppercase tracking-[0.19em] text-[#F8E8B9]/70">
-                          Diálogo · Comunidad · Soberanía
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                   
 
                   <MetallicSeal tilt={tilt} />
 
