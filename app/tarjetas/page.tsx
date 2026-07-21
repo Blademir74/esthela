@@ -106,12 +106,12 @@ const esthelaPhotos = [
   {
     id: "esthela2",
     name: "Esthela · Encuentro",
-    path: "/assets/img/foto29.jpg",
+    path: "/assets/img/pueblosabio.png",
   },
   {
     id: "esthela3",
     name: "Esthela · Territorio",
-    path: "/assets/img/foto30.jpg",
+    path: "/assets/img/foto2.jfif",
   },
 ];
 
@@ -739,7 +739,7 @@ export default function TarjetasPage() {
                           src="/assets/img/logo.png"
                           alt="Por los Caminos del Sur"
                           fill
-                          sizes="85px"
+                          sizes="90px"
                           className="object-contain p-2"
                         />
                       </div>
