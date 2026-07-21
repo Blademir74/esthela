@@ -1,284 +1,110 @@
-# 🗺️ Mapa Político Viral de Guerrero
+# Esthela Damián Peralta · Centro de Mando Digital
 
-Una plataforma web interactiva viral tipo "Spotify Wrapped" para descubrir perfiles políticos personalizados en Guerrero, México.
+Landing page de alto impacto para la aspiración a la Coordinación de Morena en Guerrero — rumbo al **22 de junio**.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-14-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+## 🎯 Identidad
 
-## 🎯 Características Principales
+- **Paleta**: Guinda Morena `#6B1D3A` · Dorado Autoridad `#D4A843` · Blanco puro
+- **Concepto**: *"Forjada desde joven en el trabajo comunitario"*
+- **Optimizado para móviles** (90% del tráfico en Guerrero)
+- **Vanilla HTML/CSS/JS** — sin frameworks, sin dependencias, carga instantánea incluso con señal débil
 
-- ✅ **Encuesta Interactiva**: 10 preguntas gamificadas tipo conversacional
-- ✅ **Algoritmo Inteligente**: Análisis político basado en ejes ideológicos
-- ✅ **Generación de Imágenes**: Resultados personalizados compartibles (1080x1080px)
-- ✅ **100% Anónimo**: Sin registro, sin spam, sin tracking invasivo
-- ✅ **Diseño Viral**: Optimizado para compartir en redes sociales
-- ✅ **Responsive**: Funciona perfectamente en móvil y desktop
-- ✅ **Performance**: Carga ultra rápida con Next.js 14
-
-## 🚀 Demo en Vivo
-
-[Ver Demo](https://miperfilguerrero.com) _(pendiente de deployment)_
-
-## 📸 Screenshots
-
-### Landing Page
-Landing page moderna con contador en vivo de participantes.
-
-### Encuesta Interactiva
-Preguntas tipo conversacional con barra de progreso y animaciones.
-
-### Página de Resultados
-Resultados personalizados con imagen compartible generada automáticamente.
-
-## 🛠️ Stack Tecnológico
-
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
-- **Lenguaje**: [TypeScript](https://www.typescriptlang.org/)
-- **Estilos**: [TailwindCSS](https://tailwindcss.com/)
-- **Animaciones**: [Framer Motion](https://www.framer.com/motion/)
-- **Generación de Imágenes**: [node-canvas](https://github.com/Automattic/node-canvas)
-- **Confetti**: [react-confetti](https://www.npmjs.com/package/react-confetti)
-- **Deployment**: [Vercel](https://vercel.com/)
-
-## 📦 Instalación
-
-### Requisitos Previos
-
-- Node.js 18+ 
-- npm o yarn
-- Git
-
-### Pasos de Instalación
-
-1. **Clonar el repositorio**
-```bash
-git clone https://github.com/tu-usuario/mapa-politico-guerrero.git
-cd mapa-politico-guerrero
-```
-
-2. **Instalar dependencias**
-```bash
-npm install
-```
-
-3. **Configurar variables de entorno** (opcional)
-```bash
-cp .env.example .env.local
-```
-
-Edita `.env.local` con tus valores:
-```env
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
-```
-
-4. **Ejecutar en desarrollo**
-```bash
-npm run dev
-```
-
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
-
-## 📁 Estructura del Proyecto
+## 📂 Estructura
 
 ```
-mapa-politico-guerrero/
-├── app/
-│   ├── page.tsx                 # Landing page
-│   ├── encuesta/
-│   │   └── page.tsx            # Página de encuesta interactiva
-│   ├── procesando/
-│   │   └── page.tsx            # Pantalla de carga
-│   ├── resultado/
-│   │   └── page.tsx            # Página de resultados
-│   ├── api/
-│   │   └── generar-imagen/
-│   │       └── route.ts        # API para generar imágenes
-│   ├── layout.tsx              # Layout global
-│   └── globals.css             # Estilos globales
-├── lib/
-│   ├── preguntas.ts            # Banco de preguntas
-│   └── algoritmo.ts            # Lógica del algoritmo político
-├── public/
-│   └── assets/
-│       └── guerrero-map.png    # Mapa de Guerrero
-├── package.json
-├── tsconfig.json
+esthela-landing/
+├── index.html          # Marcado semántico + SEO + OG tags
+├── styles.css          # Glassmorphism institucional + mobile-first
+├── script.js           # Pulso Digital, Heatmap, Countdown, Supabase
+├── assets/
+│   ├── img/
+│   │   ├── hero-guerrero.jpg        # Fondo cinematográfico Sierra Madre
+│   │   └── esthela-placeholder.jpg  # Placeholder institucional
+│   └── icons/
 └── README.md
 ```
 
-## 🧮 Algoritmo de Cálculo
+## 🔥 Secciones implementadas
 
-El algoritmo analiza las respuestas en dos ejes principales:
+| Sección | Descripción |
+|---------|-------------|
+| **Hero Impacto** | Imagen cinematográfica 2K + H1/H2 estratégicos + stats "25 · 81 · 1" |
+| **Verdad vs. Mito** | Glassmorphism dual: desmiente imposición. Refuerzo biografía UAGro |
+| **Pulso Digital** | Votación 1-click anónima (localStorage + browser fingerprint SHA-256) |
+| **Heatmap Guerrero** | SVG interactivo 7 regiones + ranking top 5 en vivo |
+| **Movilización Roles** | 3 roles: Promotor · Enlace · Creador — WhatsApp **solo aquí** |
+| **Countdown + Reporting** | Reloj al 22 junio + dashboard con sparkline semanal |
+| **Share viral** | WhatsApp, Facebook, X, Telegram, copiar enlace |
+| **FAB WhatsApp** | Flotante con animación pulse siempre visible |
 
-### Eje X (0-100): Conservador ↔ Progresista
-- Posición económica
-- Visión social
-- Apertura al cambio
+## ⚙️ Configuración — 3 niveles
 
-### Eje Y (0-100): Libertario ↔ Autoritario
-- Rol del Estado
-- Prioridad de seguridad
-- Autonomía regional
+### Nivel 1: Demo local (funciona out-of-the-box)
+No requiere configuración. Abre `index.html` directamente. Usa localStorage + baseline simulado.
 
-### Perfiles Resultantes
+### Nivel 2: Integración Supabase (recomendado para producción)
 
-| Posición X | Posición Y | Etiqueta |
-|-----------|-----------|----------|
-| 0-35 | 0-35 | Conservador Liberal |
-| 0-35 | 35-65 | Conservador Moderado |
-| 0-35 | 65-100 | Conservador Autoritario |
-| 35-65 | 0-35 | Centrista Pragmático |
-| 35-65 | 35-65 | Centrista Equilibrado |
-| 35-65 | 65-100 | Centrista Social |
-| 65-100 | 0-35 | Progresista Libertario |
-| 65-100 | 35-65 | Progresista Moderado |
-| 65-100 | 65-100 | Progresista Radical |
+1. Crea proyecto gratis en [supabase.com](https://supabase.com)
+2. En el **SQL Editor**, ejecuta the SQL al final de `script.js` (está comentado)
+3. Edita `script.js` líneas 13-14:
+   ```js
+   const SUPABASE_URL      = 'https://TU-PROYECTO.supabase.co';
+   const SUPABASE_ANON_KEY = 'eyJhbGci...';
+   ```
+4. ¡Listo! Los votos ya persisten en la nube.
 
-## 🎨 Generación de Imágenes
+### Nivel 3: Personalización final
+- **WhatsApp real**: cambia `WHATSAPP_NUMBER` en `script.js` y el href del FAB en `index.html`
+- **Fecha**: `TARGET_DATE` en `script.js` (línea ~25)
+- **Imágenes**: reemplaza `assets/img/hero-guerrero.jpg` y `esthela-placeholder.jpg` con las reales
 
-Las imágenes compartibles se generan dinámicamente usando Canvas:
+## 🚀 Despliegue
 
-- **Formato**: PNG 1080x1080px (Instagram Post)
-- **Elementos**:
-  - Fondo con degradado según perfil
-  - Mapa de Guerrero desvanecido
-  - Etiqueta de perfil destacada
-  - Mapa político miniatura con marcador
-  - Estadísticas principales
-  - Dato sorprendente
-  - CTA para compartir
-  - Hashtag #MiPerfilPolíticoGuerrero
-
-## 🌐 Deployment
-
-### Vercel (Recomendado)
-
-1. **Push a GitHub**
+### Vercel (1 clic)
 ```bash
-git add .
-git commit -m "Initial commit"
-git push origin main
+npm i -g vercel
+cd esthela-landing
+vercel --prod
 ```
 
-2. **Conectar con Vercel**
-- Ve a [vercel.com](https://vercel.com)
-- Importa tu repositorio
-- Configura variables de entorno
-- Deploy automático
+### Netlify (drag & drop)
+Arrastra la carpeta completa a [app.netlify.com/drop](https://app.netlify.com/drop).
 
-### Otras opciones
-- Netlify
-- Railway
-- DigitalOcean App Platform
+### GitHub Pages
+1. Sube a un repo público
+2. Settings → Pages → Branch `main` / root
+3. URL lista en 2 min
 
-## 📊 Métricas y Analytics
+### Hosting tradicional
+Sube los archivos vía FTP a `public_html/`. Sin PHP, sin Node.js, solo archivos estáticos.
 
-El proyecto incluye soporte para:
+## 🔒 Privacidad
 
-- **Google Analytics 4**: Tracking de visitas y conversiones
-- **Custom Events**:
-  - `encuesta_iniciada`
-  - `pregunta_completada`
-  - `resultado_generado`
-  - `imagen_compartida`
-  - `compartir_whatsapp`
-  - `compartir_twitter`
-  - `compartir_facebook`
+- **Pulso Digital**: 100% anónimo. Browser fingerprint SHA-256 + localStorage. Sin cookies, sin tracking.
+- **Geolocalización**: Por IP vía `ipapi.co` (sin API key, precisión regional).
+- **WhatsApp**: solicitado **únicamente** en formulario de roles (consentimiento explícito).
+- **Cumple GDPR/LFPDPPP** por diseño.
 
-Para activar analytics, configura `NEXT_PUBLIC_GA_ID` en tus variables de entorno.
+## 📊 KPIs medibles
 
-## 🔒 Privacidad y Seguridad
+- Pulsos registrados (total, hoy, semana)
+- Distribución Sí / Duda / No
+- Heatmap regional (7 regiones de Guerrero)
+- Tendencia 7 días (sparkline)
+- Conversión a roles (promotores, enlaces, creadores)
+- Shares virales por plataforma
 
-- ✅ **Sin registro**: No se requiere cuenta
-- ✅ **Datos anónimos**: No se almacenan identificadores personales
-- ✅ **LocalStorage**: Datos solo en el navegador del usuario
-- ✅ **Sin cookies invasivas**: Solo cookies técnicas necesarias
-- ✅ **GDPR Compliant**: Cumple con regulaciones de privacidad
+## 🎨 Decisiones de diseño
 
-## 🎯 Roadmap
-
-### Fase 1 (Actual)
-- [x] Landing page
-- [x] Encuesta interactiva
-- [x] Algoritmo de cálculo
-- [x] Generación de imágenes
-- [x] Página de resultados
-
-### Fase 2 (Próxima)
-- [ ] Dashboard administrativo
-- [ ] Estadísticas en tiempo real
-- [ ] Mapa de calor de municipios
-- [ ] Base de datos (Supabase)
-- [ ] Sistema de referidos
-
-### Fase 3 (Futuro)
-- [ ] Comparación con amigos
-- [ ] Histórico de resultados
-- [ ] Informe PDF descargable
-- [ ] App móvil nativa
-- [ ] Multi-idioma
-
-## 🤝 Contribuir
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más información.
-
-## 👥 Autores
-
-- **Tu Nombre** - *Desarrollo inicial* - [@tu_twitter](https://twitter.com/tu_twitter)
-
-## 🙏 Agradecimientos
-
-- Inspirado en el concepto "Spotify Wrapped"
-- Comunidad de Guerrero
-- Contributors y testers
-
-## 📧 Contacto
-
-- **Email**: contacto@miperfilguerrero.com
-- **Twitter**: [@MapaPoliticoGRO](https://twitter.com/MapaPoliticoGRO)
-- **Facebook**: [MiPerfilGuerrero](https://facebook.com/MiPerfilGuerrero)
-
-## 🐛 Reportar Bugs
-
-Si encuentras algún bug, por favor crea un [issue](https://github.com/tu-usuario/mapa-politico-guerrero/issues) describiendo:
-
-1. Qué esperabas que sucediera
-2. Qué sucedió realmente
-3. Pasos para reproducir el error
-4. Screenshots (si aplica)
-
-## 💡 Preguntas Frecuentes
-
-### ¿Es gratis?
-Sí, 100% gratis y sin registro.
-
-### ¿Mis respuestas son privadas?
-Sí, solo se almacenan en tu navegador (localStorage).
-
-### ¿Puedo usar esto para otro estado/país?
-Sí, el código es open source. Puedes adaptarlo fácilmente.
-
-### ¿Cómo cambio las preguntas?
-Edita el archivo `lib/preguntas.ts`.
-
-### ¿Cómo personalizo los colores?
-Los colores se definen en `tailwind.config.ts` y `app/globals.css`.
+- **Glassmorphism** con backdrop-filter sutil (20-30px blur) + borde dorado
+- **Fallback sólido** para navegadores sin soporte
+- **`prefers-reduced-motion`**: respeta usuarios con sensibilidad al movimiento
+- **`prefers-reduced-data`**: reduce efectos en conexiones lentas (ideal zonas rurales Guerrero)
+- **LCP <1s**: imagen hero con `fetchpriority="high"` + preload
+- **CLS = 0**: `aspect-ratio` en todos los contenedores de media
+- **SVG inline** (mapa, iconos, sparklines) — cero peticiones HTTP extra
+- **Supabase REST API** (sin SDK, peso mínimo)
 
 ---
 
-**⭐ Si te gusta este proyecto, dale una estrella en GitHub!**
-
-#MiPerfilPolíticoGuerrero
+**Hecho con 💛 desde Guerrero · Para Morena · Rumbo al 22 de junio**
