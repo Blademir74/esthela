@@ -771,11 +771,13 @@ export default function TarjetasPage() {
                   {/* Mapa en bajo relieve */}
                   {/* Mapa topográfico editorial: aprovecha el espacio alto derecho */}
 {/* Mapa real de Guerrero en imagen */}
+{/* Mapa real de Guerrero, integrado al fondo */}
 <div
-  className="absolute right-[64px] top-[210px] z-10 h-[250px] w-[335px] opacity-[0.33] transition-transform duration-300"
+  className="absolute right-[76px] top-[188px] z-10 h-[205px] w-[285px] opacity-[0.24] transition-transform duration-300"
   style={{
-    transform: `translate(${tilt.x * 8}px, ${tilt.y * 6}px) rotate(${tilt.x * 0.55}deg)`,
-    filter: "drop-shadow(0 12px 20px rgba(0,0,0,0.30))",
+    transform: `translate(${tilt.x * 7}px, ${tilt.y * 5}px) rotate(${tilt.x * 0.45}deg)`,
+    filter: "drop-shadow(0 10px 18px rgba(0,0,0,0.22)) grayscale(0.08)",
+    mixBlendMode: "screen",
   }}
 >
   <img
