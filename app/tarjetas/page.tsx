@@ -831,8 +831,8 @@ export default function TarjetasPage() {
                   </div>
 
                   {/* Segundo foco: manifiesto comunitario */}
-   <div
-  className="absolute bottom-[205px] left-[582px] right-[82px] z-30"
+                  <div
+  className="absolute bottom-[178px] left-[582px] right-[78px] z-30"
   style={{
     transform: `translate(${tilt.x * 4}px, ${tilt.y * 2}px)`,
   }}
