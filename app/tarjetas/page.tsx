@@ -21,6 +21,9 @@ import {
   Sparkles,
 } from "lucide-react";
 
+const EXPORT_SIZE = 1080;
+const PREVIEW_SCALE = 0.5555556;
+
 const municipalities = [
   "Acapulco de Juárez",
   "Chilpancingo de los Bravo",
@@ -59,32 +62,38 @@ const themes = [
   {
     id: "guinda",
     name: "Guinda institucional",
-    bg: "#38101D",
+    base: "#3B0E1E",
     primary: "#6B1D3A",
-    secondary: "#14070B",
+    dark: "#12070B",
+    mountain: "#153126",
+    mountainLight: "#4A5B35",
     gold: "#D4A843",
     ivory: "#FFF9E8",
-    line: "rgba(212,168,67,0.58)",
+    border: "rgba(212,168,67,0.58)",
   },
   {
     id: "sierra",
     name: "Verde sierra",
-    bg: "#10261D",
+    base: "#10261D",
     primary: "#244837",
-    secondary: "#06140F",
+    dark: "#06140F",
+    mountain: "#183428",
+    mountainLight: "#52623A",
     gold: "#D4A843",
     ivory: "#FFF9E8",
-    line: "rgba(212,168,67,0.52)",
+    border: "rgba(212,168,67,0.52)",
   },
   {
     id: "azul",
     name: "Azul soberanía",
-    bg: "#102B45",
+    base: "#102B45",
     primary: "#17476A",
-    secondary: "#07131F",
+    dark: "#07131F",
+    mountain: "#18352B",
+    mountainLight: "#405B44",
     gold: "#D4A843",
     ivory: "#FFF9E8",
-    line: "rgba(212,168,67,0.52)",
+    border: "rgba(212,168,67,0.52)",
   },
 ];
 
@@ -138,6 +147,44 @@ function GuerreroMap() {
   );
 }
 
+function MetallicSeal({
+  tilt,
+}: {
+  tilt: { x: number; y: number };
+}) {
+  return (
+    <div
+      className="absolute right-[70px] top-[165px] z-40 grid h-[132px] w-[132px] place-items-center rounded-full border-[3px] text-center text-[#FFF3C9]"
+      style={{
+        borderColor: "#D4A843",
+        background:
+          "radial-gradient(circle at 30% 21%, #FFF0A7 0%, #E2B64E 20%, #9A6818 49%, #D4A843 74%, #513005 100%)",
+        boxShadow:
+          "inset 0 0 0 7px rgba(67,37,5,0.36), inset 0 0 20px rgba(255,244,194,0.30), 0 16px 30px rgba(0,0,0,0.46), 0 4px 0 rgba(255,231,152,0.24)",
+        transform: `translate(${tilt.x * 8}px, ${tilt.y * 6}px) rotate(${tilt.x * 1.2}deg)`,
+      }}
+    >
+      <div className="relative grid h-[99px] w-[99px] place-items-center rounded-full border border-[#FFE9A4]/60 px-3">
+        <div className="absolute inset-[7px] rounded-full border border-black/20" />
+
+        <div className="relative z-10">
+          <p className="text-[10px] font-black uppercase tracking-[0.11em]">
+            Organización
+          </p>
+
+          <p className="mt-1 font-serif text-[18px] leading-none text-[#FFF7D2]">
+            territorial
+          </p>
+
+          <p className="mt-2 text-[10px] font-black uppercase tracking-[0.13em]">
+            Guerrero
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TarjetasPage() {
   const posterRef = useRef<HTMLDivElement>(null);
 
@@ -164,14 +211,14 @@ export default function TarjetasPage() {
   const displayName = name.trim() || "Voz comunitaria";
 
   useEffect(() => {
-    const preloadedImages = esthelaPhotos.map((photo) => {
+    const imageList = esthelaPhotos.map((photo) => {
       const image = new window.Image();
       image.src = photo.path;
       return image;
     });
 
     return () => {
-      preloadedImages.forEach((image) => {
+      imageList.forEach((image) => {
         image.src = "";
       });
     };
@@ -179,6 +226,7 @@ export default function TarjetasPage() {
 
   const handlePosterMove = (event: MouseEvent<HTMLDivElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
+
     const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
     const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
 
@@ -209,16 +257,15 @@ export default function TarjetasPage() {
   const makeCanvas = async () => {
     if (!posterRef.current) return null;
 
-    const source = posterRef.current;
-    const clone = source.cloneNode(true) as HTMLDivElement;
+    const clone = posterRef.current.cloneNode(true) as HTMLDivElement;
 
     clone.style.position = "fixed";
     clone.style.left = "-12000px";
     clone.style.top = "0";
-    clone.style.width = "1080px";
-    clone.style.height = "1080px";
-    clone.style.minWidth = "1080px";
-    clone.style.minHeight = "1080px";
+    clone.style.width = `${EXPORT_SIZE}px`;
+    clone.style.height = `${EXPORT_SIZE}px`;
+    clone.style.minWidth = `${EXPORT_SIZE}px`;
+    clone.style.minHeight = `${EXPORT_SIZE}px`;
     clone.style.maxWidth = "none";
     clone.style.maxHeight = "none";
     clone.style.margin = "0";
@@ -236,16 +283,16 @@ export default function TarjetasPage() {
       await waitForImages(clone);
 
       return await html2canvas(clone, {
-        width: 1080,
-        height: 1080,
+        width: EXPORT_SIZE,
+        height: EXPORT_SIZE,
         scale: 1,
-        backgroundColor: theme.bg,
+        backgroundColor: theme.base,
         useCORS: true,
         allowTaint: true,
         logging: false,
         imageTimeout: 15000,
-        windowWidth: 1080,
-        windowHeight: 1080,
+        windowWidth: EXPORT_SIZE,
+        windowHeight: EXPORT_SIZE,
         scrollX: 0,
         scrollY: 0,
       });
@@ -254,46 +301,55 @@ export default function TarjetasPage() {
     }
   };
 
+  const createBlob = async () => {
+    const canvas = await makeCanvas();
+
+    if (!canvas) {
+      throw new Error("No se encontró el lienzo del póster.");
+    }
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((file) => resolve(file), "image/png", 1),
+    );
+
+    if (!blob) {
+      throw new Error("No fue posible convertir el lienzo en PNG.");
+    }
+
+    return blob;
+  };
+
+  const createFilename = () => {
+    const cleanName = displayName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase();
+
+    return `poster-caminos-del-sur-${cleanName || "guerrero"}.png`;
+  };
+
   const downloadPoster = async () => {
     setIsGenerating(true);
 
     try {
-      const canvas = await makeCanvas();
-
-      if (!canvas) {
-        throw new Error("No se encontró el lienzo del póster.");
-      }
-
-      const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob((file) => resolve(file), "image/png", 1),
-      );
-
-      if (!blob) {
-        throw new Error("No fue posible convertir el lienzo en PNG.");
-      }
-
-      const safeName = displayName
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-zA-Z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .toLowerCase();
-
+      const blob = await createBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
 
       link.href = url;
-      link.download = `poster-caminos-del-sur-${safeName || "guerrero"}.png`;
+      link.download = createFilename();
 
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      window.setTimeout(() => URL.revokeObjectURL(url), 300);
+      window.setTimeout(() => URL.revokeObjectURL(url), 400);
     } catch (error) {
       console.error("Error al generar el póster:", error);
       alert(
-        "No fue posible generar el póster. Verifica que las imágenes existan en /public/assets/img e inténtalo nuevamente.",
+        "No fue posible generar el póster. Verifica que los archivos de imagen existan en /public/assets/img e inténtalo nuevamente.",
       );
     } finally {
       setIsGenerating(false);
@@ -304,25 +360,13 @@ export default function TarjetasPage() {
     setIsGenerating(true);
 
     try {
-      const canvas = await makeCanvas();
+      const blob = await createBlob();
 
-      if (!canvas) {
-        throw new Error("No se encontró el lienzo del póster.");
-      }
-
-      const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob((file) => resolve(file), "image/png", 0.96),
-      );
-
-      if (!blob) {
-        throw new Error("No fue posible crear el archivo.");
-      }
-
-      const file = new File([blob], "poster-caminos-del-sur.png", {
+      const file = new File([blob], createFilename(), {
         type: "image/png",
       });
 
-      const text = `${displayName}, desde ${municipio}: “${phrase}” #PorlosCaminosdelSur`;
+      const shareText = `${displayName}, desde ${municipio}: “${phrase}” #PorlosCaminosdelSur`;
 
       if (
         navigator.share &&
@@ -331,7 +375,7 @@ export default function TarjetasPage() {
       ) {
         await navigator.share({
           title: "Por los Caminos del Sur",
-          text,
+          text: shareText,
           files: [file],
         });
 
@@ -342,13 +386,13 @@ export default function TarjetasPage() {
       const link = document.createElement("a");
 
       link.href = url;
-      link.download = "poster-caminos-del-sur.png";
+      link.download = createFilename();
 
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      window.setTimeout(() => URL.revokeObjectURL(url), 300);
+      window.setTimeout(() => URL.revokeObjectURL(url), 400);
     } catch (error) {
       console.error("Error al compartir el póster:", error);
     } finally {
@@ -398,9 +442,8 @@ export default function TarjetasPage() {
           </h1>
 
           <p className="mt-3 text-sm leading-relaxed text-[#221B19]/70">
-            Una pieza editorial de voz comunitaria. El nombre y municipio
-            acompañan el mensaje; Esthela permanece como la única presencia
-            visual del póster.
+            El nombre y el municipio acompañan una voz comunitaria. Esthela es
+            la única presencia visual, para mantener claridad y jerarquía.
           </p>
 
           <div className="mt-7 space-y-6">
@@ -535,7 +578,6 @@ export default function TarjetasPage() {
                           background: `linear-gradient(135deg, ${item.primary} 0 56%, ${item.gold} 56% 100%)`,
                         }}
                       />
-
                       {item.name}
                     </button>
                   );
@@ -599,106 +641,100 @@ export default function TarjetasPage() {
                 transform: `rotateX(${tilt.y * -2.6}deg) rotateY(${tilt.x * 2.6}deg)`,
               }}
             >
-              {/* Sólo este envoltorio se escala para la vista previa */}
+              {/* El padre se escala; el lienzo exportable nunca recibe scale(). */}
               <div
                 className="absolute left-0 top-0 h-[1080px] w-[1080px] origin-top-left"
                 style={{
-                  transform: "scale(0.5555556)",
+                  transform: `scale(${PREVIEW_SCALE})`,
                   transformOrigin: "top left",
                 }}
               >
-                {/* posterRef siempre mide 1080 x 1080 sin transformaciones */}
                 <div
                   ref={posterRef}
                   className="relative h-[1080px] w-[1080px] overflow-hidden"
                   style={{
                     background: `
-                      radial-gradient(circle at 84% 10%, rgba(212,168,67,0.25), transparent 20%),
-                      radial-gradient(circle at 14% 34%, rgba(255,231,170,0.09), transparent 22%),
-                      linear-gradient(145deg, ${theme.primary} 0%, ${theme.bg} 49%, ${theme.secondary} 100%)
+                      radial-gradient(circle at 84% 10%, rgba(212,168,67,0.24), transparent 19%),
+                      radial-gradient(circle at 14% 31%, rgba(255,231,170,0.10), transparent 23%),
+                      linear-gradient(145deg, ${theme.primary} 0%, ${theme.base} 48%, ${theme.dark} 100%)
                     `,
                   }}
                 >
-                  {/* Capa de atmósfera y brillo superior */}
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(255,235,184,0.18),transparent_43%)]" />
+                  {/* PLANO 0: cielo, luz ambiental y niebla lejana */}
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(255,235,184,0.19),transparent_42%)]" />
 
-                  {/* Sierra lejana */}
                   <div
-                    className="absolute inset-x-0 bottom-[240px] h-[480px] opacity-55"
+                    className="absolute left-[-190px] top-[205px] h-[190px] w-[1510px] rotate-[-25deg] opacity-65 blur-[7px]"
                     style={{
                       background:
-                        "linear-gradient(162deg, rgba(255,224,151,0.12), rgba(28,64,47,0.82) 55%, rgba(5,19,13,0.92))",
+                        "linear-gradient(90deg, transparent 0%, rgba(255,245,207,0.03) 20%, rgba(255,223,145,0.48) 50%, rgba(255,245,207,0.08) 77%, transparent 100%)",
+                    }}
+                  />
+
+                  {/* PLANO 1: Sierra lejana */}
+                  <div
+                    className="absolute inset-x-0 bottom-[285px] h-[455px] opacity-55"
+                    style={{
+                      background: `linear-gradient(162deg, rgba(255,224,151,0.13), ${theme.mountainLight} 54%, ${theme.mountain} 100%)`,
                       clipPath:
                         "polygon(0 74%, 10% 59%, 22% 68%, 35% 34%, 48% 62%, 62% 41%, 75% 64%, 89% 35%, 100% 53%, 100% 100%, 0 100%)",
                     }}
                   />
 
-                  {/* Niebla horizontal dorada */}
+                  {/* PLANO 2: niebla dorada que separa los relieves */}
                   <div
-                    className="absolute -left-[160px] top-[350px] h-[220px] w-[1420px] rotate-[-10deg] opacity-75 blur-[15px]"
+                    className="absolute -left-[150px] top-[420px] h-[175px] w-[1410px] rotate-[-7deg] opacity-70 blur-[19px]"
                     style={{
                       background:
-                        "linear-gradient(90deg, transparent 0%, rgba(255,230,168,0.06) 20%, rgba(212,168,67,0.38) 50%, rgba(255,230,168,0.08) 78%, transparent 100%)",
+                        "linear-gradient(90deg, transparent 0%, rgba(255,236,183,0.08) 24%, rgba(212,168,67,0.30) 52%, rgba(255,236,183,0.06) 76%, transparent 100%)",
                     }}
                   />
 
-                  {/* Montaña intermedia */}
+                  {/* PLANO 3: sierra media */}
                   <div
-                    className="absolute inset-x-[-60px] bottom-[90px] h-[540px] opacity-80"
+                    className="absolute inset-x-[-70px] bottom-[90px] h-[535px] opacity-86"
                     style={{
-                      background:
-                        "linear-gradient(142deg, rgba(62,91,59,0.80), rgba(8,27,18,0.95) 60%, rgba(1,7,4,0.98))",
+                      background: `linear-gradient(142deg, ${theme.mountainLight}, ${theme.mountain} 56%, ${theme.dark} 100%)`,
                       clipPath:
-                        "polygon(0 67%, 12% 47%, 25% 64%, 39% 37%, 51% 58%, 64% 30%, 78% 56%, 90% 31%, 100% 46%, 100% 100%, 0 100%)",
+                        "polygon(0 68%, 12% 48%, 25% 65%, 39% 38%, 51% 59%, 64% 31%, 78% 57%, 90% 32%, 100% 47%, 100% 100%, 0 100%)",
                     }}
                   />
 
-                  {/* Montaña frontal oscura */}
+                  {/* PLANO 4: montaña frontal de contraste */}
                   <div
-                    className="absolute inset-x-0 bottom-0 h-[370px] opacity-95"
+                    className="absolute inset-x-0 bottom-0 h-[370px] opacity-97"
                     style={{
-                      background:
-                        "linear-gradient(132deg, rgba(24,52,39,0.98), rgba(3,13,9,1) 74%)",
+                      background: `linear-gradient(132deg, ${theme.mountain}, ${theme.dark} 74%)`,
                       clipPath:
                         "polygon(0 54%, 12% 43%, 25% 59%, 39% 34%, 53% 55%, 67% 32%, 80% 53%, 92% 28%, 100% 43%, 100% 100%, 0 100%)",
                     }}
                   />
 
-                  {/* Flare diagonal: esperanza */}
+                  {/* Textura y viñeta: profundidad cinematográfica */}
                   <div
-                    className="absolute -left-[200px] top-[253px] h-[135px] w-[1540px] rotate-[-25deg] opacity-80"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, transparent, rgba(255,245,207,0.06), rgba(255,223,145,0.72), rgba(255,245,207,0.12), transparent)",
-                      filter: "blur(5px)",
-                    }}
-                  />
-
-                  {/* Grano cinematográfico */}
-                  <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.10] mix-blend-screen"
+                    className="pointer-events-none absolute inset-0 opacity-[0.09] mix-blend-screen"
                     style={{
                       backgroundImage:
-                        "radial-gradient(rgba(255,255,255,0.85) 0.65px, transparent 0.85px)",
+                        "radial-gradient(rgba(255,255,255,0.88) 0.65px, transparent 0.85px)",
                       backgroundSize: "6px 6px",
                     }}
                   />
 
-                  {/* Viñeta */}
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_53%_37%,transparent_34%,rgba(0,0,0,0.45)_100%)]" />
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_52%_35%,transparent_34%,rgba(0,0,0,0.47)_100%)]" />
 
-                  {/* Marco exterior de alto relieve */}
+                  {/* Marco tridimensional */}
                   <div
-                    className="pointer-events-none absolute inset-[34px] rounded-[48px] border"
-                    style={{ borderColor: theme.line }}
+                    className="pointer-events-none absolute inset-[33px] rounded-[49px] border shadow-[inset_0_0_0_2px_rgba(0,0,0,0.22)]"
+                    style={{ borderColor: theme.border }}
                   />
-                  <div className="pointer-events-none absolute inset-[48px] rounded-[37px] border border-white/10" />
-                  <div className="pointer-events-none absolute inset-[60px] rounded-[29px] border border-black/20" />
 
-                  {/* Identidad superior */}
-                  <div className="absolute left-[72px] right-[72px] top-[66px] z-30 flex items-center justify-between">
+                  <div className="pointer-events-none absolute inset-[47px] rounded-[38px] border border-white/10" />
+                  <div className="pointer-events-none absolute inset-[59px] rounded-[30px] border border-black/25" />
+
+                  {/* Encabezado */}
+                  <div className="absolute left-[72px] right-[72px] top-[65px] z-30 flex items-center justify-between">
                     <div className="flex items-center gap-5">
-                      <div className="relative h-[85px] w-[85px] overflow-hidden rounded-full border border-[#D4A843]/75 bg-black/20 shadow-[0_10px_23px_rgba(0,0,0,0.30)]">
+                      <div className="relative h-[85px] w-[85px] overflow-hidden rounded-full border border-[#D4A843]/75 bg-black/20 shadow-[0_10px_24px_rgba(0,0,0,0.32)]">
                         <Image
                           src="/assets/img/logo.png"
                           alt="Por los Caminos del Sur"
@@ -719,42 +755,42 @@ export default function TarjetasPage() {
                     </div>
 
                     <div
-                      className="rounded-full border px-6 py-3 text-[14px] font-black uppercase tracking-[0.17em] text-[#F8E8B9] shadow-[0_8px_16px_rgba(0,0,0,0.18)]"
+                      className="rounded-full border px-6 py-3 text-[14px] font-black uppercase tracking-[0.17em] text-[#F8E8B9] shadow-[0_8px_17px_rgba(0,0,0,0.20)]"
                       style={{
-                        borderColor: "rgba(212,168,67,0.66)",
-                        background: "rgba(0,0,0,0.18)",
+                        borderColor: "rgba(212,168,67,0.68)",
+                        background: "rgba(0,0,0,0.20)",
                       }}
                     >
                       Guerrero
                     </div>
                   </div>
 
-                  {/* Mapa de Guerrero, bajo relieve con parallax */}
+                  {/* Mapa en bajo relieve */}
                   <div
-                    className="absolute right-[75px] top-[155px] z-10 h-[238px] w-[306px] text-[#D4A843]/45 transition-transform duration-300"
+                    className="absolute right-[70px] top-[225px] z-10 h-[205px] w-[275px] text-[#D4A843]/42 transition-transform duration-300"
                     style={{
-                      transform: `translate(${tilt.x * 13}px, ${tilt.y * 10}px) rotate(${tilt.x * 1.1}deg)`,
+                      transform: `translate(${tilt.x * 12}px, ${tilt.y * 10}px) rotate(${tilt.x * 1.1}deg)`,
                     }}
                   >
                     <GuerreroMap />
                   </div>
 
-                  {/* Sombra de retrato */}
+                  {/* Sombra de contacto del retrato */}
                   <div
-                    className="absolute left-[98px] top-[706px] z-10 h-[105px] w-[430px] rounded-full bg-black/70 blur-[34px]"
+                    className="absolute left-[96px] top-[745px] z-10 h-[86px] w-[425px] rounded-full bg-black/75 blur-[31px]"
                     style={{
                       transform: `translate(${tilt.x * -3}px, ${tilt.y * 2}px)`,
                     }}
                   />
 
-                  {/* Único retrato: Esthela */}
+                  {/* Primer plano: retrato único */}
                   <div
                     className="absolute left-[70px] top-[230px] z-20 h-[590px] w-[470px]"
                     style={{
                       transform: `translate(${tilt.x * -6}px, ${tilt.y * -4}px)`,
                     }}
                   >
-                    <div className="absolute inset-0 overflow-hidden rounded-[48px] border border-[#D4A843]/75 bg-[#17070C] shadow-[21px_29px_70px_rgba(0,0,0,0.50)]">
+                    <div className="absolute inset-0 overflow-hidden rounded-[48px] border border-[#D4A843]/80 bg-[#17070C] shadow-[22px_30px_72px_rgba(0,0,0,0.54)]">
                       <img
                         src={esthela.path}
                         alt="Esthela Damián"
@@ -762,13 +798,11 @@ export default function TarjetasPage() {
                         className="h-full w-full object-cover object-center"
                       />
 
-                      {/* Luz de retrato y contraste cinematográfico */}
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(255,229,164,0.34),transparent_28%),linear-gradient(180deg,rgba(255,235,189,0.06),transparent_38%,rgba(22,4,10,0.90)_100%)]" />
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_17%,rgba(255,229,164,0.37),transparent_28%),linear-gradient(180deg,rgba(255,235,189,0.07),transparent_37%,rgba(22,4,10,0.92)_100%)]" />
 
-                      {/* Detalle de marco interno */}
                       <div className="pointer-events-none absolute inset-[11px] rounded-[38px] border border-white/20" />
 
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#18060B]/96 via-[#18060B]/60 to-transparent px-9 pb-9 pt-28">
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#18060B]/97 via-[#18060B]/63 to-transparent px-9 pb-9 pt-28">
                         <p className="text-[15px] font-black uppercase tracking-[0.23em] text-[#F8E8B9]">
                           Territorio y comunidad
                         </p>
@@ -776,7 +810,7 @@ export default function TarjetasPage() {
                         <p
                           className="mt-3 font-serif text-[48px] leading-none text-white"
                           style={{
-                            textShadow: "0 4px 14px rgba(0,0,0,0.62)",
+                            textShadow: "0 4px 14px rgba(0,0,0,0.64)",
                           }}
                         >
                           Esthela Damián
@@ -785,9 +819,9 @@ export default function TarjetasPage() {
                     </div>
                   </div>
 
-                  {/* Bloque editorial de frase: sustituye el segundo retrato */}
+                  {/* Segundo foco: manifiesto comunitario */}
                   <div
-                    className="absolute bottom-[165px] left-[585px] right-[78px] z-30"
+                    className="absolute bottom-[157px] left-[580px] right-[72px] z-30"
                     style={{
                       transform: `translate(${tilt.x * 4}px, ${tilt.y * 2}px)`,
                     }}
@@ -796,66 +830,61 @@ export default function TarjetasPage() {
                       Voz del territorio
                     </p>
 
-                    <div className="mt-5 h-[3px] w-[130px] rounded-full bg-[#D4A843]" />
+                    <div className="mt-5 h-[3px] w-[132px] rounded-full bg-[#D4A843] shadow-[0_2px_5px_rgba(0,0,0,0.35)]" />
 
                     <h2
                       className="mt-7 font-serif text-[50px] leading-[0.95] text-[#FFF9E8]"
                       style={{
                         textShadow:
-                          "0 4px 0 rgba(35,7,15,0.48), 0 12px 28px rgba(0,0,0,0.44)",
+                          "0 4px 0 rgba(35,7,15,0.52), 0 13px 28px rgba(0,0,0,0.46)",
                       }}
                     >
                       {phrase}
                     </h2>
 
-                    <div className="mt-8 border-l border-[#D4A843]/75 pl-5">
-                      <p className="text-[19px] font-bold uppercase tracking-[0.12em] text-[#F8E8B9]">
+                    <div className="mt-8 border-l-2 border-[#D4A843] pl-5">
+                      <p
+                        className="text-[19px] font-bold uppercase tracking-[0.12em] text-[#F8E8B9]"
+                        style={{
+                          textShadow: "0 2px 10px rgba(0,0,0,0.72)",
+                        }}
+                      >
                         {displayName}
                       </p>
 
-                      <div className="mt-3 flex items-center gap-2 text-[14px] font-semibold uppercase tracking-[0.16em] text-white/68">
-                        <MapPin size={17} strokeWidth={2.2} />
-                        {municipio}, Guerrero
+                      <div className="mt-4 inline-flex max-w-full items-center gap-3 rounded-full border border-[#D4A843]/60 bg-[#16060A]/85 px-4 py-3 shadow-[0_8px_21px_rgba(0,0,0,0.46)]">
+                        <MapPin
+                          size={18}
+                          strokeWidth={2.5}
+                          className="shrink-0 text-[#F2CF8B]"
+                        />
+
+                        <p
+                          className="text-[14px] font-black uppercase leading-tight tracking-[0.11em] text-[#FFF5D7]"
+                          style={{
+                            textShadow: "0 2px 8px rgba(0,0,0,0.85)",
+                          }}
+                        >
+                          {municipio}, Guerrero
+                        </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Sello metalizado */}
-                  <div
-                    className="absolute bottom-[58px] right-[76px] z-30 grid h-[116px] w-[116px] place-items-center rounded-full border-[3px] text-center text-[#F8E8B9]"
-                    style={{
-                      borderColor: "#D4A843",
-                      background:
-                        "radial-gradient(circle at 30% 23%, #F7DE87 0%, #D6A63C 23%, #885A13 51%, #D4A843 77%, #563205 100%)",
-                      boxShadow:
-                        "inset 0 0 0 7px rgba(61,29,4,0.36), inset 0 0 17px rgba(255,243,194,0.24), 0 13px 26px rgba(0,0,0,0.40)",
-                    }}
-                  >
-                    <div className="rounded-full border border-[#FFE9A4]/55 px-3 py-4">
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em]">
-                        Por los
-                      </p>
-                      <p className="mt-1 font-serif text-[17px] leading-none text-[#FFF4CC]">
-                        Caminos
-                      </p>
-                      <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em]">
-                        del Sur
-                      </p>
-                    </div>
-                  </div>
+                  <MetallicSeal tilt={tilt} />
 
-                  {/* Firma de autenticidad */}
-                  <div className="absolute bottom-[58px] left-[76px] z-30">
+                  {/* Cierre: firma */}
+                  <div className="absolute bottom-[57px] left-[76px] z-30">
                     <p
                       className="font-serif italic text-[34px] text-[#FFF1C2]"
                       style={{
-                        textShadow: "0 3px 12px rgba(0,0,0,0.42)",
+                        textShadow: "0 3px 12px rgba(0,0,0,0.44)",
                       }}
                     >
                       Por los caminos del sur
                     </p>
 
-                    <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.25em] text-white/55">
+                    <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.25em] text-white/58">
                       #PorlosCaminosdelSur
                     </p>
                   </div>
@@ -865,9 +894,8 @@ export default function TarjetasPage() {
           </div>
 
           <p className="mt-6 max-w-[600px] text-center text-xs leading-relaxed text-[#221B19]/55">
-            La descarga genera un PNG nativo de 1080 × 1080. La vista previa
-            sólo está escalada para la pantalla: no interviene en el archivo
-            final.
+            La descarga genera un PNG nativo de 1080 × 1080. El escalamiento
+            corresponde sólo a la vista previa y no afecta el archivo final.
           </p>
         </section>
       </section>
