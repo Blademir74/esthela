@@ -771,7 +771,7 @@ export default function TarjetasPage() {
                  
 {/* Mapa real de Guerrero en imagen */}{/* Mapa real de Guerrero, integrado al fondo */}
 <div
-  className="absolute right-[109px] top-[215px] z-10 h-[278px] w-[372px] opacity-[0.27] transition-transform duration-300"
+  className="absolute right-[109px] top-[215px] z-10 h-[298px] w-[392px] opacity-[0.27] transition-transform duration-300"
   style={{
     transform: `translate(${tilt.x * 7}px, ${tilt.y * 5}px) rotate(${tilt.x * 0.4}deg)`,
     filter: "drop-shadow(0 12px 22px rgba(0,0,0,0.24)) grayscale(0.06)",
