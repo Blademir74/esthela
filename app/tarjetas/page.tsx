@@ -771,10 +771,10 @@ export default function TarjetasPage() {
                  
 {/* Mapa real de Guerrero en imagen */}{/* Mapa real de Guerrero, integrado al fondo */}
 <div
-  className="absolute right-[139px] top-[235px] z-10 h-[438px] w-[432px] opacity-[0.27] transition-transform duration-300"
+  className="absolute right-[122px] top-[168px] z-10 h-[355px] w-[468px] opacity-[0.28] transition-transform duration-300"
   style={{
-    transform: `translate(${tilt.x * 7}px, ${tilt.y * 5}px) rotate(${tilt.x * 0.4}deg)`,
-    filter: "drop-shadow(0 12px 22px rgba(0,0,0,0.24)) grayscale(0.06)",
+    transform: `translate(${tilt.x * 6}px, ${tilt.y * 4}px) rotate(${tilt.x * 0.32}deg)`,
+    filter: "drop-shadow(0 12px 22px rgba(0,0,0,0.22)) grayscale(0.04)",
     mixBlendMode: "screen",
   }}
 >
@@ -782,7 +782,7 @@ export default function TarjetasPage() {
     src="/assets/img/mapa.jpg"
     alt=""
     crossOrigin="anonymous"
-    className="h-full w-full object-contain"
+    className="h-full w-full object-contain object-center"
   />
 </div>
 
