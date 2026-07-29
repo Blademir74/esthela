@@ -656,7 +656,7 @@ export default function HomePage() {
             <div className="overflow-hidden rounded-[2.5rem] border border-[#D7CCBC]/55 bg-white p-3 shadow-editorial">
               <div className="relative aspect-[16/10] overflow-hidden rounded-[1.8rem]">
                 <Image
-                  src="/assets/img/foto30.jpg"
+                  src="/assets/img/foto22.jfif"
                   alt="Esthela Damián caminando en territorio guerrerense"
                   fill
                   className="object-cover"
