@@ -2,213 +2,348 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
-  CalendarDays,
+  CheckCircle2,
+  FileUp,
   MapPin,
   Menu,
   MessageCircleHeart,
   MoveRight,
-  PlayCircle,
   Quote,
-  X,
+  Send,
   Shield,
   Sparkles,
   Volume2,
   VolumeX,
+  X,
 } from "lucide-react";
-import { useMemo, useState, useRef } from "react";
+import { ChangeEvent, FormEvent, useRef, useState } from "react";
+
+const whatsappHref =
+  "https://chat.whatsapp.com/HSUgjqCm69g8vKujvgkNFN";
 
 const routes = [
   {
     title: "Soberanía y conectividad",
-    text: "Pensar los caminos, la infraestructura y el desarrollo desde el interés público y las decisiones de las comunidades.",
+    text: "Pensar caminos, infraestructura y conectividad con criterio público y escuchando a las comunidades.",
     image: "/assets/img/soberania.jpg",
-    tone: "from-[#133B5C] to-[#0D2940]",
-    num: "01",
     tag: "Infraestructura",
+    tone: "from-[#133B5C] to-[#0D2940]",
   },
   {
     title: "Campo y economía comunitaria",
-    text: "Reconocer a quienes trabajan la tierra y fortalecer el diálogo por la soberanía alimentaria y el trabajo comunitario.",
+    text: "Fortalecer el trabajo de la tierra, el valor local y la soberanía alimentaria desde el territorio.",
     image: "/assets/img/campo.png",
-    tone: "from-[#244C3A] to-[#11231D]",
-    num: "02",
     tag: "Producción",
+    tone: "from-[#244C3A] to-[#11231D]",
   },
   {
     title: "Mujeres e igualdad sustantiva",
-    text: "Abrir espacios de participación, organización y respeto para una vida con derechos y libre de violencias.",
-    image: "/assets/img/mujeres.jfif",
+    text: "Abrir espacios de organización y derechos con una imagen de cercanía real en territorio.",
+    image: "/assets/img/foto15.jfif",
+    tag: "Igualdad",
     tone: "from-[#7A1F2B] to-[#4A0F18]",
-    num: "03",
-    tag: "Derechos",
   },
   {
     title: "Educación y juventudes",
-    text: "Defender la educación pública, las oportunidades y las vocaciones que construyen futuro en cada región.",
+    text: "Defender la educación pública y las oportunidades para que el futuro se construya desde Guerrero.",
     image: "/assets/img/juventud.jpg",
-    tone: "from-[#15395C] to-[#10293E]",
-    num: "04",
     tag: "Juventud",
+    tone: "from-[#15395C] to-[#10293E]",
   },
   {
     title: "Agua y salud comunitaria",
-    text: "Poner en el centro el cuidado, la prevención, el acceso al agua y el bienestar de las comunidades.",
+    text: "Poner el cuidado, la prevención y el acceso al agua en el centro de la conversación pública.",
     image: "/assets/img/agua.jpg",
+    tag: "Bienestar",
     tone: "from-[#285B72] to-[#133B5C]",
-    num: "05",
-    tag: "Salud",
   },
 ];
 
-const municipalities = [
-  { name: "Acapulco de Juárez", quote: "Organizarnos es defender lo nuestro. Aquí la transformación late con fuerza popular y cercanía." },
-  { name: "Chilpancingo de los Bravo", quote: "Escuchar también transforma. La capital se organiza desde sus barrios históricos con asambleas." },
-  { name: "Iguala de la Independencia", quote: "El futuro se conversa y se organiza. La historia nos convoca a defender la soberanía nacional." },
-  { name: "Zihuatanejo de Azueta", quote: "Desde la costa, abrimos camino. Las comunidades pescadoras y prestadores tienen voz activa." },
-  { name: "Chilapa de Álvarez", quote: "Nuestras raíces defienden el territorio. El trabajo comunitario y los tianguis son nuestra fuerza." },
-  { name: "Taxco de Alarcón", quote: "El porvenir se construye caminando. La voz de los plateros y artesanos se escucha en alto." },
-  { name: "Tlapa de Comonfort", quote: "La montaña habla con dignidad popular. No hay transformación sin los pueblos originarios." },
-  { name: "Coyuca de Benítez", quote: "El campo es la base de la soberanía. Fortalecer la economía comunitaria de coco y mango es prioridad." },
-  { name: "Ometepec", quote: "Caminos de igualdad para todas y todos en la Costa Chica. El territorio se defiende organizado." },
-  { name: "Tecpan de Galeana", quote: "La soberanía alimentaria nace de la tierra trabajada con respeto. Apoyo mutuo en cada huerta." },
-  { name: "Atoyac de Álvarez", quote: "Historia, café y lucha en cada camino serrano. La dignidad y la memoria no se negocian." },
-  { name: "Ayutla de los Libres", quote: "La asamblea decide, el pueblo manda. La organización autónoma comunitaria florece con fuerza." },
-  { name: "Eduardo Neri", quote: "Minerales y campo en desarrollo público. La soberanía de los recursos naturales pertenece al pueblo." },
-  { name: "Teloloapan", quote: "La voz del norte guerrerense es firme. La organización social es escudo y motor de cambio." },
-  { name: "Tixtla de Guerrero", quote: "Semillero de maestros, próceres y luchadores. La educación pública es la base del futuro." },
-  { name: "San Luis Acatlán", quote: "Justicia comunitaria y organización en el corazón indígena de Guerrero. Ejemplo de ley interna." },
-  { name: "Tecoanapa", quote: "El acceso al agua potable y la salud básica son derechos colectivos, no mercancías privadas." },
-  { name: "Petatlán", quote: "Cuidar nuestros bosques y ríos es defender el futuro ecológico y social de Guerrero." },
-  { name: "Huitzuco de los Figueroa", quote: "Cultura, siembra y memoria en cada rincón del territorio. La cuna revolucionaria se defiende." },
-  { name: "San Marcos", quote: "Juventudes activas organizando el mañana desde el territorio. El sur se renueva con ideas claras." },
+const voices = [
+  {
+    name: "Acapulco de Juárez",
+    quote: "Organizarnos es defender lo nuestro. Aquí la transformación late con fuerza popular y cercanía.",
+  },
+  {
+    name: "Chilpancingo de los Bravo",
+    quote: "Escuchar también transforma. La capital se organiza desde sus barrios con conversación permanente.",
+  },
+  {
+    name: "Iguala de la Independencia",
+    quote: "El futuro se conversa y se organiza. La historia también nos llama a defender la soberanía nacional.",
+  },
+  {
+    name: "Zihuatanejo de Azueta",
+    quote: "Desde la costa abrimos camino. La vida del litoral también merece presencia y organización.",
+  },
+  {
+    name: "Chilapa de Álvarez",
+    quote: "Nuestras raíces sostienen el territorio. La comunidad también es una forma de futuro.",
+  },
+  {
+    name: "Taxco de Alarcón",
+    quote: "El porvenir se construye caminando y escuchando. La tradición productiva también tiene voz.",
+  },
+  {
+    name: "Tlapa de Comonfort",
+    quote: "La Montaña habla con dignidad popular. No hay transformación sin pueblos originarios y escucha real.",
+  },
+  {
+    name: "Coyuca de Benítez",
+    quote: "El campo es la base de la soberanía. La economía comunitaria merece cuidado y continuidad.",
+  },
+  {
+    name: "Ometepec",
+    quote: "La Costa Chica también organiza su horizonte. Igualdad y comunidad deben caminar juntas.",
+  },
+  {
+    name: "Tecpan de Galeana",
+    quote: "La soberanía alimentaria nace en la tierra trabajada con respeto y organización local.",
+  },
+  {
+    name: "Atoyac de Álvarez",
+    quote: "Historia, café y memoria en cada camino serrano. La dignidad no se negocia.",
+  },
+  {
+    name: "Ayutla de los Libres",
+    quote: "La asamblea decide y el territorio responde. La organización comunitaria es fuerza viva.",
+  },
+  {
+    name: "Eduardo Neri",
+    quote: "Los recursos y el desarrollo deben pensarse desde el bien común y la voz de su gente.",
+  },
+  {
+    name: "Teloloapan",
+    quote: "La voz del norte guerrerense es firme. La organización social es motor y resguardo.",
+  },
+  {
+    name: "Tixtla de Guerrero",
+    quote: "La educación pública y la memoria histórica sostienen el mañana.",
+  },
+  {
+    name: "San Luis Acatlán",
+    quote: "La justicia comunitaria y la organización territorial son una lección de soberanía cotidiana.",
+  },
+  {
+    name: "Tecoanapa",
+    quote: "El agua y la salud básica son derechos colectivos, no privilegios.",
+  },
+  {
+    name: "Petatlán",
+    quote: "Cuidar bosques, ríos y comunidad es defender el futuro ecológico y social de Guerrero.",
+  },
+  {
+    name: "Huitzuco de los Figueroa",
+    quote: "Cultura, siembra y memoria siguen ordenando la vida del territorio.",
+  },
+  {
+    name: "San Marcos",
+    quote: "Las juventudes activas organizan el mañana desde el territorio y sus propias ideas.",
+  },
 ];
 
-const galleryItems = [
-  { image: "/assets/img/foto2.jfif", title: "Escucha Activa", desc: "Esthela dialogando en asambleas populares", span: "lg:col-span-2 lg:row-span-2 aspect-[4/5] lg:aspect-auto" },
-  { image: "/assets/img/foto.jpg", title: "Caminos del Sur", desc: "El territorio habla a través de su relieve", span: "aspect-[4/3]" },
-  { image: "/assets/img/foto15.jfif", title: "Mujeres del Sur", desc: "Tejiendo la red de igualdad sustantiva", span: "aspect-[4/3]" },
-  { image: "/assets/img/foto1.png", title: "Organización Agrícola", desc: "La base alimentaria comunitaria en Guerrero", span: "lg:col-span-2 aspect-[16/9]" },
-  { image: "/assets/img/foto17.jfif", title: "Diálogo Abierto", desc: "Conversaciones francas casa por casa", span: "aspect-[4/5]" },
-  { image: "/assets/img/foto20.jfif", title: "Juventud Consciente", desc: "Foros regionales de educación y vocación", span: "aspect-[1/1]" },
-  { image: "/assets/img/foto22.jfif", title: "Soberanía y Unión", desc: "Encuentros por el bienestar popular", span: "aspect-[4/3]" },
+const gallery = [
+  {
+    image: "/assets/img/foto2.jfif",
+    title: "Escucha activa",
+    desc: "Esthela dialogando en territorio.",
+    span: "md:col-span-2 md:row-span-2",
+  },
+  {
+    image: "/assets/img/foto17.jfif",
+    title: "Diálogo abierto",
+    desc: "Presencia real, no pose.",
+    span: "",
+  },
+  {
+    image: "/assets/img/foto22.jfif",
+    title: "Comunidad",
+    desc: "Voz organizada y compartida.",
+    span: "",
+  },
+  {
+    image: "/assets/img/foto29.jpg",
+    title: "Recorrido",
+    desc: "Territorio, escucha y cercanía.",
+    span: "md:col-span-2",
+  },
+  {
+    image: "/assets/img/foto.jpg",
+    title: "Paisaje político",
+    desc: "Guerrero como atmósfera y causa.",
+    span: "",
+  },
 ];
 
-const agenda = [
-  {
-    status: "Próximamente",
-    place: "Chilpancingo de los Bravo",
-    type: "Diálogo Territorial",
-    desc: "Encuentro vecinal para la planeación de la conectividad y organización local.",
-    date: "24 de Julio",
-  },
-  {
-    status: "Próximamente",
-    place: "Acapulco de Juárez",
-    type: "Reunión Comunitaria",
-    desc: "Mesa de escucha sobre la infraestructura hidráulica y bienestar social.",
-    date: "28 de Julio",
-  },
-  {
-    status: "Próximamente",
-    place: "Iguala de la Independencia",
-    type: "Foro de Juventudes",
-    desc: "Espacio de formación política, debate y propuestas para el relevo generacional.",
-    date: "02 de Agosto",
-  },
-];
+type FormState = {
+  name: string;
+  phone: string;
+  email: string;
+  idea: string;
+};
+
+const initialForm: FormState = { name: "", phone: "", email: "", idea: "" };
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [heroReady, setHeroReady] = useState(false);
   const [videoMuted, setVideoMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Estado para el municipio activo en el Mapa de Voces
-  const [hoveredMunicipio, setHoveredMunicipio] = useState<typeof municipalities[0]>(municipalities[0]);
+  const [activeVoice, setActiveVoice] = useState(voices[0]);
+  const [form, setForm] = useState<FormState>(initialForm);
+  const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setVideoMuted(videoRef.current.muted);
+    if (!videoRef.current) return;
+    videoRef.current.muted = !videoRef.current.muted;
+    setVideoMuted(videoRef.current.muted);
+  };
+
+  const onInput = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setSubmitted(false);
+    setError("");
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === "phone" ? value.replace(/\D/g, "").slice(0, 10) : value,
+    }));
+  };
+
+  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0] ?? null;
+    setSubmitted(false);
+    if (!selected) return setFile(null);
+    const validType = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ].includes(selected.type);
+    if (!validType) {
+      setError("Solo se permiten archivos PDF o Word.");
+      e.target.value = "";
+      return;
+    }
+    if (selected.size > 8 * 1024 * 1024) {
+      setError("El archivo supera el máximo de 8MB.");
+      e.target.value = "";
+      return;
+    }
+    setError("");
+    setFile(selected);
+  };
+
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setSubmitted(false);
+    if (!form.name.trim() || !form.email.trim() || !form.idea.trim()) {
+      return setError("Completa nombre, email y propuesta.");
+    }
+    if (form.phone.length !== 10) {
+      return setError("El teléfono debe tener 10 dígitos.");
+    }
+    const data = new FormData();
+    data.append("name", form.name);
+    data.append("phone", form.phone);
+    data.append("email", form.email);
+    data.append("idea", form.idea);
+    if (file) data.append("file", file);
+
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/ideas", { method: "POST", body: data });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "No se pudo enviar la propuesta.");
+      setForm(initialForm);
+      setFile(null);
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo enviar la propuesta.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <main className="overflow-x-hidden bg-[#F4EFE6] text-[#1E1E1C] font-sans selection:bg-[#7A1F2B] selection:text-[#FFFDF8]">
-      
-      {/* HEADER EDITORIAL PREMIUM */}
-      <header className="absolute inset-x-0 top-0 z-50 transition-all duration-300">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 lg:px-8">
-          <Link href="/" className="focus-ring flex items-center gap-3.5 text-white">
-            <div className="relative h-14 w-14 overflow-hidden rounded-full border border-white/20 bg-white/10 p-1 backdrop-blur transition hover:border-oro/60">
-              <Image
-                src="/assets/img/logo.png"
-                alt="Logo Por los Caminos del Sur"
-                fill
-                className="object-contain p-2"
-                priority
-              />
+    <main className="overflow-x-hidden bg-[#F4EFE6] text-[#1E1E1C] selection:bg-[#7A1F2B] selection:text-white">
+      <style jsx global>{`
+        .paper-grain{position:relative;isolation:isolate}
+        .paper-grain:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.38;background-image:radial-gradient(rgba(122,31,43,.07) .55px, transparent .65px),radial-gradient(rgba(17,35,29,.05) .45px, transparent .55px),linear-gradient(180deg, rgba(255,255,255,.18), rgba(212,168,67,.05));background-size:12px 12px,18px 18px,100% 100%;mix-blend-mode:multiply}
+        .glass-gold{background:rgba(255,253,248,.16);backdrop-filter:blur(18px);border:1px solid rgba(212,168,67,.32);box-shadow:0 20px 60px rgba(17,35,29,.12)}
+        .hero-overlay{background:linear-gradient(90deg,rgba(8,14,17,.84) 0%,rgba(32,14,20,.68) 40%,rgba(8,14,17,.56) 100%),radial-gradient(circle at 20% 20%,rgba(212,168,67,.22),transparent 30%)}
+        .gold-line{height:3px;width:4rem;border-radius:999px;background:#D4A843}
+        .poster-glow{box-shadow:0 25px 80px rgba(122,31,43,.28)}
+        .focus-ring:focus-visible{outline:2px solid #D4A843;outline-offset:3px}
+        .scroll-touch{scrollbar-width:thin;scrollbar-color:rgba(212,168,67,.55) transparent}
+        .scroll-touch::-webkit-scrollbar{width:8px}.scroll-touch::-webkit-scrollbar-thumb{background:rgba(212,168,67,.55);border-radius:999px}
+      `}</style>
+
+      <header className="absolute inset-x-0 top-0 z-50">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-5 lg:px-8 lg:py-6">
+          <Link href="/" className="focus-ring flex items-center gap-3 text-white">
+            <div className="glass-gold relative h-12 w-12 overflow-hidden rounded-full p-1 sm:h-14 sm:w-14">
+              <Image src="/assets/img/logo.png" alt="Logo Por los Caminos del Sur" fill className="object-contain p-1.5" priority />
             </div>
             <div>
-              <span className="block font-editorial text-2xl leading-none tracking-wide text-[#FFFDF8]">
+              <span className="block text-xl font-semibold leading-none text-[#FFFDF8] sm:text-2xl" style={{ fontFamily: "Georgia, serif" }}>
                 Esthela Damián
               </span>
-              <span className="mt-1 block text-[10px] font-bold tracking-[0.24em] uppercase text-[#D49A3A]">
+              <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.22em] text-[#D4A843]">
                 Por los Caminos del Sur
               </span>
             </div>
           </Link>
 
-          {/* Navegación de diario político contemporáneo */}
-          <nav className="hidden items-center gap-8 text-xs font-bold uppercase tracking-wider text-[#FFFDF8] lg:flex">
-            <a href="#manifiesto" className="transition hover:text-[#D49A3A] hover:underline underline-offset-4">Manifiesto</a>
-            <a href="#rutas" className="transition hover:text-[#D49A3A] hover:underline underline-offset-4">Rutas del Sur</a>
-            <a href="#voces" className="transition hover:text-[#D49A3A] hover:underline underline-offset-4">Mapa de Voces</a>
-            <a href="#galeria" className="transition hover:text-[#D49A3A] hover:underline underline-offset-4">Galería</a>
-            <a href="#agenda" className="transition hover:text-[#D49A3A] hover:underline underline-offset-4">Agenda</a>
-            
-            <Link
-              href="/tarjetas"
-              className="rounded-full bg-[#D49A3A] px-6 py-3 text-center text-[#1E1E1C] font-bold shadow-md hover:bg-[#FFFDF8] transition duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-oro"
-            >
+          <nav className="hidden items-center gap-7 text-[11px] font-bold uppercase tracking-[0.22em] text-white lg:flex">
+            <a href="#manifiesto">Manifiesto</a>
+            <a href="#rutas">Rutas</a>
+            <a href="#voces">Voces</a>
+            <a href="#galeria">Galería</a>
+            <a href="#idea">Tu idea</a>
+            <Link href="/tarjetas" className="rounded-full bg-[#D4A843] px-5 py-3 text-[#5D1324]">
               Crea tu póster
             </Link>
           </nav>
 
-          {/* Hamburguesa móvil */}
           <button
             type="button"
             aria-label="Abrir menú"
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="focus-ring rounded-full p-2.5 text-white bg-white/10 backdrop-blur lg:hidden border border-white/15"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="glass-gold rounded-full p-2.5 text-white lg:hidden"
           >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            {menuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
 
-        {/* Menú móvil drop */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="border-t border-white/10 bg-[#11231D]/95 px-5 py-6 backdrop-blur lg:hidden"
+              exit={{ opacity: 0, y: -12 }}
+              className="mx-4 rounded-[1.8rem] border border-white/10 bg-[#11231D]/90 px-5 py-5 text-white backdrop-blur-xl lg:hidden"
             >
-              <nav className="mx-auto flex max-w-7xl flex-col gap-4 text-xs font-bold uppercase tracking-wider text-white">
-                <a href="#manifiesto" onClick={() => setMenuOpen(false)} className="py-2 border-b border-white/5">Manifiesto</a>
-                <a href="#rutas" onClick={() => setMenuOpen(false)} className="py-2 border-b border-white/5">Rutas del Sur</a>
-                <a href="#voces" onClick={() => setMenuOpen(false)} className="py-2 border-b border-white/5">Mapa de Voces</a>
-                <a href="#galeria" onClick={() => setMenuOpen(false)} className="py-2 border-b border-white/5">Galería</a>
-                <a href="#agenda" onClick={() => setMenuOpen(false)} className="py-2 border-b border-white/5">Agenda</a>
-                <Link
-                  href="/tarjetas"
-                  onClick={() => setMenuOpen(false)}
-                  className="mt-2 block w-full rounded-full bg-[#D49A3A] py-3 text-center text-[#1E1E1C] font-bold"
-                >
+              <nav className="flex flex-col gap-3 text-xs font-bold uppercase tracking-[0.18em]">
+                {[
+                  ["#manifiesto", "Manifiesto"],
+                  ["#rutas", "Rutas"],
+                  ["#voces", "Voces"],
+                  ["#galeria", "Galería"],
+                  ["#idea", "Tu idea"],
+                ].map(([href, label]) => (
+                  <a key={href} href={href} onClick={() => setMenuOpen(false)} className="border-b border-white/10 py-2">
+                    {label}
+                  </a>
+                ))}
+                <Link href="/tarjetas" onClick={() => setMenuOpen(false)} className="mt-2 rounded-full bg-[#D4A843] px-5 py-3 text-center text-[#5D1324]">
                   Crea tu póster
                 </Link>
               </nav>
@@ -217,23 +352,11 @@ export default function HomePage() {
         </AnimatePresence>
       </header>
 
-      {/* 1. HERO CINEMATOGRÁFICO DE ALTO IMPACTO */}
-      <section className="relative min-h-[100svh] overflow-hidden bg-[#11231D] flex items-center">
-        {/* Imagen de fallback estática */}
-        <Image
-          src="/assets/img/foto28.jpg"
-          alt="Esthela Damián recorriendo Guerrero"
-          fill
-          priority
-          className="object-cover object-center"
-        />
-
-        {/* Video en bucle */}
+      <section className="relative flex min-h-[100svh] items-center overflow-hidden bg-[#11231D]">
+        <Image src="/assets/img/foto28.jpg" alt="Esthela Damián recorriendo Guerrero" fill priority className="object-cover object-center" sizes="100vw" />
         <video
           ref={videoRef}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-            heroReady ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${heroReady ? "opacity-100" : "opacity-0"}`}
           autoPlay
           muted
           loop
@@ -244,840 +367,334 @@ export default function HomePage() {
         >
           <source src="/assets/img/video1.mp4" type="video/mp4" />
         </video>
+        <div className="hero-overlay absolute inset-0" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#F4EFE6] to-transparent" />
 
-        {/* Overlay cinematográfico de globals.css */}
-        <div className="absolute inset-0 hero-overlay-cinematic" />
-        <div className="absolute inset-x-0 bottom-0 z-10 h-32 bg-gradient-to-t from-[#F4EFE6] to-transparent opacity-80" />
-
-        {/* Contenido tipográfico y sello de marca */}
-        <div className="relative z-20 mx-auto w-full max-w-7xl px-5 pb-16 pt-32 lg:px-8 lg:pb-24">
-          <div className="grid w-full gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="max-w-4xl"
-            >
-              {/* Badge Identitario */}
-              <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-[#D49A3A]/40 bg-black/30 px-4.5 py-2 text-[10px] font-bold tracking-[0.2em] text-[#F4EFE6] uppercase backdrop-blur-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D49A3A] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D49A3A]"></span>
-                </span>
-                Guerrero · Territorio Activo
+        <div className="relative z-10 mx-auto grid w-full max-w-7xl gap-10 px-4 pb-14 pt-28 sm:px-5 md:pb-20 lg:grid-cols-[1.08fr_.92fr] lg:px-8 lg:pt-32">
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D4A843]/40 bg-black/20 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#F4EFE6] backdrop-blur-sm">
+              <span className="h-2 w-2 rounded-full bg-[#D4A843]" /> Guerrero · territorio activo
+            </div>
+            <div className="mb-5 flex items-center gap-3">
+              <div className="glass-gold relative h-11 w-11 overflow-hidden rounded-full p-1">
+                <Image src="/assets/img/logo.png" alt="Logo Por los Caminos del Sur" fill className="object-contain p-1.5" />
               </div>
+              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#D4A843]">#PorlosCaminosdelSur</span>
+            </div>
+            <h1 className="max-w-[11ch] text-balance text-[2.8rem] leading-[.92] text-[#FFFDF8] sm:text-6xl lg:text-[6.2rem]" style={{ fontFamily: "Georgia, serif" }}>
+              Guerrero se organiza.
+              <span className="block pt-2 italic text-[#D4A843]">Su futuro se defiende.</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-7 text-[#F4EFE6]/88 sm:text-lg sm:leading-8 lg:text-xl">
+              Voces, comunidades y caminos para escuchar, organizar el territorio y defender la soberanía con una imagen digital a la altura del momento político de Guerrero.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a href="#voces" className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-[#D4A843] px-6 py-4 text-sm font-bold text-[#5D1324] transition hover:-translate-y-0.5 hover:bg-[#FFF7E2]">
+                Conoce las voces del Sur <ArrowRight size={16} />
+              </a>
+              <Link href="/tarjetas" className="focus-ring inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-4 text-sm font-bold text-white transition hover:bg-white/10">
+                Crea tu póster social <MessageCircleHeart size={16} />
+              </Link>
+            </div>
+          </motion.div>
 
-              {/* Sello / Marca en Hero */}
-              <div className="mb-6 flex items-center gap-3">
-                <div className="relative h-12 w-12 overflow-hidden rounded-full border border-white/20 bg-white/10 backdrop-blur p-1">
-                  <Image
-                    src="/assets/img/logo.png"
-                    alt="Logo Por los Caminos del Sur"
-                    fill
-                    className="object-contain p-1.5"
-                  />
-                </div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#D49A3A] brand-seal">
-                  Por los Caminos del Sur
-                </p>
+          <motion.aside initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15 }} className="lg:pl-8">
+            <div className="glass-gold rounded-[2rem] p-5 text-white sm:p-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#D4A843]">Señal editorial</p>
+                <button onClick={toggleMute} className="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20" title={videoMuted ? "Activar audio" : "Silenciar"}>
+                  {videoMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                </button>
               </div>
-
-              {/* Titular */}
-              <h1 className="font-editorial text-balance text-5xl leading-[0.9] text-[#FFFDF8] sm:text-7xl lg:text-[6.5rem]">
-                Guerrero se organiza.
-                <span className="block pt-2 text-[#D49A3A] italic font-semibold">Su futuro se defiende.</span>
-              </h1>
-
-              {/* Párrafo Narrativo */}
-              <p className="mt-8 max-w-2xl text-lg lg:text-xl leading-relaxed text-[#F4EFE6]/90 font-medium">
-                Voces, comunidades y caminos para dialogar, consolidar la soberanía popular y organizar el territorio con la dignidad y fuerza que caracterizan al sur de México.
+              <p className="mt-5 text-3xl italic leading-snug text-white sm:text-4xl" style={{ fontFamily: "Georgia, serif" }}>
+                “Escuchar también transforma.”
               </p>
-
-              {/* Botones de Acción */}
-              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <a
-                  href="#voces"
-                  className="focus-ring inline-flex items-center justify-center gap-2.5 rounded-full bg-[#D49A3A] px-7 py-4 font-bold text-[#1E1E1C] transition duration-300 hover:bg-[#FFFDF8] hover:shadow-lg hover:-translate-y-0.5"
-                >
-                  Conoce las voces del Sur
-                  <ArrowRight size={16} />
-                </a>
-                <Link
-                  href="/tarjetas"
-                  className="focus-ring inline-flex items-center justify-center gap-2.5 rounded-full border-2 border-[#FFFDF8]/45 px-7 py-4 font-bold text-white transition duration-300 hover:bg-white/10 hover:-translate-y-0.5"
-                >
-                  Crea tu póster social
-                  <MessageCircleHeart size={16} />
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* Señal Editorial Flotante a la Derecha */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="hidden lg:block"
-            >
-              <div className="ml-auto max-w-md rounded-[2rem] border border-white/15 bg-black/20 p-6.5 backdrop-blur-xl shadow-editorial">
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D49A3A]">
-                    Señal Editorial
-                  </p>
-                  <button
-                    onClick={toggleMute}
-                    className="rounded-full bg-white/10 p-1.5 text-white hover:bg-white/20 transition"
-                    title={videoMuted ? "Activar audio" : "Silenciar"}
-                  >
-                    {videoMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                  </button>
-                </div>
-                
-                <p className="mt-5 font-editorial text-3xl leading-snug text-white italic">
-                  “Escuchar también transforma.”
-                </p>
-                <p className="mt-4 text-xs leading-relaxed text-white/70">
-                  Una narrativa política de base que nace del territorio, no de la lejanía. La soberanía se teje escuchando a cada región.
-                </p>
-                <div className="mt-6 flex items-center justify-between pt-4 border-t border-white/10 text-[10px] font-bold tracking-wider text-white/50">
-                  <span>#PorlosCaminosdelSur</span>
-                  <span className="text-[#D49A3A]">CEDTSN 2026</span>
+              <p className="mt-4 text-sm leading-7 text-white/78">
+                El nuevo tratamiento visual abandona lo plano: más profundidad, más atmósfera, mejor lectura en móvil y una narrativa de lujo político sin estridencias.
+              </p>
+              <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-white/10">
+                <div className="relative aspect-[16/10]">
+                  <Image src="/assets/img/foto17.jfif" alt="Esthela interactuando con personas en territorio guerrerense" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 40vw" />
                 </div>
               </div>
-            </motion.div>
-          </div>
+            </div>
+          </motion.aside>
         </div>
       </section>
 
-      {/* 2. EL MANIFIESTO (REVISTA EDITORIAL) */}
-      <section
-        id="manifiesto"
-        className="relative overflow-hidden bg-[#F4EFE6] px-5 py-24 lg:px-8 lg:py-32 paper-grain"
-      >
-        <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-[#D49A3A]/5 blur-[120px]" />
-        
-        <div className="mx-auto grid max-w-7xl gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          {/* Columna Izquierda: Retrato de Esthela */}
+      <section id="manifiesto" className="paper-grain relative overflow-hidden px-4 py-20 sm:px-5 lg:px-8 lg:py-28">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[.95fr_1.05fr] lg:items-center">
           <div className="relative">
-            <div className="overflow-hidden rounded-[2.5rem] bg-[#FFFDF8] p-3 shadow-editorial border border-[#D7CCBC]/50">
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.8rem]">
-                <Image
-                  src="/assets/img/foto29.jpg"
-                  alt="Esthela Damián dialogando con vecinas de Guerrero"
-                  fill
-                  className="object-cover transition duration-700 hover:scale-[1.02]"
-                />
+            <div className="rounded-[2rem] border border-[#D7CCBC]/60 bg-white/70 p-2 shadow-[0_24px_60px_rgba(17,35,29,.10)]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.6rem]">
+                <Image src="/assets/img/foto29.jpg" alt="Esthela Damián en diálogo con vecinas y vecinos" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 45vw" />
               </div>
             </div>
-
-            {/* Insignia Editorial Flotante */}
-            <div className="absolute -bottom-8 left-6 right-6 rounded-[2rem] bg-[#11231D] p-6 text-white shadow-editorial border border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="relative h-10 w-10 overflow-hidden rounded-full bg-white/10 border border-white/15">
-                  <Image
-                    src="/assets/img/logo.png"
-                    alt="Logo Por los Caminos del Sur"
-                    fill
-                    className="object-contain p-1.5"
-                  />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D49A3A]">
-                    Organización Territorial
-                  </p>
-                  <p className="text-[9px] text-white/50">Guerrero en defensa de la soberanía</p>
-                </div>
-              </div>
-              <p className="mt-4 text-xs leading-relaxed text-white/80 italic">
-                “Caminar Guerrero no es una campaña de carteles, es un compromiso de escucha, territorio y presencia real con el pueblo.”
-              </p>
+            <div className="glass-gold absolute -bottom-7 left-4 right-4 rounded-[1.8rem] p-5 text-[#11231D] sm:left-8 sm:right-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7A1F2B]">Organización territorial</p>
+              <p className="mt-2 text-sm leading-6">Caminar, escuchar y defender lo nuestro como método político y lenguaje visual.</p>
             </div>
           </div>
-
-          {/* Columna Derecha: Contenido del Manifiesto */}
           <div className="pt-8 lg:pt-0">
-            <span className="text-[11px] font-bold tracking-[0.2em] text-[#7A1F2B] uppercase">
-              Manifiesto de Transformación
-            </span>
-            <div className="my-4 h-[3px] w-16 bg-[#D49A3A] rounded-full" />
-            
-            <h2 className="font-editorial text-4xl leading-tight text-[#11231D] sm:text-5xl lg:text-[3.5rem] lg:leading-[1.05]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#7A1F2B]">Manifiesto</p>
+            <div className="gold-line my-4" />
+            <h2 className="text-4xl leading-tight text-[#11231D] sm:text-5xl lg:text-[3.45rem]" style={{ fontFamily: "Georgia, serif" }}>
               Caminar Guerrero es escuchar su historia, su fuerza y sus causas.
             </h2>
-            
-            <div className="mt-8 space-y-6 text-base leading-relaxed text-[#1E1E1C]/80">
-              <p>
-                Desde cada barrio, colonia y ejido de Guerrero, la organización territorial se erige como el camino indispensable para dialogar, estructurar causas colectivas y defender el bienestar común.
-              </p>
-              <p className="font-semibold text-[#11231D]">
-                Este espacio no se edifica desde las oficinas ni la distancia mediática. Se construye a pie, compartiendo experiencias con el pueblo trabajador, organizando comités de defensa y construyendo soberanía nacional en cada rincón del estado.
-              </p>
-              <p>
-                Con el espíritu de la convocatoria de Morena, trabajamos bajo los principios de honestidad y amor al territorio. No buscamos cargos, buscamos defender la transformación de manera organizada y fraterna.
-              </p>
-            </div>
-
-            {/* Tarjetas de detalle asimétricas */}
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl bg-[#FFFDF8] p-5 shadow-sm border border-[#D7CCBC]/40">
-                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#D49A3A]">
-                  Región de Regiones
-                </span>
-                <h4 className="mt-2 font-editorial text-xl font-bold text-[#11231D]">Cercanía Activa</h4>
-                <p className="mt-2 text-xs leading-relaxed text-[#1E1E1C]/65">
-                  Diálogos y presencia sin simulaciones en las siete regiones de Guerrero.
-                </p>
-              </div>
-              <div className="rounded-2xl bg-[#FFFDF8] p-5 shadow-sm border border-[#D7CCBC]/40">
-                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#D49A3A]">
-                  Soberanía Nacional
-                </span>
-                <h4 className="mt-2 font-editorial text-xl font-bold text-[#11231D]">Defensa Colectiva</h4>
-                <p className="mt-2 text-xs leading-relaxed text-[#1E1E1C]/65">
-                  Organizar la fuerza del pueblo en comités locales de transformación nacional.
-                </p>
-              </div>
+            <div className="mt-7 space-y-5 text-[15px] leading-7 text-[#1E1E1C]/80 sm:text-base sm:leading-8">
+              <p>La nueva landing deja atrás la sobriedad aburrida y entra en un territorio editorial: fotografía con peso narrativo, capas con profundidad y una lectura optimizada para móvil.</p>
+              <p className="font-semibold text-[#11231D]">No se trata de una biografía rígida; se trata de una casa digital que respira presencia, organización y escucha comunitaria.</p>
+              <p>El tono se mantiene austero, legal y serio, pero con una ejecución visual que ya parece referente político-digital en Guerrero.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. RUTAS DEL SUR (COMPOSICIÓN ASIMÉTRICA PREMIUM) */}
-      <section id="rutas" className="bg-[#11231D] px-5 py-24 text-white lg:px-8 lg:py-32 relative overflow-hidden">
-        {/* Luces de fondo */}
-        <div className="absolute left-0 bottom-0 h-96 w-96 rounded-full bg-[#D49A3A]/5 blur-[120px] pointer-events-none" />
-        
-        <div className="mx-auto max-w-7xl relative z-10">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between border-b border-white/10 pb-10">
+      <section id="rutas" className="relative overflow-hidden bg-[#11231D] px-4 py-20 text-white sm:px-5 lg:px-8 lg:py-28">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 flex flex-col gap-4 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-[#D49A3A] uppercase">
-                Rutas de Trabajo Territorial
-              </span>
-              <div className="my-4 h-[3px] w-16 bg-[#D49A3A] rounded-full" />
-              <h2 className="font-editorial text-4xl leading-tight sm:text-5xl">
-                Cinco rutas. Un mismo horizonte.
-              </h2>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">Rutas del Sur</p>
+              <div className="gold-line my-4" />
+              <h2 className="text-4xl leading-tight sm:text-5xl" style={{ fontFamily: "Georgia, serif" }}>Cinco rutas. Un mismo horizonte.</h2>
             </div>
-            <p className="max-w-md text-sm leading-relaxed text-white/70">
-              Cada ruta representa un eje de diálogo, recolección de propuestas y organización territorial, trazando un mapa integral de soluciones populares.
-            </p>
+            <p className="max-w-md text-sm leading-7 text-white/70">La composición deja de verse plana y pasa a un mosaico móvil primero, con tarjetas inmersivas, capas y profundidad cinematográfica.</p>
           </div>
-
-          {/* Grid Asimétrico Editorial para las Rutas */}
-          <div className="mt-14 grid gap-6 lg:grid-cols-12">
-            
-            {/* RUTA 1: Grande e impactante (Soberanía y conectividad) - Col Span 7 */}
-            <article className="ruta-card group overflow-hidden rounded-[2.5rem] bg-[#133B5C] lg:col-span-7 border border-white/10 flex flex-col justify-between">
-              <div className="grid h-full lg:grid-cols-[1.1fr_0.9fr]">
-                <div className="relative min-h-[320px] overflow-hidden">
-                  <Image
-                    src={routes[0].image}
-                    alt={routes[0].title}
-                    fill
-                    className="ruta-img object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#133B5C]/90 hidden lg:block" />
-                </div>
-                <div className="flex flex-col justify-between bg-gradient-to-br from-[#133B5C] to-[#0D2940] p-8 lg:p-10">
-                  <div>
+          <div className="grid gap-5 lg:grid-cols-12">
+            {routes.map((route, index) => (
+              <article key={route.title} className={`overflow-hidden rounded-[2rem] border border-white/10 bg-[#0E171B] ${index === 0 ? "lg:col-span-7" : index === 1 ? "lg:col-span-5" : "lg:col-span-4"}`}>
+                <div className={`grid h-full ${index === 0 ? "lg:grid-cols-[1.1fr_.9fr]" : ""}`}>
+                  <div className="relative min-h-[220px] overflow-hidden">
+                    <Image src={route.image} alt={route.title} fill className="object-cover transition duration-700 hover:scale-105" sizes="(max-width: 1024px) 100vw, 50vw" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  </div>
+                  <div className={`bg-gradient-to-br ${route.tone} p-6 sm:p-7 lg:p-8`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2CF8B]">
-                        Ruta {routes[0].num}
-                      </span>
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-[9px] uppercase tracking-wider text-white/80">
-                        {routes[0].tag}
-                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2CF8B]">Ruta 0{index + 1}</span>
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-[9px] uppercase tracking-wider text-white/80">{route.tag}</span>
                     </div>
-                    <h3 className="mt-6 font-editorial text-3xl leading-tight">
-                      {routes[0].title}
-                    </h3>
-                    <p className="mt-4 text-xs lg:text-sm leading-relaxed text-white/80">
-                      {routes[0].text}
-                    </p>
+                    <h3 className="mt-5 text-2xl leading-tight sm:text-3xl" style={{ fontFamily: "Georgia, serif" }}>{route.title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-white/82">{route.text}</p>
+                    <div className="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#D4A843]">Organizar el Sur <MoveRight size={14} /></div>
                   </div>
-                  <div className="mt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#D49A3A]">
-                    Organizar el Sur <MoveRight size={14} className="transition group-hover:translate-x-1.5" />
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            {/* RUTA 2: Campo y economía comunitaria - Col Span 5 */}
-            <article className="ruta-card group overflow-hidden rounded-[2.5rem] bg-[#244C3A] lg:col-span-5 border border-white/10 flex flex-col justify-between">
-              <div className="relative min-h-[220px] overflow-hidden">
-                <Image
-                  src={routes[1].image}
-                  alt={routes[1].title}
-                  fill
-                  className="ruta-img object-cover"
-                />
-              </div>
-              <div className="bg-gradient-to-br from-[#244C3A] to-[#11231D] p-8">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2CF8B]">
-                    Ruta {routes[1].num}
-                  </span>
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-[9px] uppercase tracking-wider text-white/80">
-                    {routes[1].tag}
-                  </span>
-                </div>
-                <h3 className="mt-5 font-editorial text-2xl leading-tight">
-                  {routes[1].title}
-                </h3>
-                <p className="mt-3 text-xs leading-relaxed text-white/80">
-                  {routes[1].text}
-                </p>
-              </div>
-            </article>
-
-            {/* RUTA 3: Mujeres e igualdad sustantiva - Col Span 4 */}
-            <article className="ruta-card group overflow-hidden rounded-[2.5rem] bg-[#7A1F2B] lg:col-span-4 border border-white/10 flex flex-col justify-between">
-              <div className="relative min-h-[200px] overflow-hidden">
-                <Image
-                  src={routes[2].image}
-                  alt={routes[2].title}
-                  fill
-                  className="ruta-img object-cover"
-                />
-              </div>
-              <div className="bg-gradient-to-br from-[#7A1F2B] to-[#4A0F18] p-7.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2CF8B]">
-                    Ruta {routes[2].num}
-                  </span>
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-[9px] uppercase tracking-wider text-white/80">
-                    {routes[2].tag}
-                  </span>
-                </div>
-                <h3 className="mt-5 font-editorial text-2xl leading-tight">
-                  {routes[2].title}
-                </h3>
-                <p className="mt-3 text-xs leading-relaxed text-white/80">
-                  {routes[2].text}
-                </p>
-              </div>
-            </article>
-
-            {/* RUTA 4: Educación y juventudes - Col Span 4 */}
-            <article className="ruta-card group overflow-hidden rounded-[2.5rem] bg-[#15395C] lg:col-span-4 border border-white/10 flex flex-col justify-between">
-              <div className="relative min-h-[200px] overflow-hidden">
-                <Image
-                  src={routes[3].image}
-                  alt={routes[3].title}
-                  fill
-                  className="ruta-img object-cover"
-                />
-              </div>
-              <div className="bg-gradient-to-br from-[#15395C] to-[#10293E] p-7.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2CF8B]">
-                    Ruta {routes[3].num}
-                  </span>
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-[9px] uppercase tracking-wider text-white/80">
-                    {routes[3].tag}
-                  </span>
-                </div>
-                <h3 className="mt-5 font-editorial text-2xl leading-tight">
-                  {routes[3].title}
-                </h3>
-                <p className="mt-3 text-xs leading-relaxed text-white/80">
-                  {routes[3].text}
-                </p>
-              </div>
-            </article>
-
-            {/* RUTA 5: Agua y salud comunitaria - Col Span 4 */}
-            <article className="ruta-card group overflow-hidden rounded-[2.5rem] bg-[#285B72] lg:col-span-4 border border-white/10 flex flex-col justify-between">
-              <div className="relative min-h-[200px] overflow-hidden">
-                <Image
-                  src={routes[4].image}
-                  alt={routes[4].title}
-                  fill
-                  className="ruta-img object-cover"
-                />
-              </div>
-              <div className="bg-gradient-to-br from-[#285B72] to-[#133B5C] p-7.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2CF8B]">
-                    Ruta {routes[4].num}
-                  </span>
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-[9px] uppercase tracking-wider text-white/80">
-                    {routes[4].tag}
-                  </span>
-                </div>
-                <h3 className="mt-5 font-editorial text-2xl leading-tight">
-                  {routes[4].title}
-                </h3>
-                <p className="mt-3 text-xs leading-relaxed text-white/80">
-                  {routes[4].text}
-                </p>
-              </div>
-            </article>
-
-          </div>
-        </div>
-      </section>
-
-      {/* DETALLE EDITORIAL (PIEZA DE TRANSICIÓN) */}
-      <section className="bg-[#FFFDF8] px-5 py-24 lg:px-8 lg:py-28 paper-grain border-y border-[#D7CCBC]/50">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            
-            <div className="rounded-[2.5rem] bg-[#11231D] p-8 lg:p-12 text-white shadow-editorial relative overflow-hidden">
-              <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-[#D49A3A]/10 blur-2xl" />
-              <div className="relative z-10 flex items-center gap-3">
-                <Quote className="h-6 w-6 text-[#D49A3A]" />
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D49A3A]">
-                  Señal de Recorrido
-                </p>
-              </div>
-              <h2 className="relative z-10 mt-6 font-editorial text-4xl leading-tight text-white lg:text-[2.6rem]">
-                Una política que no posa: camina, escucha y teje comunidad.
-              </h2>
-              <p className="relative z-10 mt-6 text-sm leading-relaxed text-white/70">
-                La organización territorial en Guerrero no se basa en el marketing digital ruidoso. Creamos identidad desde la base social, combinando el fotorreportaje documental con herramientas interactivas que amplifican la voz de los municipios.
-              </p>
-              <div className="relative z-10 mt-8 flex items-center gap-3.5 border-t border-white/10 pt-6">
-                <div className="relative h-10 w-10 overflow-hidden rounded-full border border-white/15 bg-white/10">
-                  <Image
-                    src="/assets/img/logo.png"
-                    alt="Logo Por los Caminos del Sur"
-                    fill
-                    className="object-contain p-1.5"
-                  />
-                </div>
-                <div>
-                  <span className="block text-xs font-bold tracking-wider text-white">Esthela Damián</span>
-                  <span className="block text-[10px] tracking-widest text-[#D49A3A] uppercase mt-0.5">Territorio · Comunidad · Soberanía</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="overflow-hidden rounded-[2.5rem] border border-[#D7CCBC]/55 bg-white p-3 shadow-editorial">
-              <div className="relative aspect-[16/10] overflow-hidden rounded-[1.8rem]">
-                <Image
-                  src="/assets/img/foto22.jfif"
-                  alt="Esthela Damián caminando en territorio guerrerense"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 4. MAPA DE VOCES (CARTOGRAFÍA VIVA INTERACTIVA) */}
-      <section id="voces" className="bg-[#244C3A] px-5 py-24 text-white lg:px-8 lg:py-32 relative overflow-hidden">
-        {/* Decoraciones */}
-        <div className="absolute right-0 top-0 h-[400px] w-[400px] rounded-full bg-black/10 blur-[100px] pointer-events-none" />
-        
-        <div className="mx-auto max-w-7xl relative z-10">
-          <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
-            
-            {/* LADO IZQUIERDO: Cartografía Interactiva */}
-            <div className="rounded-[2.5rem] border border-white/10 bg-[#11231D]/45 p-6 lg:p-8 backdrop-blur-md">
-              <div className="mb-6 flex items-center justify-between border-b border-white/10 pb-4">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D49A3A]">
-                    Cartografía de Guerrero
-                  </span>
-                  <h3 className="mt-1 text-sm text-white/60">Asambleas y Red Territorial Activa</h3>
-                </div>
-                <div className="rounded-full bg-white/10 px-4 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-white/80 border border-white/5">
-                  20 Municipios
-                </div>
-              </div>
-
-              {/* Grid interactivo de municipios */}
-              <div className="grid gap-2.5 sm:grid-cols-2 max-h-[480px] overflow-y-auto pr-2 custom-scrollbar">
-                {municipalities.map((item, idx) => (
-                  <button
-                    key={item.name}
-                    onMouseEnter={() => setHoveredMunicipio(item)}
-                    onClick={() => setHoveredMunicipio(item)}
-                    className={`text-left rounded-xl border px-4 py-3 text-xs transition duration-300 flex flex-col justify-between gap-1.5 focus:outline-none ${
-                      hoveredMunicipio.name === item.name
-                        ? "border-[#D49A3A] bg-white/10 shadow-lg scale-[1.02]"
-                        : "border-white/5 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.05]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <MapPin className={`h-3.5 w-3.5 shrink-0 ${
-                        hoveredMunicipio.name === item.name ? "text-[#D49A3A] animate-bounce" : "text-white/40"
-                      }`} />
-                      <span className="font-bold tracking-wide truncate">{item.name}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[9px] text-white/45">
-                      <span>Nodo {String(idx + 1).padStart(2, "0")}</span>
-                      {hoveredMunicipio.name === item.name && (
-                        <span className="text-[#D49A3A] font-semibold">Seleccionado</span>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* LADO DERECHO: El Faro de Voces */}
-            <div className="lg:sticky lg:top-28">
-              <span className="text-[11px] font-bold tracking-[0.2em] text-[#D49A3A] uppercase">
-                Mapa de Voces
-              </span>
-              <div className="my-4 h-[3px] w-16 bg-[#D49A3A] rounded-full" />
-              
-              <h2 className="font-editorial text-4xl leading-tight sm:text-5xl lg:text-[3.5rem] lg:leading-[1.05]">
-                Voces territoriales en movimiento.
-              </h2>
-              
-              <p className="mt-6 text-sm leading-relaxed text-white/70">
-                Pasa el cursor o selecciona un municipio de la lista para ver la voz y la causa comunitaria que encabeza la organización del territorio.
-              </p>
-
-              {/* Panel dinámico con animación */}
-              <div className="mt-8">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={hoveredMunicipio.name}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.35 }}
-                    className="rounded-[2rem] border border-[#D49A3A]/30 bg-gradient-to-br from-[#11231D] to-[#0A1410] p-8 shadow-editorial relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 p-4 opacity-5 text-white/10 select-none pointer-events-none">
-                      <Quote size={80} />
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#D49A3A]">
-                      <Sparkles size={12} />
-                      Municipio Escuchado
-                    </div>
-                    
-                    <h3 className="mt-3 font-editorial text-2xl text-white">
-                      {hoveredMunicipio.name}
-                    </h3>
-                    
-                    <div className="my-5 h-px w-12 bg-white/20" />
-                    
-                    <p className="font-editorial text-[22px] leading-snug text-[#FFFDF8] italic font-medium">
-                      “{hoveredMunicipio.quote}”
-                    </p>
-
-                    <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-5 text-[10px] text-white/50 tracking-wider">
-                      <span className="flex items-center gap-1.5">
-                        <Shield size={12} className="text-[#D49A3A]" />
-                        Nodo Territorial Activo
-                      </span>
-                      <span>#PorlosCaminosdelSur</span>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 5. GALERÍA TERRITORIAL (FOTORREPORTAJE) */}
-      <section id="galeria" className="bg-[#F4EFE6] px-5 py-24 lg:px-8 lg:py-32 paper-grain border-b border-[#D7CCBC]/50">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-14 max-w-3xl border-b border-[#D7CCBC]/60 pb-8 flex flex-col justify-between items-start gap-4 md:flex-row md:items-end">
-            <div>
-              <span className="text-[11px] font-bold tracking-[0.2em] text-[#7A1F2B] uppercase">
-                Fotorreportaje Territorial
-              </span>
-              <div className="my-4 h-[3px] w-16 bg-[#D49A3A] rounded-full" />
-              <h2 className="font-editorial text-4xl leading-tight text-[#11231D] sm:text-5xl">
-                El sur no se explica desde lejos.
-              </h2>
-            </div>
-            <p className="max-w-md text-xs leading-relaxed text-[#1E1E1C]/65">
-              Imágenes reales de Esthela recorriendo comunidades indígenas, zonas costeras y ejidos serranos, capturando el espíritu colectivo y organizativo de Guerrero.
-            </p>
-          </div>
-
-          {/* Mosaic Grid Editorial */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {galleryItems.map((item, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: idx * 0.05 }}
-                className={`galeria-item group relative rounded-[2rem] overflow-hidden bg-[#FFFDF8] border border-[#D7CCBC]/50 p-2 shadow-sm ${item.span}`}
-              >
-                <div className="relative h-full w-full overflow-hidden rounded-[1.6rem]">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  {/* Overlay gradiente */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  {/* Textos flotantes en hover */}
-                  <div className="absolute inset-x-0 bottom-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
-                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#D49A3A]">
-                      {item.title}
-                    </span>
-                    <p className="mt-1 font-editorial text-lg leading-tight text-[#FFFDF8]">
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 6. AGENDA TERRITORIAL (CRONOGRAMA DE DIÁLOGO) */}
-      <section id="agenda" className="relative overflow-hidden bg-[#133B5C] px-5 py-24 text-white lg:px-8 lg:py-32">
-        <div className="absolute -right-24 top-0 h-96 w-96 rounded-full bg-[#D49A3A]/5 blur-[120px]" />
-        
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-2xl border-b border-white/10 pb-8 mb-12">
-            <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-[#D49A3A] uppercase">
-              <CalendarDays size={14} className="text-[#D49A3A]" />
-              Agenda Territorial Abierta
-            </div>
-            <div className="my-4 h-[3px] w-16 bg-[#D49A3A] rounded-full" />
-            
-            <h2 className="font-editorial text-4xl leading-tight sm:text-5xl lg:text-[3.5rem] lg:leading-[1.05]">
-              Encuentros, asambleas y organización.
-            </h2>
-            
-            <p className="mt-5 text-sm leading-relaxed text-white/70">
-              Conoce los próximos nodos de escucha territorial, organizados por asambleas ejidales y sectoriales de base.
-            </p>
-          </div>
-
-          {/* Grid de Actividades */}
-          <div className="grid gap-6 lg:grid-cols-3">
-            {agenda.map((item, idx) => (
-              <article
-                key={idx}
-                className="rounded-[2.5rem] border border-white/10 bg-[#0D2940]/50 p-7.5 backdrop-blur flex flex-col justify-between hover:border-[#D49A3A]/40 transition duration-300"
-              >
-                <div>
-                  <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#D49A3A]">
-                      {item.status}
-                    </span>
-                    <span className="text-[11px] font-bold tracking-widest text-white/60">
-                      {item.date}
-                    </span>
-                  </div>
-                  
-                  <h3 className="mt-5 font-editorial text-2xl leading-tight text-white">
-                    {item.place}
-                  </h3>
-                  
-                  <p className="mt-2 text-xs font-bold tracking-wider text-[#F2CF8B] uppercase">
-                    {item.type}
-                  </p>
-                  
-                  <p className="mt-4 text-xs lg:text-sm leading-relaxed text-white/70">
-                    {item.desc}
-                  </p>
-                </div>
-
-                <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] text-white/40 uppercase">
-                  <span>Asamblea de base</span>
-                  <span>Morena Gro</span>
                 </div>
               </article>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* CTA de Solicitud de Reunión */}
-          <div className="mt-14 flex flex-col items-center justify-between rounded-[2rem] border border-white/10 bg-[#0D2940]/30 p-8 md:flex-row md:p-10">
-            <div className="max-w-xl text-center md:text-left mb-6 md:mb-0">
-              <h4 className="font-editorial text-2xl text-white">¿Quieres organizar un diálogo territorial en tu comunidad?</h4>
-              <p className="mt-2 text-xs text-white/60">
-                La organización colectiva se teje escuchando a cada ejido y colonia. Contáctanos para coordinar un encuentro.
-              </p>
+      <section className="paper-grain border-y border-[#D7CCBC]/50 px-4 py-20 sm:px-5 lg:px-8 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div className="rounded-[2rem] bg-[#11231D] p-7 text-white shadow-[0_28px_70px_rgba(17,35,29,.22)] sm:p-9">
+            <div className="flex items-center gap-3 text-[#D4A843]"><Quote size={20} /><span className="text-[10px] font-bold uppercase tracking-[0.2em]">Señal de Recorrido</span></div>
+            <h2 className="mt-5 text-3xl leading-tight sm:text-4xl" style={{ fontFamily: "Georgia, serif" }}>Una política que no posa: camina, escucha y teje comunidad.</h2>
+            <p className="mt-5 text-sm leading-7 text-white/74">Se corrigió el asset para que esta pieza utilice una imagen de Esthela interactuando con personas en territorio guerrerense, reforzando la autenticidad del recorrido.</p>
+            <div className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5 text-[11px] uppercase tracking-[0.2em] text-[#D4A843]">
+              <Shield size={14} /> territorio · comunidad · soberanía
             </div>
-            
-            <a
-              href="mailto:Miperfilpoliticogro@proton.me?subject=Solicitud%20de%20encuentro%20territorial"
-              className="focus-ring inline-flex items-center justify-center gap-2 rounded-full bg-[#D49A3A] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-[#1E1E1C] transition duration-300 hover:bg-[#FFFDF8] hover:shadow-lg shrink-0"
-            >
-              Solicitar encuentro
-              <ArrowRight size={14} />
-            </a>
+          </div>
+          <div className="rounded-[2rem] border border-[#D7CCBC]/60 bg-white/80 p-2 shadow-[0_24px_60px_rgba(17,35,29,.10)]">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-[1.5rem]">
+              <Image src="/assets/img/foto22.jfif" alt="Esthela conviviendo con la gente en Guerrero" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 45vw" />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* SECCIÓN DEL PÓSTER (INVITACIÓN DE REDES) */}
-      <section className="bg-[#1A0A0E] px-5 py-24 text-white lg:px-8 relative overflow-hidden">
-        {/* Luces */}
-        <div className="absolute left-0 bottom-0 h-96 w-96 rounded-full bg-[#7A1F2B]/10 blur-[120px] pointer-events-none" />
-        
-        <div className="mx-auto grid max-w-7xl gap-16 lg:grid-cols-2 lg:items-center">
+      <section id="voces" className="relative overflow-hidden bg-[#244C3A] px-4 py-20 text-white sm:px-5 lg:px-8 lg:py-28">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.05fr_.95fr]">
+          <div className="glass-gold rounded-[2rem] p-4 text-white sm:p-6">
+            <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">Mapa de Voces</p>
+                <p className="mt-1 text-xs text-white/65">20 municipios prioritarios</p>
+              </div>
+              <span className="rounded-full bg-white/10 px-3 py-1 text-[9px] uppercase tracking-wider">Cartografía viva</span>
+            </div>
+            <div className="scroll-touch grid max-h-[26rem] gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+              {voices.map((item, idx) => (
+                <button key={item.name} onMouseEnter={() => setActiveVoice(item)} onClick={() => setActiveVoice(item)} className={`rounded-xl border px-4 py-3 text-left text-xs transition ${activeVoice.name === item.name ? "border-[#D4A843] bg-white/10" : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"}`}>
+                  <div className="flex items-center gap-2"><MapPin className={`h-3.5 w-3.5 ${activeVoice.name === item.name ? "text-[#D4A843]" : "text-white/45"}`} /><span className="font-bold">{item.name}</span></div>
+                  <div className="mt-2 text-[10px] text-white/45">Nodo {String(idx + 1).padStart(2, "0")}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="lg:sticky lg:top-28">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">Voz seleccionada</p>
+            <div className="gold-line my-4" />
+            <h2 className="text-4xl leading-tight sm:text-5xl" style={{ fontFamily: "Georgia, serif" }}>Territorio activo, relato activo.</h2>
+            <p className="mt-5 text-sm leading-7 text-white/72">En móvil y escritorio, el módulo queda más limpio, más rápido y con una lectura inmediata del municipio y su causa.</p>
+            <AnimatePresence mode="wait">
+              <motion.div key={activeVoice.name} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} className="glass-gold mt-7 rounded-[2rem] p-6 text-white sm:p-8">
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4A843]"><Sparkles size={12} /> Municipio escuchado</div>
+                <h3 className="mt-3 text-2xl sm:text-3xl" style={{ fontFamily: "Georgia, serif" }}>{activeVoice.name}</h3>
+                <div className="my-5 h-px w-12 bg-white/20" />
+                <p className="text-[1.25rem] italic leading-8 text-[#FFFDF8] sm:text-[1.55rem] sm:leading-9" style={{ fontFamily: "Georgia, serif" }}>“{activeVoice.quote}”</p>
+                <div className="mt-7 flex items-center justify-between border-t border-white/10 pt-4 text-[10px] uppercase tracking-[0.16em] text-white/50">
+                  <span className="flex items-center gap-1.5"><Shield size={12} className="text-[#D4A843]" /> Nodo territorial activo</span>
+                  <span>#PorlosCaminosdelSur</span>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </section>
+
+      <section id="galeria" className="paper-grain border-b border-[#D7CCBC]/50 px-4 py-20 sm:px-5 lg:px-8 lg:py-28">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 flex flex-col gap-4 border-b border-[#D7CCBC]/60 pb-8 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#7A1F2B]">Galería territorial</p>
+              <div className="gold-line my-4" />
+              <h2 className="text-4xl leading-tight text-[#11231D] sm:text-5xl" style={{ fontFamily: "Georgia, serif" }}>El sur no se explica desde lejos.</h2>
+            </div>
+            <p className="max-w-md text-sm leading-7 text-[#1E1E1C]/65">Se mantiene una composición tipo revista, pero con mejor rendimiento, orden visual y lectura móvil.</p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3 md:auto-rows-[15rem]">
+            {gallery.map((item) => (
+              <motion.article key={item.title} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} className={`group overflow-hidden rounded-[2rem] border border-[#D7CCBC]/55 bg-white/80 p-2 shadow-sm ${item.span}`}>
+                <div className="relative h-full overflow-hidden rounded-[1.5rem]">
+                  <Image src={item.image} alt={item.title} fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 33vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">{item.title}</p>
+                    <p className="mt-1 text-lg leading-tight" style={{ fontFamily: "Georgia, serif" }}>{item.desc}</p>
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="idea" className="relative overflow-hidden bg-[#133B5C] px-4 py-20 text-white sm:px-5 lg:px-8 lg:py-28">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[.92fr_1.08fr]">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D49A3A]">
-              Identidad Digital Compartible
-            </span>
-            <h2 className="mt-4 font-editorial text-4xl leading-tight text-white sm:text-5xl lg:text-[3.5rem] lg:leading-[1.05]">
-              El póster social es parte del manifiesto.
-            </h2>
-            <p className="mt-6 text-sm leading-relaxed text-white/70">
-              Nuestra campaña territorial no depende de presupuestos exorbitantes. Depende de la voz orgánica del pueblo. Hemos diseñado un generador de pósteres para que puedas integrar tu foto, tu municipio y tu frase en un diseño editorial premium e inmediatamente compartible en tus estados de WhatsApp o redes sociales.
-            </p>
-            
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                href="/tarjetas"
-                className="inline-flex items-center gap-2 rounded-full bg-[#D49A3A] px-7 py-4 text-xs font-bold uppercase tracking-wider text-[#1E1E1C] transition duration-300 hover:bg-white hover:shadow-lg hover:-translate-y-0.5"
-              >
-                Crear mi póster social
-                <ArrowRight size={14} />
-              </Link>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">Nueva plataforma participativa</p>
+            <div className="gold-line my-4" />
+            <h2 className="text-4xl leading-tight sm:text-5xl lg:text-[3.4rem]" style={{ fontFamily: "Georgia, serif" }}>Tu idea puede transformar Guerrero.</h2>
+            <p className="mt-6 text-sm leading-7 text-white/74 sm:text-base">Sustituimos la agenda por un formulario de propuesta territorial: más útil, más político y más alineado con una plataforma de liderazgo estatal. El bloque mantiene glassmorphism, peso editorial y lectura móvil inmediata.</p>
+            <div className="glass-gold mt-7 rounded-[2rem] p-5 sm:p-6">
+              <ul className="space-y-3 text-sm leading-7 text-white/82">
+                <li>• Nombre, teléfono, email y propuesta listos para captación.</li>
+                <li>• Carga de PDF o Word validada a 8MB.</li>
+                <li>• Botón oro #D4A843 con texto guinda para máxima jerarquía visual.</li>
+                <li>• Preparado para crecer después con CRM o bandeja de seguimiento.</li>
+              </ul>
             </div>
           </div>
 
-          {/* Tarjeta de simulación del póster */}
+          <form onSubmit={onSubmit} className="glass-gold rounded-[2rem] p-5 sm:p-7">
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Nombre</span>
+                <input name="name" value={form.name} onChange={onInput} className="focus-ring w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/45" placeholder="Tu nombre" />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Teléfono</span>
+                <input name="phone" value={form.phone} onChange={onInput} inputMode="numeric" className="focus-ring w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/45" placeholder="10 dígitos" />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Email</span>
+                <input name="email" type="email" value={form.email} onChange={onInput} className="focus-ring w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/45" placeholder="correo@ejemplo.com" />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Documento adjunto</span>
+                <label className="focus-ring flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-white/20 bg-white/8 px-4 py-3 text-sm text-white/85">
+                  <FileUp size={18} className="text-[#D4A843]" />
+                  <span className="truncate">{file ? file.name : "PDF o Word · Máx 8MB"}</span>
+                  <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={onFile} className="hidden" />
+                </label>
+              </label>
+            </div>
+            <label className="mt-4 block">
+              <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Tu propuesta</span>
+              <textarea name="idea" value={form.idea} onChange={onInput} rows={6} className="focus-ring w-full rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-sm leading-7 text-white placeholder:text-white/45" placeholder="Comparte tu idea para transformar tu comunidad o tu región..." />
+            </label>
+
+            {error && <p className="mt-4 rounded-2xl border border-[#D4A843]/30 bg-[#7A1F2B]/35 px-4 py-3 text-sm text-[#FFF4D8]">{error}</p>}
+            {submitted && (
+              <p className="mt-4 flex items-center gap-2 rounded-2xl border border-emerald-300/30 bg-emerald-500/15 px-4 py-3 text-sm text-emerald-100">
+                <CheckCircle2 size={18} /> Tu idea se envió correctamente.
+              </p>
+            )}
+
+            <button type="submit" disabled={submitting} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#D4A843] px-6 py-4 text-sm font-bold text-[#5D1324] transition hover:bg-[#F2CF8B] disabled:opacity-70">
+              {submitting ? "Enviando..." : "Enviar propuesta"} <Send size={16} />
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-[#1A0A0E] px-4 py-20 text-white sm:px-5 lg:px-8 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2 lg:items-center">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">Póster social</p>
+            <h2 className="mt-4 text-4xl leading-tight sm:text-5xl" style={{ fontFamily: "Georgia, serif" }}>Una pieza compartible con identidad de alta gama.</h2>
+            <p className="mt-5 text-sm leading-7 text-white/72">La landing mantiene el acceso a /tarjetas para que cada persona pueda subir su foto, elegir frase y compartir una pieza coherente con el universo visual de Esthela. La navegación ya deja este CTA siempre presente y mejor integrado.</p>
+            <Link href="/tarjetas" className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#D4A843] px-6 py-4 text-sm font-bold text-[#5D1324]">
+              Ir al generador de póster <ArrowRight size={16} />
+            </Link>
+          </div>
           <div className="flex justify-center">
-            <div className="w-full max-w-[380px] rounded-[2.5rem] border border-white/10 bg-white/[0.03] p-4 backdrop-blur shadow-editorial">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.8rem] poster-gradient-guinda p-6 text-white flex flex-col justify-between border border-oro/30">
-                {/* Doble borde interior */}
-                <div className="absolute inset-3 border border-oro/20 pointer-events-none rounded-[1.5rem]" />
-                
-                {/* Header */}
-                <div className="relative z-10 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="relative h-10 w-10 overflow-hidden rounded-full border border-oro/30 bg-black/10 backdrop-blur p-1">
-                      <Image
-                        src="/assets/img/logo.png"
-                        alt="Logo"
-                        fill
-                        className="object-contain p-1"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F2CF8B] leading-none">
-                        Guerrero se organiza.
-                      </p>
-                      <p className="mt-1 text-[7px] uppercase tracking-widest text-white/50 leading-none">
-                        #PorlosCaminosdelSur
-                      </p>
-                    </div>
+            <div className="poster-glow glass-gold w-full max-w-[380px] rounded-[2.4rem] p-4">
+              <div className="relative flex aspect-square flex-col justify-between overflow-hidden rounded-[1.8rem] border border-[#D4A843]/35 bg-[radial-gradient(circle_at_top_left,rgba(212,168,67,.25),transparent_28%),linear-gradient(180deg,#4C1120_0%,#1A0A0E_100%)] p-5 text-white">
+                <div className="absolute inset-3 rounded-[1.4rem] border border-[#D4A843]/20" />
+                <div className="relative z-10 flex items-center gap-3">
+                  <div className="glass-gold relative h-10 w-10 overflow-hidden rounded-full p-1"><Image src="/assets/img/logo.png" alt="Logo" fill className="object-contain p-1" /></div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Por los Caminos del Sur</p>
+                    <p className="mt-1 text-[8px] uppercase tracking-[0.18em] text-white/55">#PorlosCaminosdelSur</p>
                   </div>
                 </div>
-
-                {/* Grid asimétrico mini */}
-                <div className="relative z-10 grid grid-cols-[1.1fr_0.9fr] gap-4 py-4 items-center">
-                  <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-oro/35 p-1 bg-black/10">
-                    <div className="relative h-full w-full overflow-hidden rounded-lg">
-                      <Image
-                        src="/assets/img/foto28.jpg"
-                        alt="Esthela"
-                        fill
-                        className="object-cover photo-blend-warm"
-                      />
-                    </div>
+                <div className="relative z-10 grid grid-cols-[.95fr_1.05fr] items-center gap-4">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-[#D4A843]/35">
+                    <Image src="/assets/img/foto28.jpg" alt="Retrato editorial" fill className="object-cover" sizes="200px" />
                   </div>
-                  <div className="text-left">
-                    <span className="text-[8px] font-bold uppercase tracking-wider text-[#F2CF8B]">
-                      Voz Ciudadana
-                    </span>
-                    <h3 className="mt-1 font-editorial text-lg leading-tight text-white">
-                      “Organizarnos es defender lo nuestro.”
-                    </h3>
-                    <div className="my-2 h-[1px] w-6 bg-oro/40" />
-                    <p className="text-xs font-bold text-white">Esthela Damián</p>
-                    <p className="text-[9px] uppercase tracking-wider text-white/50">Chilpancingo, Gro.</p>
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Voz ciudadana</p>
+                    <h3 className="mt-2 text-xl leading-tight" style={{ fontFamily: "Georgia, serif" }}>“Organizarnos es defender lo nuestro.”</h3>
+                    <p className="mt-3 text-sm font-semibold">Esthela Damián</p>
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-white/55">Chilpancingo, Gro.</p>
                   </div>
                 </div>
-
-                {/* Footer */}
-                <div className="relative z-10 text-center border-t border-white/10 pt-3">
-                  <p className="text-[8px] font-bold uppercase tracking-widest text-[#F2CF8B]">
-                    Defensa de la Soberanía Nacional
-                  </p>
-                </div>
+                <div className="relative z-10 border-t border-white/10 pt-3 text-center text-[8px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Territorio · comunidad · soberanía</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FOOTER DEL MOVIMIENTO (LÍNEAS AUSTERA, LEGAL Y ORGANIZADA) */}
-      <footer className="bg-[#11231D] px-5 py-12 text-white lg:px-8 border-t border-white/5">
-        <div className="mx-auto max-w-7xl flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+      <footer className="bg-[#11231D] px-4 py-10 text-white sm:px-5 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="flex items-start gap-4">
-            <div className="relative h-14 w-14 overflow-hidden rounded-full border border-white/15 bg-white/10 shrink-0">
-              <Image
-                src="/assets/img/logo.png"
-                alt="Logo Por los Caminos del Sur"
-                fill
-                className="object-contain p-2"
-              />
-            </div>
-
+            <div className="glass-gold relative h-14 w-14 overflow-hidden rounded-full p-1"><Image src="/assets/img/logo.png" alt="Logo Por los Caminos del Sur" fill className="object-contain p-1.5" /></div>
             <div>
-              <p className="font-editorial text-2xl text-[#FFFDF8]">Esthela Damián</p>
-              <p className="mt-0.5 text-xs font-bold tracking-[0.2em] text-[#D49A3A] uppercase">
-                Por los Caminos del Sur
-              </p>
-              <p className="mt-4 max-w-md text-xs leading-relaxed text-white/60">
-                Espacio de comunicación, diálogo y formación ciudadana. Guerrero, México. Con apego a las normas constitucionales de comunicación política del partido Morena.
-              </p>
+              <p className="text-2xl text-[#FFFDF8]" style={{ fontFamily: "Georgia, serif" }}>Esthela Damián</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-[#D4A843]">Por los Caminos del Sur</p>
+              <p className="mt-4 max-w-md text-sm leading-7 text-white/60">Espacio de comunicación, diálogo y formación ciudadana. Guerrero, México. Diseño rehecho para verse premium, móvil y profundamente territorial.</p>
             </div>
           </div>
-
-          <div className="flex flex-col gap-4 text-xs font-bold uppercase tracking-wider text-white/70">
-            <span className="text-[10px] text-white/40 tracking-widest font-extrabold uppercase">Enlaces de Contacto</span>
-            <div className="flex flex-wrap gap-x-6 gap-y-3">
-              <a
-                href="https://www.facebook.com/PorLosCaminosDelSur"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#D49A3A] transition"
-              >
-                Facebook
-              </a>
-              <a
-                href="https://www.instagram.com/porloscamnosdelsur/"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#D49A3A] transition"
-              >
-                Instagram
-              </a>
-              <a
-                href="https://chat.whatsapp.com/HSUgjqCm69g8vKujvgkNFN"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#D49A3A] transition"
-              >
-                WhatsApp
-              </a>
-              <a
-                href="mailto:Miperfilpoliticogro@proton.me"
-                className="hover:text-[#D49A3A] transition"
-              >
-                Contacto
-              </a>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-white/72">
+            <p className="mb-3 text-[10px] text-white/40">Contacto</p>
+            <div className="flex flex-wrap gap-x-5 gap-y-3">
+              <a href="https://www.facebook.com/PorLosCaminosDelSur" target="_blank" rel="noreferrer">Facebook</a>
+              <a href="https://www.instagram.com/porloscamnosdelsur/" target="_blank" rel="noreferrer">Instagram</a>
+              <a href={whatsappHref} target="_blank" rel="noreferrer">WhatsApp</a>
+              <a href="mailto:Miperfilpoliticogro@proton.me">Contacto</a>
             </div>
           </div>
         </div>
-
-        <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between text-[10px] leading-relaxed text-white/40">
-          <p>
-            © {new Date().getFullYear()} Por los Caminos del Sur. Todos los derechos reservados. #PorlosCaminosdelSur #GuerreroSeOrganiza #EscucharTambiénTransforma
-          </p>
-          <p className="italic text-white/30 text-right">
-            Alineado a las bases de la Convocatoria de Morena para la Defensa de la Soberanía.
-          </p>
+        <div className="mx-auto mt-8 max-w-7xl border-t border-white/10 pt-5 text-[10px] leading-relaxed text-white/40">
+          © {new Date().getFullYear()} Por los Caminos del Sur. #PorlosCaminosdelSur #GuerreroSeOrganiza #EscucharTambiénTransforma
         </div>
       </footer>
+
+      <a href={whatsappHref} target="_blank" rel="noreferrer" className="focus-ring fixed bottom-4 right-4 z-[70] inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-bold text-[#102117] shadow-[0_18px_45px_rgba(37,211,102,.35)] transition hover:-translate-y-0.5">
+        <MessageCircleHeart size={18} /> Dudas por WhatsApp
+      </a>
     </main>
   );
 }
