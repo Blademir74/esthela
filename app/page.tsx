@@ -140,16 +140,26 @@ type FormState = {
 
 const initialForm: FormState = { name: "", phone: "", email: "", idea: "" };
 
-function GalleryPhoto({ src, alt }: { src: string; alt: string }) {
+function SafeImage({
+  src,
+  alt,
+  className = "object-cover",
+  sizes,
+  priority,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  sizes?: string;
+  priority?: boolean;
+}) {
   const [failed, setFailed] = useState(false);
 
   if (failed) {
     return (
-      <div className="placeholder-guinda flex h-full w-full flex-col items-center justify-center gap-3 text-white">
-        <div className="glass-gold relative h-14 w-14 overflow-hidden rounded-full p-1.5">
-          <Image src="/assets/img/logo.png" alt="Logo Guerrero es con E" fill className="object-contain p-1" />
-        </div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">Guerrero es con E</p>
+      <div className="placeholder-guinda flex h-full w-full flex-col items-center justify-center gap-2 text-white">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#D4A843]/50 text-lg font-black text-[#D4A843]">E</div>
+        <p className="text-center text-[9px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">Guerrero es con E</p>
       </div>
     );
   }
@@ -159,8 +169,9 @@ function GalleryPhoto({ src, alt }: { src: string; alt: string }) {
       src={src}
       alt={alt}
       fill
-      className="object-cover transition duration-700 group-hover:scale-105"
-      sizes="(max-width: 768px) 100vw, 50vw"
+      priority={priority}
+      className={className}
+      sizes={sizes}
       onError={() => setFailed(true)}
     />
   );
@@ -272,7 +283,7 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 sm:px-5 lg:px-8 lg:py-4">
           <Link href="/" className="focus-ring flex min-w-0 items-center gap-3 text-white">
             <div className="glass-gold relative h-11 w-11 shrink-0 overflow-hidden rounded-full p-1 sm:h-12 sm:w-12">
-              <Image src="/assets/img/logo.png" alt="Logo Por los Caminos del Sur" fill className="object-contain p-1.5" priority />
+              <SafeImage src="/assets/img/logo.png" alt="Logo Por los Caminos del Sur" className="object-contain p-1.5" priority />
             </div>
             <div className="min-w-0">
               <span className="block truncate text-lg leading-none text-[#FFFDF8] sm:text-xl" style={serifStyle}>
@@ -333,10 +344,9 @@ export default function HomePage() {
       </header>
 
       <section className="relative min-h-[100svh] overflow-hidden bg-[#11231D] pt-24 sm:pt-28 lg:pt-24">
-        <Image
+        <SafeImage
           src="/assets/img/foto28.jpg"
           alt="Esthela Damián recorriendo Guerrero"
-          fill
           priority
           className="object-cover object-center"
           sizes="100vw"
@@ -396,11 +406,9 @@ export default function HomePage() {
                 </p>
                 <div className="mt-5 overflow-hidden rounded-[1.4rem] border border-[#D4A843]/35">
                   <div className="relative aspect-[16/10]">
-                    <Image
+                    <SafeImage
                       src="/assets/img/foto17.jfif"
                       alt="Esthela interactuando con personas en territorio guerrerense"
-                      fill
-                      className="object-cover"
                       sizes="(max-width: 1024px) 100vw, 40vw"
                     />
                   </div>
@@ -416,7 +424,7 @@ export default function HomePage() {
           <div className="relative">
             <div className="rounded-[2rem] border border-[#D7CCBC]/60 bg-white/70 p-2 shadow-[0_24px_60px_rgba(17,35,29,.10)]">
               <div className="relative aspect-[4/5] overflow-hidden rounded-[1.6rem]">
-                <Image src="/assets/img/foto29.jpg" alt="Esthela Damián en diálogo con vecinas y vecinos" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 45vw" />
+                <SafeImage src="/assets/img/foto29.jpg" alt="Esthela Damián en diálogo con vecinas y vecinos" sizes="(max-width: 1024px) 100vw, 45vw" />
               </div>
             </div>
             <div className="glass-gold absolute -bottom-6 left-4 right-4 rounded-[1.5rem] p-4 text-[#11231D] sm:left-8 sm:right-8 sm:p-5">
@@ -454,7 +462,7 @@ export default function HomePage() {
               <article key={route.title} className={`overflow-hidden rounded-[2rem] border border-[#D4A843]/20 bg-[#0E171B] shadow-[0_20px_50px_rgba(0,0,0,.3)] ${index === 0 ? "lg:col-span-7" : index === 1 ? "lg:col-span-5" : "lg:col-span-4"}`}>
                 <div className={`grid h-full ${index === 0 ? "lg:grid-cols-[1.05fr_.95fr]" : ""}`}>
                   <div className="relative min-h-[240px] overflow-hidden">
-                    <Image src={route.image} alt={route.title} fill className="object-cover transition duration-700 hover:scale-105" sizes="(max-width: 1024px) 100vw, 50vw" />
+                    <SafeImage src={route.image} alt={route.title} className="object-cover transition duration-700 hover:scale-105" sizes="(max-width: 1024px) 100vw, 50vw" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
                   </div>
                   <div className={`bg-gradient-to-br ${route.tone} p-6 sm:p-7 lg:p-8`}>
@@ -485,7 +493,7 @@ export default function HomePage() {
           </div>
           <div className="rounded-[2rem] border border-[#D7CCBC]/60 bg-white/80 p-2 shadow-[0_24px_60px_rgba(17,35,29,.10)]">
             <div className="relative aspect-[16/10] overflow-hidden rounded-[1.5rem]">
-              <Image src="/assets/img/foto22.jfif" alt="Esthela conviviendo con la gente en Guerrero" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 45vw" />
+              <SafeImage src="/assets/img/foto22.jfif" alt="Esthela conviviendo con la gente en Guerrero" sizes="(max-width: 1024px) 100vw, 45vw" />
             </div>
           </div>
         </div>
@@ -552,7 +560,7 @@ export default function HomePage() {
                 className={`overflow-hidden rounded-[2rem] border border-[#D4A843]/30 bg-white/80 p-2 shadow-[0_18px_45px_rgba(17,35,29,.12)] ${item.className}`}
               >
                 <div className={`group relative overflow-hidden rounded-[1.5rem] ${item.aspect}`}>
-                  <GalleryPhoto src={item.image} alt={item.title} />
+                  <SafeImage src={item.image} alt={item.title} className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 768px) 100vw, 50vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/18 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">{item.title}</p>
@@ -628,7 +636,7 @@ export default function HomePage() {
               <div className="relative flex aspect-square flex-col justify-between overflow-hidden rounded-[1.7rem] border border-[#D4A843]/35 bg-[radial-gradient(circle_at_top_left,rgba(212,168,67,.25),transparent_28%),linear-gradient(180deg,#4C1120_0%,#1A0A0E_100%)] p-5 text-white">
                 <div className="absolute inset-3 rounded-[1.4rem] border border-[#D4A843]/20" />
                 <div className="relative z-10 flex items-center gap-3">
-                  <div className="glass-gold relative h-10 w-10 overflow-hidden rounded-full p-1"><Image src="/assets/img/logo.png" alt="Logo" fill className="object-contain p-1" /></div>
+                  <div className="glass-gold relative h-10 w-10 overflow-hidden rounded-full p-1"><SafeImage src="/assets/img/logo.png" alt="Logo" className="object-contain p-1" /></div>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Por los Caminos del Sur</p>
                     <p className="mt-1 text-[8px] uppercase tracking-[0.18em] text-white/55">Guerrero, México</p>
@@ -636,7 +644,7 @@ export default function HomePage() {
                 </div>
                 <div className="relative z-10 grid grid-cols-[.95fr_1.05fr] items-center gap-4">
                   <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-[#D4A843]/35">
-                    <Image src="/assets/img/foto28.jpg" alt="Retrato editorial" fill className="object-cover" sizes="200px" />
+                    <SafeImage src="/assets/img/foto28.jpg" alt="Retrato editorial" sizes="200px" />
                   </div>
                   <div>
                     <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Voz ciudadana</p>
@@ -655,7 +663,7 @@ export default function HomePage() {
       <footer className="bg-[#11231D] px-5 py-10 text-white sm:px-5 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="flex items-start gap-4">
-            <div className="glass-gold relative h-14 w-14 shrink-0 overflow-hidden rounded-full p-1"><Image src="/assets/img/logo.png" alt="Logo Por los Caminos del Sur" fill className="object-contain p-1.5" /></div>
+            <div className="glass-gold relative h-14 w-14 shrink-0 overflow-hidden rounded-full p-1"><SafeImage src="/assets/img/logo.png" alt="Logo Por los Caminos del Sur" className="object-contain p-1.5" /></div>
             <div>
               <p className="text-2xl text-[#FFFDF8]" style={serifStyle}>Esthela Damián</p>
               <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-[#D4A843]">Por los Caminos del Sur</p>
