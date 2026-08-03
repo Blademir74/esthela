@@ -1,61 +1,48 @@
+import { Playfair_Display } from "next/font/google";
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import React from "react";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-editorial",
-  display: "swap",
+  variable: "--font-playfair",
 });
 
+const siteUrl = "https://porloscaminosdelsur.vercel.app";
+const shareImage = "/assets/img/foto3.jfif";
+const shareTitle = "Esthela Damián | Por los Caminos del Sur";
+const shareDescription = "Guerrero se organiza, su futuro se defiende. Territorio, voz y organización con Esthela Damián.";
+
 export const metadata: Metadata = {
-  title: "Por los Caminos del Sur | Esthela Damián",
-  description:
-    "Guerrero se organiza. Su futuro se defiende. Voces, comunidades y caminos para dialogar, fortalecer la organización territorial y defender lo nuestro.",
-  keywords: [
-    "Guerrero",
-    "Por los Caminos del Sur",
-    "Esthela Damián",
-    "organización territorial",
-    "soberanía nacional",
-    "comunidades",
-    "Cuarta Transformación",
-    "Morena Guerrero",
-  ],
+  metadataBase: new URL(siteUrl),
+  title: shareTitle,
+  description: shareDescription,
   openGraph: {
-    title: "Por los Caminos del Sur | Esthela Damián",
-    description: "Guerrero se organiza. Su futuro se defiende.",
+    title: shareTitle,
+    description: shareDescription,
+    images: [{ url: shareImage, width: 1200, height: 1500 }],
+    url: siteUrl,
     type: "website",
     locale: "es_MX",
-    images: [
-      {
-        url: "/assets/img/foto28.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Esthela Damián - Por los Caminos del Sur",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Por los Caminos del Sur | Esthela Damián",
-    description: "Guerrero se organiza. Su futuro se defiende.",
-    images: ["/assets/img/foto28.jpg"],
+    title: shareTitle,
+    description: shareDescription,
+    images: [shareImage],
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="es-MX" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="antialiased">{children}</body>
+    <html lang="es" className={playfair.variable}>
+      <body className="antialiased bg-[#F4EFE6] text-[#1E1E1C]">
+        {children}
+      </body>
     </html>
   );
 }
