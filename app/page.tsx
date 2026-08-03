@@ -109,21 +109,21 @@ const gallery = [
     aspect: "aspect-[4/5]",
   },
   {
-    image: "/assets/img/galeria/foto22.jfif",
+    image: "/assets/img/galeria/foto11.jfif",
     title: "Comunidad organizada",
     desc: "Encuentros directos con la gente.",
     className: "md:col-span-12 lg:col-span-3",
     aspect: "aspect-[16/10] lg:aspect-[4/5]",
   },
   {
-    image: "/assets/img/galeria/foto29.jpg",
+    image: "/assets/img/galeria/foto3.jfif",
     title: "Recorrido en territorio",
     desc: "Cercanía, conversación y método.",
     className: "md:col-span-7 lg:col-span-7",
     aspect: "aspect-[16/10]",
   },
   {
-    image: "/assets/img/galeria/foto.jpg",
+    image: "/assets/img/galeria/foto15.jfif",
     title: "Guerrero en movimiento",
     desc: "Cada región con su propia causa.",
     className: "md:col-span-5 lg:col-span-5",
@@ -272,7 +272,7 @@ export default function HomePage() {
         .paper-grain:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.34;background-image:radial-gradient(rgba(122,31,43,.06) .55px, transparent .65px),radial-gradient(rgba(17,35,29,.04) .45px, transparent .55px),linear-gradient(180deg, rgba(255,255,255,.18), rgba(212,168,67,.05));background-size:12px 12px,18px 18px,100% 100%;mix-blend-mode:multiply}
         .glass-gold{background:rgba(255,255,255,.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(212,168,67,.45);box-shadow:0 24px 60px rgba(17,35,29,.16)}
         .placeholder-guinda{background:linear-gradient(155deg,#7A1F2B 0%,#4A0F18 100%)}
-        .hero-overlay{background:linear-gradient(90deg,rgba(7,10,11,.92) 0%,rgba(23,12,16,.78) 38%,rgba(8,10,11,.60) 68%,rgba(8,10,11,.66) 100%),linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.58) 100%),radial-gradient(circle at 18% 22%,rgba(212,168,67,.20),transparent 28%)}
+        .hero-overlay{background:linear-gradient(90deg,rgba(20,6,11,.92) 0%,rgba(35,9,16,.80) 38%,rgba(15,5,9,.62) 68%,rgba(15,5,9,.68) 100%),linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(10,3,6,.60) 100%),radial-gradient(circle at 18% 22%,rgba(212,168,67,.20),transparent 28%)}
         .gold-line{height:3px;width:4rem;border-radius:999px;background:#D4A843}
         .focus-ring:focus-visible{outline:2px solid #D4A843;outline-offset:3px}
         .voice-scroll{scrollbar-width:thin;scrollbar-color:rgba(212,168,67,.55) transparent}
@@ -320,7 +320,7 @@ export default function HomePage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mx-4 mb-4 rounded-[1.5rem] border border-white/10 bg-[#11231D]/95 px-5 py-5 text-white backdrop-blur-xl lg:hidden"
+              className="mx-4 mb-4 rounded-[1.5rem] border border-white/10 bg-[#3D0E1A]/95 px-5 py-5 text-white backdrop-blur-xl lg:hidden"
             >
               <nav className="flex flex-col gap-3 text-xs font-bold uppercase tracking-[0.16em]">
                 {[
@@ -343,10 +343,10 @@ export default function HomePage() {
         </AnimatePresence>
       </header>
 
-      <section className="relative min-h-[100svh] overflow-hidden bg-[#11231D] pt-24 sm:pt-28 lg:pt-24">
+      <section className="relative min-h-[100svh] overflow-hidden bg-[#3D0E1A] pt-24 sm:pt-28 lg:pt-24">
         <SafeImage
-          src="/assets/img/foto28.jpg"
-          alt="Esthela Damián recorriendo Guerrero"
+          src="/assets/img/foto3.jfif"
+          alt="Comunidad de Guerrero recibiendo a Esthela Damián"
           priority
           className="object-cover object-center"
           sizes="100vw"
@@ -359,7 +359,7 @@ export default function HomePage() {
           loop
           playsInline
           preload="metadata"
-          poster="/assets/img/foto28.jpg"
+          poster="/assets/img/foto3.jfif"
           onCanPlay={() => setHeroReady(true)}
         >
           <source src="/assets/img/video1.mp4" type="video/mp4" />
@@ -424,7 +424,7 @@ export default function HomePage() {
           <div className="relative">
             <div className="rounded-[2rem] border border-[#D7CCBC]/60 bg-white/70 p-2 shadow-[0_24px_60px_rgba(17,35,29,.10)]">
               <div className="relative aspect-[4/5] overflow-hidden rounded-[1.6rem]">
-                <SafeImage src="/assets/img/foto29.jpg" alt="Esthela Damián en diálogo con vecinas y vecinos" sizes="(max-width: 1024px) 100vw, 45vw" />
+                <SafeImage src="/assets/img/foto15.jfif" alt="Esthela Damián en plaza pública con vecinas y vecinos" sizes="(max-width: 1024px) 100vw, 45vw" />
               </div>
             </div>
             <div className="glass-gold absolute -bottom-6 left-4 right-4 rounded-[1.5rem] p-4 text-[#11231D] sm:left-8 sm:right-8 sm:p-5">
@@ -447,7 +447,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="rutas" className="relative overflow-hidden bg-[#11231D] px-5 py-18 text-white sm:px-5 sm:py-20 lg:px-8 lg:py-28">
+      <section id="rutas" className="relative overflow-hidden bg-[#3D0E1A] px-5 py-18 text-white sm:px-5 sm:py-20 lg:px-8 lg:py-28">
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 flex flex-col gap-4 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
@@ -459,7 +459,7 @@ export default function HomePage() {
           </div>
           <div className="grid gap-5 lg:grid-cols-12">
             {routes.map((route, index) => (
-              <article key={route.title} className={`overflow-hidden rounded-[2rem] border border-[#D4A843]/20 bg-[#0E171B] shadow-[0_20px_50px_rgba(0,0,0,.3)] ${index === 0 ? "lg:col-span-7" : index === 1 ? "lg:col-span-5" : "lg:col-span-4"}`}>
+              <article key={route.title} className={`overflow-hidden rounded-[2rem] border border-[#D4A843]/20 bg-[#240710] shadow-[0_20px_50px_rgba(0,0,0,.3)] ${index === 0 ? "lg:col-span-7" : index === 1 ? "lg:col-span-5" : "lg:col-span-4"}`}>
                 <div className={`grid h-full ${index === 0 ? "lg:grid-cols-[1.05fr_.95fr]" : ""}`}>
                   <div className="relative min-h-[240px] overflow-hidden">
                     <SafeImage src={route.image} alt={route.title} className="object-cover transition duration-700 hover:scale-105" sizes="(max-width: 1024px) 100vw, 50vw" />
@@ -483,7 +483,7 @@ export default function HomePage() {
 
       <section className="paper-grain border-y border-[#D7CCBC]/50 px-5 py-18 sm:px-5 sm:py-20 lg:px-8 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
-          <div className="rounded-[2rem] bg-[#11231D] p-7 text-white shadow-[0_28px_70px_rgba(17,35,29,.22)] sm:p-9">
+          <div className="rounded-[2rem] bg-[#3D0E1A] p-7 text-white shadow-[0_28px_70px_rgba(17,35,29,.22)] sm:p-9">
             <div className="flex items-center gap-3 text-[#D4A843]"><Quote size={20} /><span className="text-[10px] font-bold uppercase tracking-[0.2em]">Señal de Recorrido</span></div>
             <h2 className={`${montserrat.className} mt-5 text-3xl font-extrabold leading-tight sm:text-4xl`}>Una política que camina y escucha comunidad.</h2>
             <p className="mt-5 text-sm leading-7 text-white/74" style={serifStyle}>En cada comunidad, el trabajo territorial de Esthela Damián se sostiene en el diálogo directo con la gente y en la defensa de las causas propias de cada región de Guerrero.</p>
@@ -493,13 +493,13 @@ export default function HomePage() {
           </div>
           <div className="rounded-[2rem] border border-[#D7CCBC]/60 bg-white/80 p-2 shadow-[0_24px_60px_rgba(17,35,29,.10)]">
             <div className="relative aspect-[16/10] overflow-hidden rounded-[1.5rem]">
-              <SafeImage src="/assets/img/foto22.jfif" alt="Esthela conviviendo con la gente en Guerrero" sizes="(max-width: 1024px) 100vw, 45vw" />
+              <SafeImage src="/assets/img/foto11.jfif" alt="Comunidad de Guerrero organizada junto a Esthela Damián" sizes="(max-width: 1024px) 100vw, 45vw" />
             </div>
           </div>
         </div>
       </section>
 
-      <section id="voces" className="relative overflow-hidden bg-[#244C3A] px-5 py-18 text-white sm:px-5 sm:py-20 lg:px-8 lg:py-28">
+      <section id="voces" className="relative overflow-hidden bg-[#3D0E1A] px-5 py-18 text-white sm:px-5 sm:py-20 lg:px-8 lg:py-28">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.05fr_.95fr]">
           <div className="glass-gold rounded-[2rem] p-4 text-[#11231D] sm:p-6">
             <div className="mb-5 flex items-center justify-between border-b border-[#11231D]/12 pb-4">
@@ -573,7 +573,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="idea" className="relative overflow-hidden bg-[#133B5C] px-5 py-18 text-white sm:px-5 sm:py-20 lg:px-8 lg:py-28">
+      <section id="idea" className="relative overflow-hidden bg-[#3D0E1A] px-5 py-18 text-white sm:px-5 sm:py-20 lg:px-8 lg:py-28">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className={`${montserrat.className} text-4xl font-extrabold leading-tight sm:text-5xl lg:text-[3.4rem]`}>Tu idea puede transformar Guerrero</h2>
         </div>
@@ -621,12 +621,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[#1A0A0E] px-5 py-18 text-white sm:px-5 sm:py-20 lg:px-8 lg:py-24">
+      <section className="paper-grain relative overflow-hidden border-t border-[#D7CCBC]/50 px-5 py-18 sm:px-5 sm:py-20 lg:px-8 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4A843]">Póster social</p>
-            <h2 className={`${montserrat.className} mt-4 text-4xl font-extrabold leading-tight sm:text-5xl`}>Una pieza compartible con identidad de alta gama.</h2>
-            <p className="mt-5 text-sm leading-7 text-white/72" style={serifStyle}>Sube tu foto, elige una frase y comparte tu propio póster con el universo visual de Esthela Damián.</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7A1F2B]">Póster social</p>
+            <h2 className={`${montserrat.className} mt-4 text-4xl font-extrabold leading-tight text-[#11231D] sm:text-5xl`}>Una pieza compartible con identidad de alta gama.</h2>
+            <p className="mt-5 text-sm leading-7 text-[#1E1E1C]/70" style={serifStyle}>Sube tu foto, elige una frase y comparte tu propio póster con el universo visual de Esthela Damián.</p>
             <Link href="/tarjetas" className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#D4A843] px-6 py-4 text-sm font-bold text-[#5D1324]">
               Ir al generador de póster <ArrowRight size={16} />
             </Link>
@@ -644,7 +644,7 @@ export default function HomePage() {
                 </div>
                 <div className="relative z-10 grid grid-cols-[.95fr_1.05fr] items-center gap-4">
                   <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-[#D4A843]/35">
-                    <SafeImage src="/assets/img/foto28.jpg" alt="Retrato editorial" sizes="200px" />
+                    <SafeImage src="/assets/img/foto2.jfif" alt="Retrato editorial de Esthela Damián" sizes="200px" />
                   </div>
                   <div>
                     <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#F2CF8B]">Voz ciudadana</p>
@@ -660,7 +660,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="bg-[#11231D] px-5 py-10 text-white sm:px-5 lg:px-8">
+      <footer className="bg-[#3D0E1A] px-5 py-10 text-white sm:px-5 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="flex items-start gap-4">
             <div className="glass-gold relative h-14 w-14 shrink-0 overflow-hidden rounded-full p-1"><SafeImage src="/assets/img/logo.png" alt="Logo Por los Caminos del Sur" className="object-contain p-1.5" /></div>
