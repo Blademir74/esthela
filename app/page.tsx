@@ -50,7 +50,7 @@ const routes = [
   {
     title: "Mujeres e igualdad sustantiva",
     text: "Abrir espacios de organización y derechos con una imagen de cercanía real en territorio.",
-    image: "/assets/img/foto15.jfif",
+    image: "/assets/img/mujeres.jfif",
     tag: "Igualdad",
     tone: "from-[#7A1F2B] to-[#4A0F18]",
   },
@@ -95,35 +95,35 @@ const voices = [
 
 const gallery = [
   {
-    image: "/assets/img/galeria/foto2.jfif",
+    image: "/assets/img/foto3.jfif",
     title: "Escucha activa",
     desc: "Diálogo directo con la comunidad.",
     className: "md:col-span-6 lg:col-span-5",
     aspect: "aspect-[4/5] md:aspect-[5/6]",
   },
   {
-    image: "/assets/img/galeria/foto17.jfif",
+    image: "/assets/img/foto15.jfif",
     title: "Presencia territorial",
     desc: "Recorrido a pie por los municipios.",
     className: "md:col-span-6 lg:col-span-4",
     aspect: "aspect-[4/5]",
   },
   {
-    image: "/assets/img/galeria/foto11.jfif",
+    image: "/assets/img/foto26.jfif",
     title: "Comunidad organizada",
     desc: "Encuentros directos con la gente.",
     className: "md:col-span-12 lg:col-span-3",
     aspect: "aspect-[16/10] lg:aspect-[4/5]",
   },
   {
-    image: "/assets/img/galeria/foto3.jfif",
+    image: "/assets/img/foto10.jfif",
     title: "Recorrido en territorio",
     desc: "Cercanía, conversación y método.",
     className: "md:col-span-7 lg:col-span-7",
     aspect: "aspect-[16/10]",
   },
   {
-    image: "/assets/img/galeria/foto15.jfif",
+    image: "/assets/img/foto16.jfif",
     title: "Guerrero en movimiento",
     desc: "Cada región con su propia causa.",
     className: "md:col-span-5 lg:col-span-5",
@@ -691,7 +691,7 @@ export default function HomePage() {
       </footer>
 
       <a href={whatsappHref} target="_blank" rel="noreferrer" className="focus-ring fixed bottom-4 right-4 z-[70] inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-bold text-[#102117] shadow-[0_18px_45px_rgba(37,211,102,.35)] transition hover:-translate-y-0.5">
-        <MessageCircleHeart size={18} /> Dudas por WhatsApp
+        <MessageCircleHeart size={18} /> Unete a la Ola de la Esperanza
       </a>
     </main>
   );
