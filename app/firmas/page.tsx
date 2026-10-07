@@ -1,16 +1,258 @@
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Users, FileText, MessageCircle, PenTool, Download, Share2, Check, AlertCircle } from 'lucide-react';
-import SignaturePad from '@/components/firmas/SignaturePad';
-import BadgeConsulta from '@/components/firmas/BadgeConsulta';
-import { MUNICIPIOS_GUERRERO, clasificarInconformidad, generarFolio } from '@/lib/consulta-data';
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Shield, Users, FileText, MessageCircle, PenTool, Download,
+  Share2, Check, ChevronRight, Star, Trophy, Upload, X, AlertCircle
+} from "lucide-react";
 
-const P1_SI = 'SI_SEPARACION';
-const P1_NO = 'NO_PERMANENCIA';
-const CAND_ESTHELA = 'Esthela Damián';
-const CAND_MOJICA = 'Beatriz Mojica';
+/* ================= DATA: 81 MUNICIPIOS (idéntico a tus otros archivos) ================= */
+const MUNICIPIOS = [
+  "Acapulco de Juarez ","Acatepec ","Ahuacuotzingo ","Ajuchitlan del Progreso ","Alcozauca de Guerrero ",
+  "Alpoyeca ","Apaxtla ","Arcelia ","Atenango del Rio ","Atlamajalcingo del Monte ",
+  "Atlixtac ","Atoyac de Alvarez ","Ayutla de los Libres ","Azoyu ","Benito Juarez ","Buenavista de Cuellar ",
+  "Coahuayutla de Jose Maria Izazaga ","Cocula ","Copala ","Copalillo ","Copanatoyac ",
+  "Coyuca de Benitez ","Coyuca de Catalan ","Cuajinicuilapa ","Cualac ","Cuautepec ",
+  "Cuetzala del Progreso ","Cutzamala de Pinzon ","Chilapa de Alvarez ","Chilpancingo de los Bravo ","Eduardo Neri ",
+  "Florencio Villarreal ","General Canuto A. Neri ","General Heliodoro Castillo ","Huamuxtitlan ",
+  "Huitzuco de los Figueroa ","Iguala de la Independencia ","Igualapa ",
+  "Iliatenco ","Ixcateopan de Cuauhtemoc ","Jose Joaquin de Herrera ","Juan R. Escudero ","Juchitan ",
+  "La Union de Isidoro Montes de Oca ","Las Vigas ","Leonardo Bravo ","Malinaltepec ",
+  "Marquelia ","Martir de Cuilapan ","Metlatonoc ","Mochitlan ","Nuu Savi ",
+  "Olinala ","Ometepec ","Pedro Ascencio Alquisiras ","Petatlan ","Pilcaya ",
+  "Pungarabato ","Quechultenango ","San Luis Acatlan ","San Marcos ",
+  "San Miguel Totolapan ","San Nicolas ","Santa Cruz del Rincon ","Taxco de Alarcon ",
+  "Tecoanapa ","Tecpan de Galeana ","Teloloapan ","Tepecoacuilco de Trujano ",
+  "Tetipac ","Tixtla de Guerrero ","Tlacoachistlahuaca ","Tlacoapa ","Tlalchapa ",
+  "Tlalixtaquilla de Maldonado ","Tlapa de Comonfort ","Tlapehuala ","Xalpatlahuac ","Xochihuehuetlan ",
+  "Xochistlahuaca ","Zapotitlan Tablas ","Zirandaro ","Zitlala ","Zihuatanejo de Azueta "
+].sort();
 
+const P1_SI = "SI_SEPARACION";
+const P1_NO = "NO_PERMANENCIA";
+const CAND_ESTHELA = "Esthela Damián";
+const CAND_MOJICA = "Beatriz Mojica";
+
+const inputClass = "w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843]/50 transition-all text-sm";
+const labelClass = "block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase";
+
+/* ================= SUPABASE CONFIG (mismo patrón que tu page.tsx) ================= */
+const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const SB_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+/* ================= HELPERS ================= */
+const generarFolio = () => {
+  const n = Math.floor(Math.random() * 99999).toString().padStart(5, "0");
+  return `FIRMA-${new Date().getFullYear()}-GRO-${n}`;
+};
+
+const clasificar = (texto: string) => {
+  const t = texto.toLowerCase();
+  const cats: Record<string, string[]> = {
+    "Imposición / Falta de Transparencia": ["imposicion","imposición","impuesto","impuesta","encuesta","fraude","transparente","transparencia","tongo","dedazo"],
+    "Exigencia de Respeto a Bases": ["respeto","bases","militancia","estatutos","reglas","proceso interno"],
+    "Descontento con Liderazgo Actual": ["citlalli","ariadna","dirigencia","coordinacion","coordinación"],
+    "Apoyo a Esthela Damián": ["esthela","damián","damian","chilpancingo","experiencia","trabajo de base"],
+  };
+  let categoria = "Expresión Libre", max = 0;
+  for (const [c, ks] of Object.entries(cats)) {
+    const hits = ks.filter(k => t.includes(k)).length;
+    if (hits > max) { max = hits; categoria = c; }
+  }
+  let sentimiento = "Indignación Constructiva";
+  if (t.includes("esperanza") || t.includes("vamos") || t.includes("lograr")) sentimiento = "Esperanza Combativa";
+  else if (t.includes("harto") || t.includes("basta") || t.includes("hartazgo")) sentimiento = "Hartazgo Histórico";
+  else if (t.includes("miedo") || t.includes("temor")) sentimiento = "Preocupación Activa";
+  return { categoria, sentimiento, region: "Centro" };
+};
+
+/* ================= SIGNATURE PAD (inline, mismo patrón que tarjetas) ================= */
+function SignaturePad({ onChange }: { onChange: (f: string | null) => void }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const drawing = useRef(false);
+  const [ok, setOk] = useState(false);
+
+  const init = () => {
+    const c = ref.current; if (!c) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = c.getBoundingClientRect().width;
+    c.width = w * dpr; c.height = 200 * dpr;
+    const ctx = c.getContext("2d")!;
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = "#F5EFE0"; ctx.fillRect(0, 0, w, 200);
+    ctx.strokeStyle = "rgba(107,29,58,.25)"; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(20, 150); ctx.lineTo(w - 20, 150); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = "#14050B"; ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  };
+
+  useEffect(() => { init(); }, []);
+
+  const pos = (e: React.PointerEvent) => {
+    const r = ref.current!.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+  const down = (e: React.PointerEvent) => {
+    drawing.current = true;
+    ref.current!.setPointerCapture(e.pointerId);
+    const ctx = ref.current!.getContext("2d")!;
+    const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  };
+  const move = (e: React.PointerEvent) => {
+    if (!drawing.current) return;
+    const ctx = ref.current!.getContext("2d")!;
+    const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+    setOk(true);
+  };
+  const up = () => {
+    if (!drawing.current) return;
+    drawing.current = false;
+    onChange(ref.current!.toDataURL("image/png"));
+  };
+  const clear = () => { init(); setOk(false); onChange(null); };
+
+  return (
+    <div>
+      <label className={labelClass}>Firma Digital (traza con el dedo o mouse)</label>
+      <canvas
+        ref={ref}
+        className="w-full border border-[#D4A843]/30 rounded-xl cursor-crosshair"
+        style={{ height: 200, touchAction: "none" }}
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}
+      />
+      {ok && (
+        <button type="button" onClick={clear}
+          className="mt-2 px-4 py-2 rounded-full text-xs font-bold border border-white/20 text-white/60 hover:border-[#D4A843]/40 hover:text-[#D4A843] transition-all">
+          Borrar firma
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ================= BADGE DESCARGABLE (inline con html2canvas, mismo patrón que tarjetas) ================= */
+function BadgeModal({ data, onClose }: { data: any; onClose: () => void }) {
+  const badgeRef = useRef<HTMLDivElement>(null);
+  const [png, setPng] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      if (!badgeRef.current) return;
+      try {
+        const html2canvas = (await import("html2canvas")).default;
+        const canvas = await html2canvas(badgeRef.current, { scale: 3, useCORS: true, backgroundColor: null, logging: false });
+        setPng(canvas.toDataURL("image/png", 1.0));
+      } catch {
+        // fallback: solo botón de compartir
+      }
+    })();
+    document.body.style.overflow = "hidden";
+    const k = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", k);
+    return () => { window.removeEventListener("keydown", k); document.body.style.overflow = ""; };
+  }, [onClose]);
+
+  const shareText = encodeURIComponent(
+    `✅ Mi firma ya cuenta en la Consulta por la Transparencia en Guerrero.\nFolio: ${data.registro_id}\n¡El pueblo es el único que manda!\n#PorlosCaminosdelSur\n\n🔗 Firma tú también: https://porloscaminosdelsur.org/firmas`
+  );
+
+  const handleDownload = () => {
+    if (!png) return;
+    const link = document.createElement("a");
+    link.download = `acta-${data.registro_id}.png`;
+    link.href = png;
+    link.click();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[1000] bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
+      <div className="max-w-md w-full bg-[#14050B] border-2 border-[#D4A843]/50 rounded-2xl p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-black text-[#D4A843] flex items-center gap-2">
+            <Trophy className="w-5 h-5" /> Acta Registrada
+          </h3>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <p className="text-sm text-white/70 mb-4">
+          Folio: <strong className="text-[#D4A843]">{data.registro_id}</strong>
+        </p>
+
+        {/* Badge visual (para html2canvas) */}
+        <div ref={badgeRef} className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "4/5", background: "linear-gradient(145deg, #6B1D3A 0%, #3D0A1F 55%, #0D0308 100%)", border: "3px solid #D4A843" }}>
+          {/* Fibra de carbono */}
+          <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 8px), repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 8px)" }} />
+          {/* Franja superior */}
+          <div className="h-2 w-full" style={{ background: "linear-gradient(90deg, #D4A843 0%, #fff9e6 50%, #D4A843 100%)" }} />
+          {/* Header */}
+          <div className="px-5 pt-3 pb-2 flex items-center justify-between">
+            <div>
+              <p className="text-[9px] font-black tracking-[0.2em] text-[#D4A843] uppercase">Guerrero</p>
+              <p className="text-[10px] font-black tracking-widest text-white/60 uppercase">2026</p>
+            </div>
+            <div className="flex gap-0.5">
+              {[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 fill-[#D4A843] text-[#D4A843]" />)}
+            </div>
+            <div className="text-right">
+              <p className="text-[9px] font-black tracking-widest text-[#D4A843] uppercase">Consulta</p>
+              <p className="text-[8px] tracking-widest text-white/50 uppercase">Ciudadana</p>
+            </div>
+          </div>
+          {/* Sello */}
+          <div className="flex justify-center my-4">
+            <div className="relative w-28 h-28 rounded-full flex items-center justify-center" style={{ border: "3px solid #D4A843", boxShadow: "0 0 20px rgba(212,168,67,0.4)", background: "rgba(212,168,67,0.12)" }}>
+              <div className="text-center">
+                <p className="text-[10px] text-[#D4A843] font-black tracking-widest uppercase">Firma</p>
+                <p className="text-[10px] text-[#D4A843] font-black tracking-widest uppercase">Válida</p>
+              </div>
+            </div>
+          </div>
+          {/* Frase principal */}
+          <div className="px-6 py-3 text-center">
+            <p className="text-[11px] text-[#D4A843]/80 font-black tracking-[0.2em] uppercase mb-2">Mi voz ya cuenta</p>
+            <p className="font-black text-white text-base leading-tight mb-2" style={{ fontFamily: "Georgia, serif" }}>
+              Mi firma ya cuenta en la Consulta por la <span className="text-[#D4A843]">Transparencia</span> en Guerrero.
+            </p>
+            <p className="font-black text-[#D4A843] text-xl leading-tight tracking-wider" style={{ fontFamily: "Georgia, serif", fontStyle: "italic" }}>
+              ¡El pueblo es el único que manda!
+            </p>
+          </div>
+          {/* Datos */}
+          <div className="px-5 py-4 mt-2" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.7))", borderTop: "1px solid rgba(212,168,67,0.25)" }}>
+            <p className="text-[10px] tracking-[0.25em] text-[#D4A843]/70 uppercase mb-1 font-semibold text-center">Firmante</p>
+            <p className="font-black text-white text-lg leading-tight text-center">{data.usuario.nombre}</p>
+            <div className="mt-2 mx-auto px-4 py-1 rounded-full inline-flex items-center justify-center w-full" style={{ background: "rgba(212,168,67,0.18)", border: "1px solid rgba(212,168,67,0.35)" }}>
+              <p className="text-[10px] text-[#D4A843] font-bold tracking-wider">{data.usuario.municipio}</p>
+            </div>
+            <p className="text-[9px] text-white/40 mt-2 text-center tracking-wider">Folio: {data.registro_id}</p>
+            <p className="text-[9px] text-white/40 text-center tracking-wider">#PorlosCaminosdelSur</p>
+          </div>
+          <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #D4A843 0%, #BC955C 50%, #D4A843 100%)" }} />
+        </div>
+
+        {/* Acciones */}
+        <div className="mt-5 space-y-2">
+          {png && (
+            <button onClick={handleDownload}
+              className="w-full py-3 rounded-full font-black text-sm bg-[#D4A843] text-[#14050B] hover:bg-[#BC955C] transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
+              <Download className="w-4 h-4" /> Descargar Acta
+            </button>
+          )}
+          <a href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noopener noreferrer"
+            className="w-full py-3 rounded-full font-bold text-sm shimmer-btn flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
+            <Share2 className="w-4 h-4 text-[#D4A843]" /> Compartir en mi Estado de WhatsApp
+          </a>
+          <button onClick={onClose}
+            className="w-full py-2 text-xs text-white/40 hover:text-white/70 transition-colors">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================= PÁGINA PRINCIPAL ================= */
 type Step = 1 | 2 | 3 | 4;
 
 export default function ConsultaPage() {
@@ -18,31 +260,19 @@ export default function ConsultaPage() {
   const [loading, setLoading] = useState(false);
   const [badgeData, setBadgeData] = useState<any>(null);
   const [stats, setStats] = useState({ total: 14280, municipios: 81 });
-
   const [form, setForm] = useState({
-    nombre: '',
-    municipio: '',
-    whatsapp: '',
-    p1: '',
-    p2: '',
-    inconformidad: '',
-    firma: null as string | null,
+    nombre: "", municipio: "", whatsapp: "",
+    p1: "", p2: "", inconformidad: "", firma: null as string | null,
   });
 
-  // Cargar stats reales
+  // Cargar stats reales desde Supabase (mismo patrón que page.tsx)
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/consultas_firmas?select=folio`, {
-      headers: {
-        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
-      }
+    if (!SB_URL || !SB_KEY) return;
+    fetch(`${SB_URL}/rest/v1/consultas_firmas?select=folio`, {
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
     })
       .then(r => r.json())
-      .then(rows => {
-        if (Array.isArray(rows)) {
-          setStats(s => ({ ...s, total: 14280 + rows.length }));
-        }
-      })
+      .then(rows => { if (Array.isArray(rows)) setStats(s => ({ ...s, total: 14280 + rows.length })); })
       .catch(() => {});
   }, []);
 
@@ -57,77 +287,59 @@ export default function ConsultaPage() {
     setLoading(true);
     try {
       const folio = generarFolio();
-      const nlp = clasificarInconformidad(form.inconformidad, form.municipio);
-
+      const nlp = clasificar(form.inconformidad);
       const row = {
         folio,
         nombre: form.nombre.trim().slice(0, 100),
         municipio: form.municipio.trim().slice(0, 80),
-        whatsapp: form.whatsapp.replace(/\D/g, '').slice(0, 10),
-        pregunta_1: form.p1,
-        pregunta_2: form.p2,
+        whatsapp: form.whatsapp.replace(/\D/g, "").slice(0, 10),
+        pregunta_1: form.p1, pregunta_2: form.p2,
         inconformidad: form.inconformidad.trim().slice(0, 1500),
-        categoria_queja: nlp.categoria,
-        sentimiento: nlp.sentimiento,
-        region: nlp.region,
-        firma_data_url: form.firma,
+        categoria_queja: nlp.categoria, sentimiento: nlp.sentimiento,
+        region: nlp.region, firma_data_url: form.firma,
       };
-
-      const req = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/consultas_firmas`, {
-        method: 'POST',
+      const req = await fetch(`${SB_URL}/rest/v1/consultas_firmas`, {
+        method: "POST",
         headers: {
-          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
+          apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
+          "Content-Type": "application/json", Prefer: "return=representation"
         },
         body: JSON.stringify(row)
       });
-
-      if (!req.ok) throw new Error('DB error');
+      if (!req.ok) throw new Error("DB error");
       const [saved] = await req.json();
-
       setBadgeData({
         registro_id: saved.folio || folio,
         fecha_hora: new Date().toISOString(),
         usuario: { nombre: saved.nombre, municipio: saved.municipio, whatsapp: saved.whatsapp },
-        respuestas_consulta: {
-          pregunta_1_dimision_dirigentes: saved.pregunta_1,
-          pregunta_2_preferencia_coordinadora: saved.pregunta_2,
-        },
+        respuestas_consulta: { pregunta_1_dimision_dirigentes: saved.pregunta_1, pregunta_2_preferencia_coordinadora: saved.pregunta_2 },
         analisis_inconformidad_nlp: {
-          texto_original: saved.inconformidad,
-          categoria_queja: saved.categoria_queja,
-          sentimiento: saved.sentimiento,
-          region_impacto: saved.region,
+          texto_original: saved.inconformidad, categoria_queja: saved.categoria_queja,
+          sentimiento: saved.sentimiento, region_impacto: saved.region,
         }
       });
       setStats(s => ({ ...s, total: s.total + 1 }));
     } catch (err) {
-      alert('No pudimos registrar tu firma. Intenta de nuevo.');
+      alert("No pudimos registrar tu firma. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
   };
 
-  const inputClass = "w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843]/50 transition-all text-sm";
-  const labelClass = "block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase";
-
+  
   return (
     <main className="overflow-x-hidden bg-[#14050B] w-full min-h-screen">
-      {/* Fondos decorativos */}
+      {/* Fondos decorativos (mismo patrón que page.tsx) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#6B1D3A]/10 rounded-full blur-[160px]" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#D4A843]/5 rounded-full blur-[120px]" />
       </div>
 
-      {/* Header fijo */}
+      {/* HEADER FIJO con marca de agua sutil */}
       <header className="fixed inset-x-0 top-0 z-40 backdrop-blur-md bg-[#14050B]/80 border-b border-[#D4A843]/20 px-4 md:px-8 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-[#D4A843]" />
-          <span className="text-[#D4A843] font-black text-xs md:text-sm tracking-widest uppercase">
-            Esthela Damián
-          </span>
+          <span className="text-[#D4A843] font-black text-xs md:text-sm tracking-widest uppercase">Esthela Damián</span>
         </div>
         <span className="px-3 py-1 rounded-full bg-[#6B1D3A] border border-[#D4A843] text-[#D4A843] text-[10px] md:text-xs font-black tracking-widest">
           #PorlosCaminosdelSur
@@ -136,17 +348,17 @@ export default function ConsultaPage() {
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 pt-24 pb-12">
 
-        {/* HERO */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-8"
-        >
+        {/* HERO con marca de agua de Esthela */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-center mb-8 relative">
+          {/* Watermark sutil de Esthela */}
+          <div className="absolute inset-0 -z-10 flex items-center justify-center opacity-[0.08] pointer-events-none">
+            <img src="/assets/img/esthela.jpg" alt="" className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-full" style={{ filter: "grayscale(50%)" }} />
+          </div>
+
           <span className="inline-block px-4 py-1.5 rounded-full bg-[#D4A843]/10 border border-[#D4A843]/30 text-[#D4A843] text-[10px] md:text-xs font-bold mb-5 tracking-[0.3em] uppercase">
             Consulta Ciudadana · Guerrero 2026
           </span>
-          <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+          <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-4" style={{ fontFamily: "Georgia, serif" }}>
             Por la <span className="text-[#D4A843]">Transparencia</span><br/>
             y la Soberanía Popular
           </h1>
@@ -157,7 +369,7 @@ export default function ConsultaPage() {
           {/* Stats en vivo */}
           <div className="mt-6 mx-auto max-w-md grid grid-cols-2 divide-x divide-[#D4A843]/20 bg-white/[0.03] border border-[#D4A843]/30 rounded-2xl p-4">
             <div>
-              <p className="text-2xl md:text-3xl font-black text-[#D4A843] tabular-nums">{stats.total.toLocaleString('es-MX')}</p>
+              <p className="text-2xl md:text-3xl font-black text-[#D4A843] tabular-nums">{stats.total.toLocaleString("es-MX")}</p>
               <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Firmas Folio</p>
             </div>
             <div>
@@ -170,27 +382,20 @@ export default function ConsultaPage() {
         {/* STEPPER */}
         <div className="grid grid-cols-4 gap-2 mb-6">
           {([1,2,3,4] as Step[]).map((n) => {
-            const labels = ['Datos', 'Consulta', 'Catarsis', 'Firma'];
-            const icons = [Users, FileText, MessageCircle, PenTool];
-            const Icon = icons[n-1];
+            const labels = ["Datos", "Consulta", "Catarsis", "Firma"];
             const active = step >= n;
             const current = step === n;
             return (
-              <div
-                key={n}
-                className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border transition-all ${
-                  current ? 'bg-[#6B1D3A]/40 border-[#D4A843]' :
-                  active ? 'bg-[#D4A843]/5 border-[#D4A843]/30' :
-                  'bg-white/[0.02] border-white/10'
-                }`}
-              >
+              <div key={n} className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border transition-all ${
+                current ? "bg-[#6B1D3A]/40 border-[#D4A843]" :
+                active ? "bg-[#D4A843]/5 border-[#D4A843]/30" :
+                "bg-white/[0.02] border-white/10"
+              }`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-                  active ? 'bg-[#D4A843] text-[#14050B]' : 'bg-white/10 text-white/40'
-                }`}>
-                  {n}
-                </div>
+                  active ? "bg-[#D4A843] text-[#14050B]" : "bg-white/10 text-white/40"
+                }`}>{n}</div>
                 <span className={`text-[9px] md:text-[10px] font-bold tracking-wider uppercase ${
-                  active ? 'text-[#D4A843]' : 'text-white/40'
+                  active ? "text-[#D4A843]" : "text-white/40"
                 }`}>{labels[n-1]}</span>
               </div>
             );
@@ -199,14 +404,10 @@ export default function ConsultaPage() {
 
         {/* FORM CARD */}
         <AnimatePresence mode="wait">
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+          <motion.div key={step}
+            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="rounded-3xl bg-white/[0.025] border border-white/10 p-5 md:p-8 backdrop-blur-sm"
-          >
+            className="rounded-3xl bg-white/[0.025] border border-white/10 p-5 md:p-8 backdrop-blur-sm">
 
             {/* PASO 1: DATOS */}
             {step === 1 && (
@@ -230,7 +431,7 @@ export default function ConsultaPage() {
                   <select value={form.municipio} onChange={(e) => setForm({...form, municipio: e.target.value})}
                     className={`${inputClass} appearance-none cursor-pointer`}>
                     <option value="" disabled className="bg-[#1A0510]">Selecciona tu municipio…</option>
-                    {MUNICIPIOS_GUERRERO.map(m => (
+                    {MUNICIPIOS.map(m => (
                       <option key={m} value={m} className="bg-[#1A0510] text-white">{m}</option>
                     ))}
                   </select>
@@ -239,7 +440,7 @@ export default function ConsultaPage() {
                   <label className={labelClass}>WhatsApp / Teléfono (10 dígitos) *</label>
                   <input type="tel" inputMode="numeric" maxLength={10}
                     value={form.whatsapp}
-                    onChange={(e) => setForm({...form, whatsapp: e.target.value.replace(/\D/g, '')})}
+                    onChange={(e) => setForm({...form, whatsapp: e.target.value.replace(/\D/g, "")})}
                     className={inputClass} placeholder="7471234567" />
                 </div>
               </div>
@@ -259,11 +460,11 @@ export default function ConsultaPage() {
                 </div>
 
                 <fieldset>
-                  <legend className="text-white/90 text-sm md:text-base leading-relaxed mb-4 italic" style={{ fontFamily: 'Georgia, serif' }}>
+                  <legend className="text-white/90 text-sm md:text-base leading-relaxed mb-4 italic" style={{ fontFamily: "Georgia, serif" }}>
                     <span className="text-[#D4A843] font-bold not-italic">Pregunta 1 ·</span> Ante las inconsistencias e inconformidades registradas en el proceso de selección de coordinaciones en Guerrero, ¿respaldas la exigencia popular para la separación del cargo de Citlalli Hernández y Ariadna Montiel?
                   </legend>
                   <div className="space-y-2">
-                    <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p1 === P1_SI ? 'bg-[#6B1D3A]/30 border-[#D4A843]' : 'bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40'}`}>
+                    <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p1 === P1_SI ? "bg-[#6B1D3A]/30 border-[#D4A843]" : "bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40"}`}>
                       <input type="radio" name="p1" value={P1_SI} checked={form.p1 === P1_SI}
                         onChange={(e) => setForm({...form, p1: e.target.value})}
                         className="mt-0.5 accent-[#D4A843]" />
@@ -271,7 +472,7 @@ export default function ConsultaPage() {
                         <strong className="text-[#D4A843]">SÍ</strong>, exijo transparencia y separación del cargo para revisar el proceso.
                       </span>
                     </label>
-                    <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p1 === P1_NO ? 'bg-[#6B1D3A]/30 border-[#D4A843]' : 'bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40'}`}>
+                    <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p1 === P1_NO ? "bg-[#6B1D3A]/30 border-[#D4A843]" : "bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40"}`}>
                       <input type="radio" name="p1" value={P1_NO} checked={form.p1 === P1_NO}
                         onChange={(e) => setForm({...form, p1: e.target.value})}
                         className="mt-0.5 accent-[#D4A843]" />
@@ -283,11 +484,11 @@ export default function ConsultaPage() {
                 </fieldset>
 
                 <fieldset>
-                  <legend className="text-white/90 text-sm md:text-base leading-relaxed mb-4 italic" style={{ fontFamily: 'Georgia, serif' }}>
+                  <legend className="text-white/90 text-sm md:text-base leading-relaxed mb-4 italic" style={{ fontFamily: "Georgia, serif" }}>
                     <span className="text-[#D4A843] font-bold not-italic">Pregunta 2 ·</span> Para encabezar los trabajos de organización y defensa de la transformación en Guerrero, ¿a quién prefieres como Coordinadora Estatal?
                   </legend>
                   <div className="space-y-2">
-                    <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p2 === CAND_ESTHELA ? 'bg-[#6B1D3A]/30 border-[#D4A843]' : 'bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40'}`}>
+                    <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p2 === CAND_ESTHELA ? "bg-[#6B1D3A]/30 border-[#D4A843]" : "bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40"}`}>
                       <input type="radio" name="p2" value={CAND_ESTHELA} checked={form.p2 === CAND_ESTHELA}
                         onChange={(e) => setForm({...form, p2: e.target.value})}
                         className="mt-0.5 accent-[#D4A843]" />
@@ -296,7 +497,7 @@ export default function ConsultaPage() {
                         <p className="text-white/50 text-xs mt-0.5">Experiencia nacional, raíz en Chilpancingo y trabajo de base.</p>
                       </div>
                     </label>
-                    <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p2 === CAND_MOJICA ? 'bg-[#6B1D3A]/30 border-[#D4A843]' : 'bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40'}`}>
+                    <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p2 === CAND_MOJICA ? "bg-[#6B1D3A]/30 border-[#D4A843]" : "bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40"}`}>
                       <input type="radio" name="p2" value={CAND_MOJICA} checked={form.p2 === CAND_MOJICA}
                         onChange={(e) => setForm({...form, p2: e.target.value})}
                         className="mt-0.5 accent-[#D4A843]" />
@@ -321,7 +522,7 @@ export default function ConsultaPage() {
                     <p className="text-white/40 text-xs">Tu voz queda registrada para la historia.</p>
                   </div>
                 </div>
-                <p className="text-white/70 text-sm leading-relaxed italic" style={{ fontFamily: 'Georgia, serif' }}>
+                <p className="text-white/70 text-sm leading-relaxed italic" style={{ fontFamily: "Georgia, serif" }}>
                   Describe brevemente tu inconformidad o el motivo de tu firma sobre la situación política de tu municipio o del estado.
                 </p>
                 <textarea
@@ -334,7 +535,7 @@ export default function ConsultaPage() {
                 />
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-white/40">Mínimo 10 caracteres</span>
-                  <span className={`font-bold ${form.inconformidad.length < 10 ? 'text-red-400' : 'text-[#D4A843]'}`}>
+                  <span className={`font-bold ${form.inconformidad.length < 10 ? "text-red-400" : "text-[#D4A843]"}`}>
                     {form.inconformidad.length}/1500
                   </span>
                 </div>
@@ -354,6 +555,12 @@ export default function ConsultaPage() {
                   </div>
                 </div>
                 <SignaturePad onChange={(firma) => setForm({...form, firma})} />
+                <div className="p-4 rounded-xl bg-[#6B1D3A]/20 border border-[#D4A843]/20">
+                  <p className="text-white/70 text-xs leading-relaxed">
+                    <AlertCircle className="w-4 h-4 inline text-[#D4A843] mr-1" />
+                    Al firmar aceptas que tu voz sea registrada como parte del instrumento jurídico-político del pueblo guerrerense.
+                  </p>
+                </div>
               </div>
             )}
 
@@ -374,15 +581,9 @@ export default function ConsultaPage() {
                 <button onClick={submit} disabled={!canNext() || loading}
                   className="ml-auto px-8 py-3 rounded-full font-black text-sm shimmer-btn flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95">
                   {loading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Registrando acta…
-                    </>
+                    <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Registrando acta…</>
                   ) : (
-                    <>
-                      <PenTool className="w-5 h-5 text-[#D4A843]" />
-                      📜 Firmar y Validar mi Voz
-                    </>
+                    <><PenTool className="w-5 h-5 text-[#D4A843]" /> 📜 Firmar y Validar mi Voz</>
                   )}
                 </button>
               )}
@@ -396,28 +597,19 @@ export default function ConsultaPage() {
         Consulta Ciudadana por la Transparencia · Guerrero es Primero 💚
       </footer>
 
-      {/* WhatsApp flotante · 7474795833 */}
+      {/* WhatsApp flotante · 7474795833 · GAMA z-999 · right/bottom 20px */}
       <a
         href="https://wa.me/527474795833?text=Hola%2C%20quiero%20firmar%20la%20Consulta%20Ciudadana%20por%20la%20Transparencia%20en%20Guerrero.%20%C2%BFPodr%C3%ADan%20enviarme%20el%20link%3F"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Escríbenos por WhatsApp"
+        target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp"
         className="fixed z-[999] flex items-center justify-center rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.5)] transition-all hover:scale-110 active:scale-95"
-        style={{
-          bottom: '20px',
-          right: '20px',
-          width: '58px',
-          height: '58px',
-          background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
-        }}
-      >
+        style={{ bottom: "20px", right: "20px", width: "58px", height: "58px", background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)" }}>
         <svg viewBox="0 0 32 32" width="30" height="30" fill="#fff">
           <path d="M16 3C9.4 3 4 8.2 4 14.7c0 2.6.9 5 2.3 7L4 29l7.5-2.2c1.4.7 2.9 1.1 4.5 1.1 6.6 0 12-5.2 12-11.7S22.6 3 16 3zm6 16.1c-.3.8-1.5 1.5-2.1 1.6-.6.1-1.2.3-4-.8-3.4-1.4-5.6-4.8-5.8-5-.2-.2-1.4-1.9-1.4-3.6s.9-2.5 1.2-2.9c.3-.3.7-.4.9-.4h.7c.2 0 .5-.1.8.6.3.8 1.1 2.7 1.2 2.9.1.2.2.4 0 .7-.2.3-.3.5-.5.8-.2.2-.4.5-.2.9.2.4 1.1 1.8 2.4 2.9 1.6 1.4 3 1.9 3.4 2.1.4.2.7.1 1-.1.3-.3 1.1-1.3 1.4-1.7.3-.4.6-.4 1-.2.4.1 2.5 1.2 2.9 1.4.4.2.7.3.8.5.1.2.1 1-.2 1.8z"/>
         </svg>
       </a>
 
       {/* Modal de Badge */}
-      {badgeData && <BadgeConsulta data={badgeData} onClose={() => setBadgeData(null)} />}
+      {badgeData && <BadgeModal data={badgeData} onClose={() => setBadgeData(null)} />}
     </main>
   );
 }
