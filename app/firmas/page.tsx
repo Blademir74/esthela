@@ -1,81 +1,76 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Shield, Users, FileText, MessageCircle, PenTool, Download,
-  Share2, Check, ChevronRight, Star, Trophy, Upload, X, AlertCircle
-} from "lucide-react";
+import { Shield, Users, FileText, MessageCircle, PenTool, Download, Share2, Trophy, X, AlertCircle, RefreshCw } from "lucide-react";
 
-/* ================= DATA: 81 MUNICIPIOS (idéntico a tus otros archivos) ================= */
-const MUNICIPIOS = [
-  "Acapulco de Juarez ","Acatepec ","Ahuacuotzingo ","Ajuchitlan del Progreso ","Alcozauca de Guerrero ",
-  "Alpoyeca ","Apaxtla ","Arcelia ","Atenango del Rio ","Atlamajalcingo del Monte ",
-  "Atlixtac ","Atoyac de Alvarez ","Ayutla de los Libres ","Azoyu ","Benito Juarez ","Buenavista de Cuellar ",
-  "Coahuayutla de Jose Maria Izazaga ","Cocula ","Copala ","Copalillo ","Copanatoyac ",
-  "Coyuca de Benitez ","Coyuca de Catalan ","Cuajinicuilapa ","Cualac ","Cuautepec ",
-  "Cuetzala del Progreso ","Cutzamala de Pinzon ","Chilapa de Alvarez ","Chilpancingo de los Bravo ","Eduardo Neri ",
-  "Florencio Villarreal ","General Canuto A. Neri ","General Heliodoro Castillo ","Huamuxtitlan ",
-  "Huitzuco de los Figueroa ","Iguala de la Independencia ","Igualapa ",
-  "Iliatenco ","Ixcateopan de Cuauhtemoc ","Jose Joaquin de Herrera ","Juan R. Escudero ","Juchitan ",
-  "La Union de Isidoro Montes de Oca ","Las Vigas ","Leonardo Bravo ","Malinaltepec ",
-  "Marquelia ","Martir de Cuilapan ","Metlatonoc ","Mochitlan ","Nuu Savi ",
-  "Olinala ","Ometepec ","Pedro Ascencio Alquisiras ","Petatlan ","Pilcaya ",
-  "Pungarabato ","Quechultenango ","San Luis Acatlan ","San Marcos ",
-  "San Miguel Totolapan ","San Nicolas ","Santa Cruz del Rincon ","Taxco de Alarcon ",
-  "Tecoanapa ","Tecpan de Galeana ","Teloloapan ","Tepecoacuilco de Trujano ",
-  "Tetipac ","Tixtla de Guerrero ","Tlacoachistlahuaca ","Tlacoapa ","Tlalchapa ",
-  "Tlalixtaquilla de Maldonado ","Tlapa de Comonfort ","Tlapehuala ","Xalpatlahuac ","Xochihuehuetlan ",
-  "Xochistlahuaca ","Zapotitlan Tablas ","Zirandaro ","Zitlala ","Zihuatanejo de Azueta "
-].sort();
+/* ========== DATA ========== */
+const MUNICIPIOS = ["Acapulco de Juarez","Acatepec","Ahuacuotzingo","Ajuchitlan del Progreso","Alcozauca de Guerrero","Alpoyeca","Apaxtla","Arcelia","Atenango del Rio","Atlamajalcingo del Monte","Atlixtac","Atoyac de Alvarez","Ayutla de los Libres","Azoyu","Benito Juarez","Buenavista de Cuellar","Coahuayutla de Jose Maria Izazaga","Cocula","Copala","Copalillo","Copanatoyac","Coyuca de Benitez","Coyuca de Catalan","Cuajinicuilapa","Cualac","Cuautepec","Cuetzala del Progreso","Cutzamala de Pinzon","Chilapa de Alvarez","Chilpancingo de los Bravo","Eduardo Neri","Florencio Villarreal","General Canuto A. Neri","General Heliodoro Castillo","Huamuxtitlan","Huitzuco de los Figueroa","Iguala de la Independencia","Igualapa","Iliatenco","Ixcateopan de Cuauhtemoc","Jose Joaquin de Herrera","Juan R. Escudero","Juchitan","La Union de Isidoro Montes de Oca","Las Vigas","Leonardo Bravo","Malinaltepec","Marquelia","Martir de Cuilapan","Metlatonoc","Mochitlan","Nuu Savi","Olinala","Ometepec","Pedro Ascencio Alquisiras","Petatlan","Pilcaya","Pungarabato","Quechultenango","San Luis Acatlan","San Marcos","San Miguel Totolapan","San Nicolas","Santa Cruz del Rincon","Taxco de Alarcon","Tecoanapa","Tecpan de Galeana","Teloloapan","Tepecoacuilco de Trujano","Tetipac","Tixtla de Guerrero","Tlacoachistlahuaca","Tlacoapa","Tlalchapa","Tlalixtaquilla de Maldonado","Tlapa de Comonfort","Tlapehuala","Xalpatlahuac","Xochihuehuetlan","Xochistlahuaca","Zapotitlan Tablas","Zirandaro","Zitlala","Zihuatanejo de Azueta"].sort();
 
 const P1_SI = "SI_SEPARACION";
 const P1_NO = "NO_PERMANENCIA";
 const CAND_ESTHELA = "Esthela Damián";
 const CAND_MOJICA = "Beatriz Mojica";
-
 const inputClass = "w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843]/50 transition-all text-sm";
 const labelClass = "block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase";
 
-/* ================= SUPABASE CONFIG (mismo patrón que tu page.tsx) ================= */
+/* ========== SUPABASE + COLA OFFLINE ========== */
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SB_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const LS_QUEUE = "firmas_pendientes_v1";
 
-/* ================= HELPERS ================= */
-const generarFolio = () => {
-  const n = Math.floor(Math.random() * 99999).toString().padStart(5, "0");
-  return `FIRMA-${new Date().getFullYear()}-GRO-${n}`;
-};
+const getQueue = (): any[] => { try { return JSON.parse(localStorage.getItem(LS_QUEUE) || "[]"); } catch { return []; } };
+const pushQueue = (row: any) => { try { const q = getQueue(); q.push(row); localStorage.setItem(LS_QUEUE, JSON.stringify(q)); } catch {} };
+const removeQueue = (folio: string) => { try { localStorage.setItem(LS_QUEUE, JSON.stringify(getQueue().filter(r => r.folio !== folio))); } catch {} };
+
+/* POST con timeout de 12s (nunca se queda colgado) */
+async function postRow(row: any): Promise<{ ok: boolean; saved: any }> {
+  if (!SB_URL || !SB_KEY) return { ok: false, saved: null };
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  try {
+    const req = await fetch(`${SB_URL}/rest/v1/consultas_firmas`, {
+      method: "POST",
+      signal: ctrl.signal,
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" },
+      body: JSON.stringify(row)
+    });
+    if (!req.ok) { console.error("[FIRMAS] Supabase:", req.status, await req.text()); return { ok: false, saved: null }; }
+    const data = await req.json();
+    return { ok: true, saved: Array.isArray(data) ? data[0] : data };
+  } catch (e) {
+    console.error("[FIRMAS] Conexión:", e);
+    return { ok: false, saved: null };
+  } finally { clearTimeout(timer); }
+}
+
+/* ========== HELPERS ========== */
+const generarFolio = () => `FIRMA-${new Date().getFullYear()}-GRO-${Math.floor(Math.random() * 99999).toString().padStart(5, "0")}`;
 
 const clasificar = (texto: string) => {
   const t = texto.toLowerCase();
   const cats: Record<string, string[]> = {
-    "Imposición / Falta de Transparencia": ["imposicion","imposición","impuesto","impuesta","encuesta","fraude","transparente","transparencia","tongo","dedazo"],
-    "Exigencia de Respeto a Bases": ["respeto","bases","militancia","estatutos","reglas","proceso interno"],
+    "Imposición / Falta de Transparencia": ["imposicion","imposición","impuesto","encuesta","fraude","transparente","transparencia","tongo","dedazo"],
+    "Exigencia de Respeto a Bases": ["respeto","bases","militancia","estatutos","reglas"],
     "Descontento con Liderazgo Actual": ["citlalli","ariadna","dirigencia","coordinacion","coordinación"],
-    "Apoyo a Esthela Damián": ["esthela","damián","damian","chilpancingo","experiencia","trabajo de base"],
+    "Apoyo a Esthela Damián": ["esthela","damián","damian","chilpancingo","experiencia"]
   };
   let categoria = "Expresión Libre", max = 0;
-  for (const [c, ks] of Object.entries(cats)) {
-    const hits = ks.filter(k => t.includes(k)).length;
-    if (hits > max) { max = hits; categoria = c; }
-  }
+  for (const [c, ks] of Object.entries(cats)) { const h = ks.filter(k => t.includes(k)).length; if (h > max) { max = h; categoria = c; } }
   let sentimiento = "Indignación Constructiva";
-  if (t.includes("esperanza") || t.includes("vamos") || t.includes("lograr")) sentimiento = "Esperanza Combativa";
-  else if (t.includes("harto") || t.includes("basta") || t.includes("hartazgo")) sentimiento = "Hartazgo Histórico";
-  else if (t.includes("miedo") || t.includes("temor")) sentimiento = "Preocupación Activa";
+  if (t.includes("esperanza") || t.includes("vamos")) sentimiento = "Esperanza Combativa";
+  else if (t.includes("harto") || t.includes("basta")) sentimiento = "Hartazgo Histórico";
   return { categoria, sentimiento, region: "Centro" };
 };
 
-/* ================= SIGNATURE PAD (inline, mismo patrón que tarjetas) ================= */
+/* ========== FIRMA TÁCTIL ========== */
 function SignaturePad({ onChange }: { onChange: (f: string | null) => void }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const [ok, setOk] = useState(false);
-
   const init = () => {
     const c = ref.current; if (!c) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = c.getBoundingClientRect().width;
+    const w = c.getBoundingClientRect().width || 320;
     c.width = w * dpr; c.height = 200 * dpr;
     const ctx = c.getContext("2d")!;
     ctx.scale(dpr, dpr);
@@ -84,56 +79,26 @@ function SignaturePad({ onChange }: { onChange: (f: string | null) => void }) {
     ctx.beginPath(); ctx.moveTo(20, 150); ctx.lineTo(w - 20, 150); ctx.stroke(); ctx.setLineDash([]);
     ctx.strokeStyle = "#14050B"; ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round";
   };
-
   useEffect(() => { init(); }, []);
-
-  const pos = (e: React.PointerEvent) => {
-    const r = ref.current!.getBoundingClientRect();
-    return { x: e.clientX - r.left, y: e.clientY - r.top };
-  };
-  const down = (e: React.PointerEvent) => {
-    drawing.current = true;
-    ref.current!.setPointerCapture(e.pointerId);
-    const ctx = ref.current!.getContext("2d")!;
-    const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
-  };
-  const move = (e: React.PointerEvent) => {
-    if (!drawing.current) return;
-    const ctx = ref.current!.getContext("2d")!;
-    const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
-    setOk(true);
-  };
-  const up = () => {
-    if (!drawing.current) return;
-    drawing.current = false;
-    onChange(ref.current!.toDataURL("image/png"));
-  };
+  const pos = (e: React.PointerEvent) => { const r = ref.current!.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const down = (e: React.PointerEvent) => { drawing.current = true; ref.current!.setPointerCapture(e.pointerId); const ctx = ref.current!.getContext("2d")!; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+  const move = (e: React.PointerEvent) => { if (!drawing.current) return; const ctx = ref.current!.getContext("2d")!; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); setOk(true); };
+  const up = () => { if (!drawing.current) return; drawing.current = false; onChange(ref.current!.toDataURL("image/png")); };
   const clear = () => { init(); setOk(false); onChange(null); };
-
   return (
     <div>
       <label className={labelClass}>Firma Digital (traza con el dedo o mouse)</label>
-      <canvas
-        ref={ref}
-        className="w-full border border-[#D4A843]/30 rounded-xl cursor-crosshair"
-        style={{ height: 200, touchAction: "none" }}
-        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}
-      />
-      {ok && (
-        <button type="button" onClick={clear}
-          className="mt-2 px-4 py-2 rounded-full text-xs font-bold border border-white/20 text-white/60 hover:border-[#D4A843]/40 hover:text-[#D4A843] transition-all">
-          Borrar firma
-        </button>
-      )}
+      <canvas ref={ref} className="w-full border border-[#D4A843]/30 rounded-xl cursor-crosshair" style={{ height: 200, touchAction: "none" }}
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} />
+      {ok && <button type="button" onClick={clear} className="mt-2 px-4 py-2 rounded-full text-xs font-bold border border-white/20 text-white/60 hover:border-[#D4A843]/40 hover:text-[#D4A843] transition-all">Borrar firma</button>}
     </div>
   );
 }
 
-/* ================= BADGE DESCARGABLE (inline con html2canvas, mismo patrón que tarjetas) ================= */
-function BadgeModal({ data, onClose }: { data: any; onClose: () => void }) {
+/* ========== BADGE / ACTA ========== */
+function BadgeModal({ data, onClose, onRetry }: { data: any; onClose: () => void; onRetry: () => void }) {
   const badgeRef = useRef<HTMLDivElement>(null);
   const [png, setPng] = useState<string | null>(null);
-
   useEffect(() => {
     (async () => {
       if (!badgeRef.current) return;
@@ -141,459 +106,283 @@ function BadgeModal({ data, onClose }: { data: any; onClose: () => void }) {
         const html2canvas = (await import("html2canvas")).default;
         const canvas = await html2canvas(badgeRef.current, { scale: 3, useCORS: true, backgroundColor: null, logging: false });
         setPng(canvas.toDataURL("image/png", 1.0));
-      } catch {
-        // fallback: solo botón de compartir
-      }
+      } catch {}
     })();
     document.body.style.overflow = "hidden";
     const k = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", k);
     return () => { window.removeEventListener("keydown", k); document.body.style.overflow = ""; };
-  }, [onClose]);
+  }, [data.sincronizado, onClose]);
 
-  const shareText = encodeURIComponent(
-    `✅ Mi firma ya cuenta en la Consulta por la Transparencia en Guerrero.\nFolio: ${data.registro_id}\n¡El pueblo es el único que manda!\n#PorlosCaminosdelSur\n\n🔗 Firma tú también: https://porloscaminosdelsur.org/firmas`
-  );
-
-  const handleDownload = () => {
-    if (!png) return;
-    const link = document.createElement("a");
-    link.download = `acta-${data.registro_id}.png`;
-    link.href = png;
-    link.click();
-  };
+  const shareText = encodeURIComponent(`✅ Mi firma ya cuenta en la Consulta por la Transparencia en Guerrero.\nFolio: ${data.registro_id}\n¡El pueblo es el único que manda!\n#PorlosCaminosdelSur\n\n🔗 Firma tú también: https://porloscaminosdelsur.org/firmas`);
+  const handleDownload = () => { if (!png) return; const l = document.createElement("a"); l.download = `acta-${data.registro_id}.png`; l.href = png; l.click(); };
 
   return (
     <div className="fixed inset-0 z-[1000] bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
-      <div className="max-w-md w-full bg-[#14050B] border-2 border-[#D4A843]/50 rounded-2xl p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-black text-[#D4A843] flex items-center gap-2">
-            <Trophy className="w-5 h-5" /> Acta Registrada
-          </h3>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+      <div className="max-w-md w-full bg-[#14050B] border-2 border-[#D4A843]/50 rounded-2xl p-6 shadow-2xl max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xl font-black text-[#D4A843] flex items-center gap-2"><Trophy className="w-5 h-5" /> Acta Registrada</h3>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
         </div>
-        <p className="text-sm text-white/70 mb-4">
-          Folio: <strong className="text-[#D4A843]">{data.registro_id}</strong>
-        </p>
-
-        {/* Badge visual (para html2canvas) */}
+        <p className="text-sm text-white/70 mb-2">Folio: <strong className="text-[#D4A843]">{data.registro_id}</strong></p>
+        {data.sincronizado === false && (
+          <div className="mb-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+            <p className="text-[11px] text-yellow-300/90 flex-1">Guardada en este dispositivo. Se sincronizará al abrir de nuevo la página.</p>
+            <button onClick={onRetry} className="p-2 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 transition-colors" aria-label="Reintentar"><RefreshCw className="w-3.5 h-3.5 text-yellow-300" /></button>
+          </div>
+        )}
+        {/* Arte del badge */}
         <div ref={badgeRef} className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "4/5", background: "linear-gradient(145deg, #6B1D3A 0%, #3D0A1F 55%, #0D0308 100%)", border: "3px solid #D4A843" }}>
-          {/* Fibra de carbono */}
           <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 8px), repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 8px)" }} />
-          {/* Franja superior */}
           <div className="h-2 w-full" style={{ background: "linear-gradient(90deg, #D4A843 0%, #fff9e6 50%, #D4A843 100%)" }} />
-          {/* Header */}
           <div className="px-5 pt-3 pb-2 flex items-center justify-between">
-            <div>
-              <p className="text-[9px] font-black tracking-[0.2em] text-[#D4A843] uppercase">Guerrero</p>
-              <p className="text-[10px] font-black tracking-widest text-white/60 uppercase">2026</p>
-            </div>
-            <div className="flex gap-0.5">
-              {[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 fill-[#D4A843] text-[#D4A843]" />)}
-            </div>
-            <div className="text-right">
-              <p className="text-[9px] font-black tracking-widest text-[#D4A843] uppercase">Consulta</p>
-              <p className="text-[8px] tracking-widest text-white/50 uppercase">Ciudadana</p>
-            </div>
+            <div><p className="text-[9px] font-black tracking-[0.2em] text-[#D4A843] uppercase">Guerrero</p><p className="text-[10px] font-black tracking-widest text-white/60 uppercase">2026</p></div>
+            <p className="text-[9px] font-black tracking-widest text-[#D4A843] uppercase text-right">Consulta<br /><span className="text-white/50">Ciudadana</span></p>
           </div>
-          {/* Sello */}
           <div className="flex justify-center my-4">
-            <div className="relative w-28 h-28 rounded-full flex items-center justify-center" style={{ border: "3px solid #D4A843", boxShadow: "0 0 20px rgba(212,168,67,0.4)", background: "rgba(212,168,67,0.12)" }}>
-              <div className="text-center">
-                <p className="text-[10px] text-[#D4A843] font-black tracking-widest uppercase">Firma</p>
-                <p className="text-[10px] text-[#D4A843] font-black tracking-widest uppercase">Válida</p>
-              </div>
+            <div className="w-28 h-28 rounded-full flex items-center justify-center" style={{ border: "3px solid #D4A843", boxShadow: "0 0 20px rgba(212,168,67,0.4)", background: "rgba(212,168,67,0.12)" }}>
+              <p className="text-[11px] text-[#D4A843] font-black tracking-widest uppercase text-center">Firma<br />Válida</p>
             </div>
           </div>
-          {/* Frase principal */}
           <div className="px-6 py-3 text-center">
-            <p className="text-[11px] text-[#D4A843]/80 font-black tracking-[0.2em] uppercase mb-2">Mi voz ya cuenta ⚠️ Acta generada en este dispositivo · sincronización con BD pendiente</p>
-            <p className="font-black text-white text-base leading-tight mb-2" style={{ fontFamily: "Georgia, serif" }}>
-              Mi firma ya cuenta en la Consulta por la <span className="text-[#D4A843]">Transparencia</span> en Guerrero.
-            </p>
-            <p className="font-black text-[#D4A843] text-xl leading-tight tracking-wider" style={{ fontFamily: "Georgia, serif", fontStyle: "italic" }}>
-              ¡El pueblo es el único que manda!
-            </p>
+            <p className="font-black text-white text-base leading-tight mb-2" style={{ fontFamily: "Georgia, serif" }}>Mi firma ya cuenta en la Consulta por la <span className="text-[#D4A843]">Transparencia</span> en Guerrero.</p>
+            <p className="font-black text-[#D4A843] text-xl leading-tight tracking-wider" style={{ fontFamily: "Georgia, serif", fontStyle: "italic" }}>¡El pueblo es el único que manda!</p>
           </div>
-          {/* Datos */}
           <div className="px-5 py-4 mt-2" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.7))", borderTop: "1px solid rgba(212,168,67,0.25)" }}>
             <p className="text-[10px] tracking-[0.25em] text-[#D4A843]/70 uppercase mb-1 font-semibold text-center">Firmante</p>
             <p className="font-black text-white text-lg leading-tight text-center">{data.usuario.nombre}</p>
-            <div className="mt-2 mx-auto px-4 py-1 rounded-full inline-flex items-center justify-center w-full" style={{ background: "rgba(212,168,67,0.18)", border: "1px solid rgba(212,168,67,0.35)" }}>
+            <div className="mt-2 px-4 py-1 rounded-full text-center" style={{ background: "rgba(212,168,67,0.18)", border: "1px solid rgba(212,168,67,0.35)" }}>
               <p className="text-[10px] text-[#D4A843] font-bold tracking-wider">{data.usuario.municipio}</p>
             </div>
-            <p className="text-[9px] text-white/40 mt-2 text-center tracking-wider">Folio: {data.registro_id}</p>
-            <p className="text-[9px] text-white/40 text-center tracking-wider">#PorlosCaminosdelSur</p>
+            <p className="text-[9px] text-white/40 mt-2 text-center tracking-wider">Folio: {data.registro_id} · #PorlosCaminosdelSur</p>
           </div>
           <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #D4A843 0%, #BC955C 50%, #D4A843 100%)" }} />
         </div>
-
-        {/* Acciones */}
-        <div className="mt-5 space-y-2">
-          {png && (
-            <button onClick={handleDownload}
-              className="w-full py-3 rounded-full font-black text-sm bg-[#D4A843] text-[#14050B] hover:bg-[#BC955C] transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
-              <Download className="w-4 h-4" /> Descargar Acta
-            </button>
-          )}
-          <a href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noopener noreferrer"
-            className="w-full py-3 rounded-full font-bold text-sm shimmer-btn flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
-            <Share2 className="w-4 h-4 text-[#D4A843]" /> Compartir en mi Estado de WhatsApp
-          </a>
-          <button onClick={onClose}
-            className="w-full py-2 text-xs text-white/40 hover:text-white/70 transition-colors">
-            Cerrar
-          </button>
+        <div className="mt-4 space-y-2">
+          {png && <button onClick={handleDownload} className="w-full py-3 rounded-full font-black text-sm bg-[#D4A843] text-[#14050B] hover:bg-[#BC955C] transition-all flex items-center justify-center gap-2"><Download className="w-4 h-4" /> Descargar Acta</button>}
+          <a href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 rounded-full font-bold text-sm shimmer-btn flex items-center justify-center gap-2"><Share2 className="w-4 h-4 text-[#D4A843]" /> Compartir en mi Estado de WhatsApp</a>
+          <button onClick={onClose} className="w-full py-2 text-xs text-white/40 hover:text-white/70 transition-colors">Cerrar</button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ================= PÁGINA PRINCIPAL ================= */
+/* ========== PÁGINA ========== */
 type Step = 1 | 2 | 3 | 4;
 
 export default function ConsultaPage() {
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
   const [badgeData, setBadgeData] = useState<any>(null);
   const [stats, setStats] = useState({ total: 14280, municipios: 81 });
-  const [form, setForm] = useState({
-    nombre: "", municipio: "", whatsapp: "",
-    p1: "", p2: "", inconformidad: "", firma: null as string | null,
-  });
+  const [form, setForm] = useState({ nombre: "", municipio: "", whatsapp: "", p1: "", p2: "", inconformidad: "", firma: null as string | null });
 
-  // Cargar stats reales desde Supabase (mismo patrón que page.tsx)
+  /* Stats + re-sincronizar cola pendiente al abrir */
   useEffect(() => {
-    if (!SB_URL || !SB_KEY) return;
-    fetch(`${SB_URL}/rest/v1/consultas_firmas?select=folio`, {
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
-    })
-      .then(r => r.json())
-      .then(rows => { if (Array.isArray(rows)) setStats(s => ({ ...s, total: 14280 + rows.length })); })
-      .catch(() => {});
+    (async () => {
+      if (SB_URL && SB_KEY) {
+        try {
+          const r = await fetch(`${SB_URL}/rest/v1/consultas_firmas?select=folio`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
+          const rows = await r.json();
+          if (Array.isArray(rows)) setStats(s => ({ ...s, total: 14280 + rows.length }));
+        } catch {}
+        const q = getQueue();
+        if (q.length) { let n = 0; for (const row of q) { const res = await postRow(row); if (res.ok) { removeQueue(row.folio); n++; } } if (n) setStats(s => ({ ...s, total: s.total + n })); }
+      }
+    })();
   }, []);
 
-  const submit = async () => {
-  setLoading(true);
-  const folio = generarFolio();
-  const nlp = clasificar(form.inconformidad);
-  const row = {
-    folio,
-    nombre: form.nombre.trim().slice(0, 100),
-    municipio: form.municipio.trim().slice(0, 80),
-    whatsapp: form.whatsapp.replace(/\D/g, "").slice(0, 10),
-    pregunta_1: form.p1,
-    pregunta_2: form.p2,
-    inconformidad: form.inconformidad.trim().slice(0, 1500),
-    categoria_queja: nlp.categoria,
-    sentimiento: nlp.sentimiento,
-    region: nlp.region,
-    firma_data_url: form.firma,
+  /* ✅ AHORA SÍ EXISTE (era el bug principal) */
+  const canNext = (): boolean => {
+    if (step === 1) return form.nombre.trim().length >= 3 && !!form.municipio && form.whatsapp.length === 10;
+    if (step === 2) return !!form.p1 && !!form.p2;
+    if (step === 3) return form.inconformidad.trim().length >= 10;
+    return !!form.firma;
   };
 
-  let saved: any = null;
-  try {
-    const req = await fetch(`${SB_URL}/rest/v1/consultas_firmas`, {
-      method: "POST",
-      headers: {
-        apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
-        "Content-Type": "application/json", Prefer: "return=representation"
-      },
-      body: JSON.stringify(row)
-    });
-    if (req.ok) {
-      const data = await req.json();
-      saved = Array.isArray(data) ? data[0] : data;
-    } else {
-      console.error("[FIRMAS] Supabase rechazó el registro:", req.status, await req.text());
+  const next = () => {
+    setErr("");
+    if (!canNext()) {
+      if (step === 1) setErr(form.whatsapp.length !== 10 ? "Ingresa nombre, municipio y WhatsApp de 10 dígitos." : "Completa nombre y municipio.");
+      if (step === 2) setErr("Responde ambas preguntas para continuar.");
+      if (step === 3) setErr("Escribe al menos 10 caracteres de tu inconformidad.");
+      return;
     }
-  } catch (e) {
-    console.error("[FIRMAS] Error de conexión:", e);
-  }
+    setStep((step + 1) as Step);
+  };
 
-  // El acta se genera SIEMPRE (con o sin BD) para no frenar la campaña
-  const final = saved || row;
-  setBadgeData({
-    registro_id: final.folio || folio,
-    fecha_hora: new Date().toISOString(),
-    sincronizado: !!saved,
-    usuario: { nombre: final.nombre, municipio: final.municipio, whatsapp: final.whatsapp },
-    respuestas_consulta: {
-      pregunta_1_dimision_dirigentes: final.pregunta_1,
-      pregunta_2_preferencia_coordinadora: final.pregunta_2
-    },
-    analisis_inconformidad_nlp: {
-      texto_original: final.inconformidad,
-      categoria_queja: final.categoria_queja,
-      sentimiento: final.sentimiento,
-      region_impacto: final.region
-    }
-  });
-  if (saved) setStats(s => ({ ...s, total: s.total + 1 }));
-  setLoading(false);
-};
-  
+  const submit = async () => {
+    if (loading) return;
+    if (!canNext()) { setErr("Traza tu firma en el recuadro para validar tu voz."); return; }
+    setLoading(true); setErr("");
+    const folio = generarFolio();
+    const nlp = clasificar(form.inconformidad);
+    const row = {
+      folio,
+      nombre: form.nombre.trim().slice(0, 100),
+      municipio: form.municipio.trim().slice(0, 80),
+      whatsapp: form.whatsapp.replace(/\D/g, "").slice(0, 10),
+      pregunta_1: form.p1, pregunta_2: form.p2,
+      inconformidad: form.inconformidad.trim().slice(0, 1500),
+      categoria_queja: nlp.categoria, sentimiento: nlp.sentimiento, region: nlp.region,
+      firma_data_url: form.firma
+    };
+    const { ok, saved } = await postRow(row);
+    if (!ok) pushQueue(row); // nunca se pierde: cola offline
+    const final = saved || row;
+    setBadgeData({
+      registro_id: final.folio || folio,
+      fecha_hora: new Date().toISOString(),
+      sincronizado: ok,
+      _row: row,
+      usuario: { nombre: final.nombre, municipio: final.municipio, whatsapp: final.whatsapp },
+      respuestas_consulta: { pregunta_1_dimision_dirigentes: final.pregunta_1, pregunta_2_preferencia_coordinadora: final.pregunta_2 },
+      analisis_inconformidad_nlp: { texto_original: final.inconformidad, categoria_queja: final.categoria_queja, sentimiento: final.sentimiento, region_impacto: final.region }
+    });
+    if (ok) setStats(s => ({ ...s, total: s.total + 1 }));
+    setLoading(false);
+  };
+
+  const retrySync = async () => {
+    if (!badgeData?._row || loading) return;
+    setLoading(true);
+    const { ok } = await postRow(badgeData._row);
+    if (ok) { removeQueue(badgeData._row.folio); setBadgeData((b: any) => ({ ...b, sincronizado: true })); setStats(s => ({ ...s, total: s.total + 1 })); }
+    setLoading(false);
+  };
+
   return (
     <main className="overflow-x-hidden bg-[#14050B] w-full min-h-screen">
-      {/* Fondos decorativos (mismo patrón que page.tsx) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#6B1D3A]/10 rounded-full blur-[160px]" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#D4A843]/5 rounded-full blur-[120px]" />
       </div>
 
-      {/* HEADER FIJO con marca de agua sutil */}
       <header className="fixed inset-x-0 top-0 z-40 backdrop-blur-md bg-[#14050B]/80 border-b border-[#D4A843]/20 px-4 md:px-8 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-[#D4A843]" />
-          <span className="text-[#D4A843] font-black text-xs md:text-sm tracking-widest uppercase">Esthela Damián</span>
-        </div>
-        <span className="px-3 py-1 rounded-full bg-[#6B1D3A] border border-[#D4A843] text-[#D4A843] text-[10px] md:text-xs font-black tracking-widest">
-          #PorlosCaminosdelSur
-        </span>
+        <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-[#D4A843]" /><span className="text-[#D4A843] font-black text-xs md:text-sm tracking-widest uppercase">Esthela Damián</span></div>
+        <span className="px-3 py-1 rounded-full bg-[#6B1D3A] border border-[#D4A843] text-[#D4A843] text-[10px] md:text-xs font-black tracking-widest">#PorlosCaminosdelSur</span>
       </header>
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 pt-24 pb-12">
-
-        {/* HERO con marca de agua de Esthela */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-center mb-8 relative">
-          {/* Watermark sutil de Esthela */}
           <div className="absolute inset-0 -z-10 flex items-center justify-center opacity-[0.08] pointer-events-none">
             <img src="/assets/img/esthela.jpg" alt="" className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-full" style={{ filter: "grayscale(50%)" }} />
           </div>
-
-          <span className="inline-block px-4 py-1.5 rounded-full bg-[#D4A843]/10 border border-[#D4A843]/30 text-[#D4A843] text-[10px] md:text-xs font-bold mb-5 tracking-[0.3em] uppercase">
-            Consulta Ciudadana · Guerrero 2026
-          </span>
-          <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-4" style={{ fontFamily: "Georgia, serif" }}>
-            Por la <span className="text-[#D4A843]">Transparencia</span><br/>
-            y la Soberanía Popular
-          </h1>
-          <p className="text-white/70 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-            Tu firma es un <strong className="text-[#D4A843]">acto de soberanía</strong>. Cada registro queda foliado, clasificado y resguardado como instrumento jurídico-político del pueblo guerrerense.
-          </p>
-
-          {/* Stats en vivo */}
+          <span className="inline-block px-4 py-1.5 rounded-full bg-[#D4A843]/10 border border-[#D4A843]/30 text-[#D4A843] text-[10px] md:text-xs font-bold mb-5 tracking-[0.3em] uppercase">Consulta Ciudadana · Guerrero 2026</span>
+          <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-4" style={{ fontFamily: "Georgia, serif" }}>Por la <span className="text-[#D4A843]">Transparencia</span><br />y la Soberanía Popular</h1>
+          <p className="text-white/70 text-sm md:text-base max-w-xl mx-auto leading-relaxed">Tu firma es un <strong className="text-[#D4A843]">acto de soberanía</strong>. Cada registro queda foliado, clasificado y resguardado como instrumento jurídico-político del pueblo guerrerense.</p>
           <div className="mt-6 mx-auto max-w-md grid grid-cols-2 divide-x divide-[#D4A843]/20 bg-white/[0.03] border border-[#D4A843]/30 rounded-2xl p-4">
-            <div>
-              <p className="text-2xl md:text-3xl font-black text-[#D4A843] tabular-nums">{stats.total.toLocaleString("es-MX")}</p>
-              <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Firmas Folio</p>
-            </div>
-            <div>
-              <p className="text-2xl md:text-3xl font-black text-[#D4A843]">{stats.municipios} / 81</p>
-              <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Municipios</p>
-            </div>
+            <div><p className="text-2xl md:text-3xl font-black text-[#D4A843] tabular-nums">{stats.total.toLocaleString("es-MX")}</p><p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Firmas Folio</p></div>
+            <div><p className="text-2xl md:text-3xl font-black text-[#D4A843]">{stats.municipios} / 81</p><p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Municipios</p></div>
           </div>
         </motion.section>
 
-        {/* STEPPER */}
         <div className="grid grid-cols-4 gap-2 mb-6">
-          {([1,2,3,4] as Step[]).map((n) => {
+          {([1, 2, 3, 4] as Step[]).map(n => {
             const labels = ["Datos", "Consulta", "Catarsis", "Firma"];
-            const active = step >= n;
-            const current = step === n;
+            const active = step >= n, current = step === n;
             return (
-              <div key={n} className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border transition-all ${
-                current ? "bg-[#6B1D3A]/40 border-[#D4A843]" :
-                active ? "bg-[#D4A843]/5 border-[#D4A843]/30" :
-                "bg-white/[0.02] border-white/10"
-              }`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-                  active ? "bg-[#D4A843] text-[#14050B]" : "bg-white/10 text-white/40"
-                }`}>{n}</div>
-                <span className={`text-[9px] md:text-[10px] font-bold tracking-wider uppercase ${
-                  active ? "text-[#D4A843]" : "text-white/40"
-                }`}>{labels[n-1]}</span>
+              <div key={n} className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border transition-all ${current ? "bg-[#6B1D3A]/40 border-[#D4A843]" : active ? "bg-[#D4A843]/5 border-[#D4A843]/30" : "bg-white/[0.02] border-white/10"}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${active ? "bg-[#D4A843] text-[#14050B]" : "bg-white/10 text-white/40"}`}>{n}</div>
+                <span className={`text-[9px] md:text-[10px] font-bold tracking-wider uppercase ${active ? "text-[#D4A843]" : "text-white/40"}`}>{labels[n - 1]}</span>
               </div>
             );
           })}
         </div>
 
-        {/* FORM CARD */}
         <AnimatePresence mode="wait">
-          <motion.div key={step}
-            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="rounded-3xl bg-white/[0.025] border border-white/10 p-5 md:p-8 backdrop-blur-sm">
+          <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="rounded-3xl bg-white/[0.025] border border-white/10 p-5 md:p-8 backdrop-blur-sm">
 
-            {/* PASO 1: DATOS */}
             {step === 1 && (
               <div className="space-y-5">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-[#D4A843]" />
-                  </div>
-                  <div>
-                    <h2 className="text-white font-black text-lg">Paso 1 · Datos del Ciudadano</h2>
-                    <p className="text-white/40 text-xs">Verificamos tu identidad para validar tu firma.</p>
-                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center"><Users className="w-5 h-5 text-[#D4A843]" /></div>
+                  <div><h2 className="text-white font-black text-lg">Paso 1 · Datos del Ciudadano</h2><p className="text-white/40 text-xs">Verificamos tu identidad para validar tu firma.</p></div>
                 </div>
-                <div>
-                  <label className={labelClass}>Nombre completo o alias verificado *</label>
-                  <input type="text" value={form.nombre} onChange={(e) => setForm({...form, nombre: e.target.value})}
-                    className={inputClass} placeholder="Ej. María C. o Juan Pérez" />
-                </div>
-                <div>
-                  <label className={labelClass}>Municipio de Guerrero *</label>
-                  <select value={form.municipio} onChange={(e) => setForm({...form, municipio: e.target.value})}
-                    className={`${inputClass} appearance-none cursor-pointer`}>
+                <div><label className={labelClass}>Nombre completo o alias verificado *</label>
+                  <input type="text" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} className={inputClass} placeholder="Ej. María C. o Juan Pérez" /></div>
+                <div><label className={labelClass}>Municipio de Guerrero *</label>
+                  <select value={form.municipio} onChange={e => setForm({ ...form, municipio: e.target.value })} className={`${inputClass} appearance-none cursor-pointer`}>
                     <option value="" disabled className="bg-[#1A0510]">Selecciona tu municipio…</option>
-                    {MUNICIPIOS.map(m => (
-                      <option key={m} value={m} className="bg-[#1A0510] text-white">{m}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelClass}>WhatsApp / Teléfono (10 dígitos) *</label>
-                  <input type="tel" inputMode="numeric" maxLength={10}
-                    value={form.whatsapp}
-                    onChange={(e) => setForm({...form, whatsapp: e.target.value.replace(/\D/g, "")})}
-                    className={inputClass} placeholder="7471234567" />
-                </div>
+                    {MUNICIPIOS.map(m => <option key={m} value={m} className="bg-[#1A0510] text-white">{m}</option>)}
+                  </select></div>
+                <div><label className={labelClass}>WhatsApp / Teléfono (10 dígitos) *</label>
+                  <input type="tel" inputMode="numeric" maxLength={10} value={form.whatsapp} onChange={e => setForm({ ...form, whatsapp: e.target.value.replace(/\D/g, "") })} className={inputClass} placeholder="7471234567" /></div>
               </div>
             )}
 
-            {/* PASO 2: CONSULTA */}
             {step === 2 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-[#D4A843]" />
-                  </div>
-                  <div>
-                    <h2 className="text-white font-black text-lg">Paso 2 · Consulta Ciudadana</h2>
-                    <p className="text-white/40 text-xs">Responde las 2 preguntas obligatorias.</p>
-                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center"><FileText className="w-5 h-5 text-[#D4A843]" /></div>
+                  <div><h2 className="text-white font-black text-lg">Paso 2 · Consulta Ciudadana</h2><p className="text-white/40 text-xs">Responde las 2 preguntas obligatorias.</p></div>
                 </div>
-
                 <fieldset>
-                  <legend className="text-white/90 text-sm md:text-base leading-relaxed mb-4 italic" style={{ fontFamily: "Georgia, serif" }}>
-                    <span className="text-[#D4A843] font-bold not-italic">Pregunta 1 ·</span> Ante las inconsistencias e inconformidades registradas en el proceso de selección de coordinaciones en Guerrero, ¿respaldas la exigencia popular para la separación del cargo de Citlalli Hernández y Ariadna Montiel?
-                  </legend>
+                  <legend className="text-white/90 text-sm md:text-base leading-relaxed mb-4 italic" style={{ fontFamily: "Georgia, serif" }}><span className="text-[#D4A843] font-bold not-italic">Pregunta 1 ·</span> Ante las inconsistencias e inconformidades registradas en el proceso de selección de coordinaciones en Guerrero, ¿respaldas la exigencia popular para la separación del cargo de Citlalli Hernández y Ariadna Montiel?</legend>
                   <div className="space-y-2">
                     <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p1 === P1_SI ? "bg-[#6B1D3A]/30 border-[#D4A843]" : "bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40"}`}>
-                      <input type="radio" name="p1" value={P1_SI} checked={form.p1 === P1_SI}
-                        onChange={(e) => setForm({...form, p1: e.target.value})}
-                        className="mt-0.5 accent-[#D4A843]" />
-                      <span className="text-white text-sm leading-snug">
-                        <strong className="text-[#D4A843]">SÍ</strong>, exijo transparencia y separación del cargo para revisar el proceso.
-                      </span>
+                      <input type="radio" name="p1" value={P1_SI} checked={form.p1 === P1_SI} onChange={e => setForm({ ...form, p1: e.target.value })} className="mt-0.5 accent-[#D4A843]" />
+                      <span className="text-white text-sm leading-snug"><strong className="text-[#D4A843]">SÍ</strong>, exijo transparencia y separación del cargo para revisar el proceso.</span>
                     </label>
                     <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p1 === P1_NO ? "bg-[#6B1D3A]/30 border-[#D4A843]" : "bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40"}`}>
-                      <input type="radio" name="p1" value={P1_NO} checked={form.p1 === P1_NO}
-                        onChange={(e) => setForm({...form, p1: e.target.value})}
-                        className="mt-0.5 accent-[#D4A843]" />
-                      <span className="text-white text-sm leading-snug">
-                        <strong className="text-white/70">NO</strong>, considero que deben permanecer.
-                      </span>
+                      <input type="radio" name="p1" value={P1_NO} checked={form.p1 === P1_NO} onChange={e => setForm({ ...form, p1: e.target.value })} className="mt-0.5 accent-[#D4A843]" />
+                      <span className="text-white text-sm leading-snug"><strong className="text-white/70">NO</strong>, considero que deben permanecer.</span>
                     </label>
                   </div>
                 </fieldset>
-
                 <fieldset>
-                  <legend className="text-white/90 text-sm md:text-base leading-relaxed mb-4 italic" style={{ fontFamily: "Georgia, serif" }}>
-                    <span className="text-[#D4A843] font-bold not-italic">Pregunta 2 ·</span> Para encabezar los trabajos de organización y defensa de la transformación en Guerrero, ¿a quién prefieres como Coordinadora Estatal?
-                  </legend>
+                  <legend className="text-white/90 text-sm md:text-base leading-relaxed mb-4 italic" style={{ fontFamily: "Georgia, serif" }}><span className="text-[#D4A843] font-bold not-italic">Pregunta 2 ·</span> Para encabezar los trabajos de organización y defensa de la transformación en Guerrero, ¿a quién prefieres como Coordinadora Estatal?</legend>
                   <div className="space-y-2">
                     <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p2 === CAND_ESTHELA ? "bg-[#6B1D3A]/30 border-[#D4A843]" : "bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40"}`}>
-                      <input type="radio" name="p2" value={CAND_ESTHELA} checked={form.p2 === CAND_ESTHELA}
-                        onChange={(e) => setForm({...form, p2: e.target.value})}
-                        className="mt-0.5 accent-[#D4A843]" />
-                      <div className="text-white text-sm leading-snug">
-                        <strong className="text-[#D4A843]">Mtra. Esthela Damián</strong>
-                        <p className="text-white/50 text-xs mt-0.5">Experiencia nacional, raíz en Chilpancingo y trabajo de base.</p>
-                      </div>
+                      <input type="radio" name="p2" value={CAND_ESTHELA} checked={form.p2 === CAND_ESTHELA} onChange={e => setForm({ ...form, p2: e.target.value })} className="mt-0.5 accent-[#D4A843]" />
+                      <div className="text-white text-sm leading-snug"><strong className="text-[#D4A843]">Mtra. Esthela Damián</strong><p className="text-white/50 text-xs mt-0.5">Experiencia nacional, raíz en Chilpancingo y trabajo de base.</p></div>
                     </label>
                     <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.p2 === CAND_MOJICA ? "bg-[#6B1D3A]/30 border-[#D4A843]" : "bg-white/[0.02] border-white/10 hover:border-[#D4A843]/40"}`}>
-                      <input type="radio" name="p2" value={CAND_MOJICA} checked={form.p2 === CAND_MOJICA}
-                        onChange={(e) => setForm({...form, p2: e.target.value})}
-                        className="mt-0.5 accent-[#D4A843]" />
-                      <div className="text-white text-sm leading-snug">
-                        <strong>Beatriz Mojica</strong>
-                      </div>
+                      <input type="radio" name="p2" value={CAND_MOJICA} checked={form.p2 === CAND_MOJICA} onChange={e => setForm({ ...form, p2: e.target.value })} className="mt-0.5 accent-[#D4A843]" />
+                      <div className="text-white text-sm leading-snug"><strong>Beatriz Mojica</strong></div>
                     </label>
                   </div>
                 </fieldset>
               </div>
             )}
 
-            {/* PASO 3: CATARSIS */}
             {step === 3 && (
               <div className="space-y-5">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center">
-                    <MessageCircle className="w-5 h-5 text-[#D4A843]" />
-                  </div>
-                  <div>
-                    <h2 className="text-white font-black text-lg">Paso 3 · Catarsis Ciudadana</h2>
-                    <p className="text-white/40 text-xs">Tu voz queda registrada para la historia.</p>
-                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center"><MessageCircle className="w-5 h-5 text-[#D4A843]" /></div>
+                  <div><h2 className="text-white font-black text-lg">Paso 3 · Catarsis Ciudadana</h2><p className="text-white/40 text-xs">Tu voz queda registrada para la historia.</p></div>
                 </div>
-                <p className="text-white/70 text-sm leading-relaxed italic" style={{ fontFamily: "Georgia, serif" }}>
-                  Describe brevemente tu inconformidad o el motivo de tu firma sobre la situación política de tu municipio o del estado.
-                </p>
-                <textarea
-                  rows={6}
-                  value={form.inconformidad}
-                  onChange={(e) => setForm({...form, inconformidad: e.target.value})}
-                  className={`${inputClass} min-h-[160px] resize-none`}
-                  placeholder="No estamos de acuerdo con la imposición desde el centro, en Chilpancingo queremos que se respete la encuesta real..."
-                  maxLength={1500}
-                />
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-white/40">Mínimo 10 caracteres</span>
-                  <span className={`font-bold ${form.inconformidad.length < 10 ? "text-red-400" : "text-[#D4A843]"}`}>
-                    {form.inconformidad.length}/1500
-                  </span>
-                </div>
+                <p className="text-white/70 text-sm leading-relaxed italic" style={{ fontFamily: "Georgia, serif" }}>Describe brevemente tu inconformidad o el motivo de tu firma sobre la situación política de tu municipio o del estado.</p>
+                <textarea rows={6} value={form.inconformidad} onChange={e => setForm({ ...form, inconformidad: e.target.value })} className={`${inputClass} min-h-[160px] resize-none`} placeholder="No estamos de acuerdo con la imposición desde el centro, en Chilpancingo queremos que se respete la encuesta real..." maxLength={1500} />
+                <div className="flex justify-between items-center text-xs"><span className="text-white/40">Mínimo 10 caracteres</span><span className={`font-bold ${form.inconformidad.trim().length < 10 ? "text-red-400" : "text-[#D4A843]"}`}>{form.inconformidad.length}/1500</span></div>
               </div>
             )}
 
-            {/* PASO 4: FIRMA */}
             {step === 4 && (
               <div className="space-y-5">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center">
-                    <PenTool className="w-5 h-5 text-[#D4A843]" />
-                  </div>
-                  <div>
-                    <h2 className="text-white font-black text-lg">Paso 4 · Firma y Validación</h2>
-                    <p className="text-white/40 text-xs">Tu firma digital sella el acta como documento válido.</p>
-                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-[#D4A843]/20 flex items-center justify-center"><PenTool className="w-5 h-5 text-[#D4A843]" /></div>
+                  <div><h2 className="text-white font-black text-lg">Paso 4 · Firma y Validación</h2><p className="text-white/40 text-xs">Tu firma digital sella el acta como documento válido.</p></div>
                 </div>
-                <SignaturePad onChange={(firma) => setForm({...form, firma})} />
+                <SignaturePad onChange={firma => setForm({ ...form, firma })} />
                 <div className="p-4 rounded-xl bg-[#6B1D3A]/20 border border-[#D4A843]/20">
-                  <p className="text-white/70 text-xs leading-relaxed">
-                    <AlertCircle className="w-4 h-4 inline text-[#D4A843] mr-1" />
-                    Al firmar aceptas que tu voz sea registrada como parte del instrumento jurídico-político del pueblo guerrerense.
-                  </p>
+                  <p className="text-white/70 text-xs leading-relaxed"><AlertCircle className="w-4 h-4 inline text-[#D4A843] mr-1" />Al firmar aceptas que tu voz sea registrada como parte del instrumento jurídico-político del pueblo guerrerense.</p>
                 </div>
               </div>
             )}
 
-            {/* NAVEGACIÓN */}
+            {err && <p className="mt-4 text-center text-red-400 text-sm font-semibold">{err}</p>}
+
             <div className="mt-8 flex justify-between gap-3">
-              {step > 1 && (
-                <button onClick={() => setStep((step - 1) as Step)}
-                  className="px-6 py-3 rounded-full font-bold text-sm border border-white/20 text-white/60 hover:border-[#D4A843]/40 hover:text-[#D4A843] transition-all">
-                  ← Anterior
-                </button>
-              )}
+              {step > 1 && <button onClick={() => { setErr(""); setStep((step - 1) as Step); }} className="px-6 py-3 rounded-full font-bold text-sm border border-white/20 text-white/60 hover:border-[#D4A843]/40 hover:text-[#D4A843] transition-all">← Anterior</button>}
               {step < 4 ? (
-                <button onClick={() => setStep((step + 1) as Step)} disabled={!canNext()}
-                  className="ml-auto px-8 py-3 rounded-full font-black text-sm bg-[#D4A843] text-[#14050B] hover:bg-[#BC955C] disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95">
-                  Siguiente →
-                </button>
+                <button onClick={next} className="ml-auto px-8 py-3 rounded-full font-black text-sm bg-[#D4A843] text-[#14050B] hover:bg-[#BC955C] transition-all hover:scale-105 active:scale-95">Siguiente →</button>
               ) : (
-                <button onClick={submit} disabled={!canNext() || loading}
-                  className="ml-auto px-8 py-3 rounded-full font-black text-sm shimmer-btn flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95">
-                  {loading ? (
-                    <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Registrando acta…</>
-                  ) : (
-                    <><PenTool className="w-5 h-5 text-[#D4A843]" /> 📜 Firmar y Validar mi Voz</>
-                  )}
+                <button onClick={submit} disabled={loading} className="ml-auto px-8 py-3 rounded-full font-black text-sm shimmer-btn flex items-center gap-2 disabled:opacity-60 transition-all hover:scale-105 active:scale-95">
+                  {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Registrando acta…</> : <><PenTool className="w-5 h-5 text-[#D4A843]" /> 📜 Firmar y Validar mi Voz</>}
                 </button>
               )}
             </div>
@@ -601,24 +390,13 @@ export default function ConsultaPage() {
         </AnimatePresence>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-6 text-center text-xs text-white/40">
-        Consulta Ciudadana por la Transparencia · Guerrero es Primero 💚
-      </footer>
+      <footer className="border-t border-white/5 py-6 text-center text-xs text-white/40">Consulta Ciudadana por la Transparencia · Guerrero es Primero 💚</footer>
 
-      {/* WhatsApp flotante · 7474795833 · GAMA z-999 · right/bottom 20px */}
-      <a
-        href="https://wa.me/527474795833?text=Hola%2C%20quiero%20firmar%20la%20Consulta%20Ciudadana%20por%20la%20Transparencia%20en%20Guerrero.%20%C2%BFPodr%C3%ADan%20enviarme%20el%20link%3F"
-        target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp"
-        className="fixed z-[999] flex items-center justify-center rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.5)] transition-all hover:scale-110 active:scale-95"
-        style={{ bottom: "20px", right: "20px", width: "58px", height: "58px", background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)" }}>
-        <svg viewBox="0 0 32 32" width="30" height="30" fill="#fff">
-          <path d="M16 3C9.4 3 4 8.2 4 14.7c0 2.6.9 5 2.3 7L4 29l7.5-2.2c1.4.7 2.9 1.1 4.5 1.1 6.6 0 12-5.2 12-11.7S22.6 3 16 3zm6 16.1c-.3.8-1.5 1.5-2.1 1.6-.6.1-1.2.3-4-.8-3.4-1.4-5.6-4.8-5.8-5-.2-.2-1.4-1.9-1.4-3.6s.9-2.5 1.2-2.9c.3-.3.7-.4.9-.4h.7c.2 0 .5-.1.8.6.3.8 1.1 2.7 1.2 2.9.1.2.2.4 0 .7-.2.3-.3.5-.5.8-.2.2-.4.5-.2.9.2.4 1.1 1.8 2.4 2.9 1.6 1.4 3 1.9 3.4 2.1.4.2.7.1 1-.1.3-.3 1.1-1.3 1.4-1.7.3-.4.6-.4 1-.2.4.1 2.5 1.2 2.9 1.4.4.2.7.3.8.5.1.2.1 1-.2 1.8z"/>
-        </svg>
+      <a href="https://wa.me/527474795833?text=Hola%2C%20quiero%20firmar%20la%20Consulta%20Ciudadana%20por%20la%20Transparencia%20en%20Guerrero.%20%C2%BFPodr%C3%ADan%20enviarme%20el%20link%3F" target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp" className="fixed z-[999] flex items-center justify-center rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.5)] transition-all hover:scale-110 active:scale-95" style={{ bottom: "20px", right: "20px", width: "58px", height: "58px", background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)" }}>
+        <svg viewBox="0 0 32 32" width="30" height="30" fill="#fff"><path d="M16 3C9.4 3 4 8.2 4 14.7c0 2.6.9 5 2.3 7L4 29l7.5-2.2c1.4.7 2.9 1.1 4.5 1.1 6.6 0 12-5.2 12-11.7S22.6 3 16 3zm6 16.1c-.3.8-1.5 1.5-2.1 1.6-.6.1-1.2.3-4-.8-3.4-1.4-5.6-4.8-5.8-5-.2-.2-1.4-1.9-1.4-3.6s.9-2.5 1.2-2.9c.3-.3.7-.4.9-.4h.7c.2 0 .5-.1.8.6.3.8 1.1 2.7 1.2 2.9.1.2.2.4 0 .7-.2.3-.3.5-.5.8-.2.2-.4.5-.2.9.2.4 1.1 1.8 2.4 2.9 1.6 1.4 3 1.9 3.4 2.1.4.2.7.1 1-.1.3-.3 1.1-1.3 1.4-1.7.3-.4.6-.4 1-.2.4.1 2.5 1.2 2.9 1.4.4.2.7.3.8.5.1.2.1 1-.2 1.8z"/></svg>
       </a>
 
-      {/* Modal de Badge */}
-      {badgeData && <BadgeModal data={badgeData} onClose={() => setBadgeData(null)} />}
+      {badgeData && <BadgeModal data={badgeData} onClose={() => setBadgeData(null)} onRetry={retrySync} />}
     </main>
   );
 }
