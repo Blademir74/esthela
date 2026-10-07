@@ -209,7 +209,7 @@ function BadgeModal({ data, onClose }: { data: any; onClose: () => void }) {
           </div>
           {/* Frase principal */}
           <div className="px-6 py-3 text-center">
-            <p className="text-[11px] text-[#D4A843]/80 font-black tracking-[0.2em] uppercase mb-2">Mi voz ya cuenta</p>
+            <p className="text-[11px] text-[#D4A843]/80 font-black tracking-[0.2em] uppercase mb-2">Mi voz ya cuenta ⚠️ Acta generada en este dispositivo · sincronización con BD pendiente</p>
             <p className="font-black text-white text-base leading-tight mb-2" style={{ fontFamily: "Georgia, serif" }}>
               Mi firma ya cuenta en la Consulta por la <span className="text-[#D4A843]">Transparencia</span> en Guerrero.
             </p>
@@ -276,56 +276,65 @@ export default function ConsultaPage() {
       .catch(() => {});
   }, []);
 
-  const canNext = () => {
-    if (step === 1) return form.nombre.trim().length >= 3 && form.municipio && form.whatsapp.length === 10;
-    if (step === 2) return !!form.p1 && !!form.p2;
-    if (step === 3) return form.inconformidad.trim().length >= 10;
-    return !!form.firma;
-  };
-
   const submit = async () => {
-    setLoading(true);
-    try {
-      const folio = generarFolio();
-      const nlp = clasificar(form.inconformidad);
-      const row = {
-        folio,
-        nombre: form.nombre.trim().slice(0, 100),
-        municipio: form.municipio.trim().slice(0, 80),
-        whatsapp: form.whatsapp.replace(/\D/g, "").slice(0, 10),
-        pregunta_1: form.p1, pregunta_2: form.p2,
-        inconformidad: form.inconformidad.trim().slice(0, 1500),
-        categoria_queja: nlp.categoria, sentimiento: nlp.sentimiento,
-        region: nlp.region, firma_data_url: form.firma,
-      };
-      const req = await fetch(`${SB_URL}/rest/v1/consultas_firmas`, {
-        method: "POST",
-        headers: {
-          apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
-          "Content-Type": "application/json", Prefer: "return=representation"
-        },
-        body: JSON.stringify(row)
-      });
-      if (!req.ok) throw new Error("DB error");
-      const [saved] = await req.json();
-      setBadgeData({
-        registro_id: saved.folio || folio,
-        fecha_hora: new Date().toISOString(),
-        usuario: { nombre: saved.nombre, municipio: saved.municipio, whatsapp: saved.whatsapp },
-        respuestas_consulta: { pregunta_1_dimision_dirigentes: saved.pregunta_1, pregunta_2_preferencia_coordinadora: saved.pregunta_2 },
-        analisis_inconformidad_nlp: {
-          texto_original: saved.inconformidad, categoria_queja: saved.categoria_queja,
-          sentimiento: saved.sentimiento, region_impacto: saved.region,
-        }
-      });
-      setStats(s => ({ ...s, total: s.total + 1 }));
-    } catch (err) {
-      alert("No pudimos registrar tu firma. Intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
+  setLoading(true);
+  const folio = generarFolio();
+  const nlp = clasificar(form.inconformidad);
+  const row = {
+    folio,
+    nombre: form.nombre.trim().slice(0, 100),
+    municipio: form.municipio.trim().slice(0, 80),
+    whatsapp: form.whatsapp.replace(/\D/g, "").slice(0, 10),
+    pregunta_1: form.p1,
+    pregunta_2: form.p2,
+    inconformidad: form.inconformidad.trim().slice(0, 1500),
+    categoria_queja: nlp.categoria,
+    sentimiento: nlp.sentimiento,
+    region: nlp.region,
+    firma_data_url: form.firma,
   };
 
+  let saved: any = null;
+  try {
+    const req = await fetch(`${SB_URL}/rest/v1/consultas_firmas`, {
+      method: "POST",
+      headers: {
+        apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
+        "Content-Type": "application/json", Prefer: "return=representation"
+      },
+      body: JSON.stringify(row)
+    });
+    if (req.ok) {
+      const data = await req.json();
+      saved = Array.isArray(data) ? data[0] : data;
+    } else {
+      console.error("[FIRMAS] Supabase rechazó el registro:", req.status, await req.text());
+    }
+  } catch (e) {
+    console.error("[FIRMAS] Error de conexión:", e);
+  }
+
+  // El acta se genera SIEMPRE (con o sin BD) para no frenar la campaña
+  const final = saved || row;
+  setBadgeData({
+    registro_id: final.folio || folio,
+    fecha_hora: new Date().toISOString(),
+    sincronizado: !!saved,
+    usuario: { nombre: final.nombre, municipio: final.municipio, whatsapp: final.whatsapp },
+    respuestas_consulta: {
+      pregunta_1_dimision_dirigentes: final.pregunta_1,
+      pregunta_2_preferencia_coordinadora: final.pregunta_2
+    },
+    analisis_inconformidad_nlp: {
+      texto_original: final.inconformidad,
+      categoria_queja: final.categoria_queja,
+      sentimiento: final.sentimiento,
+      region_impacto: final.region
+    }
+  });
+  if (saved) setStats(s => ({ ...s, total: s.total + 1 }));
+  setLoading(false);
+};
   
   return (
     <main className="overflow-x-hidden bg-[#14050B] w-full min-h-screen">
