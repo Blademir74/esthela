@@ -1,29 +1,162 @@
-// lib/consulta-data.ts  (catálogo + NLP heurístico gratuito)
 export const MUNICIPIOS_GUERRERO = [
-  'Acapulco de Juárez','Chilpancingo de los Bravo','Iguala de la Independencia',
-  'Taxco de Alarcón','Zihuatanejo de Azueta','Tlapa de Comonfort','Ometepec',
-  'Arcelia','Teloloapan','Coyuca de Benítez','Petatlán','Técpan de Galeana',
-  'Atoyac de Álvarez','Ayutla de los Libres','Marquelia','San Luis Acatlán',
-  'Chilapa de Álvarez','Tixtla de Guerrero','Huitzuco de los Figueroa',
-  // … resto hasta 81 (usa el mismo array de tu landing principal)
+  'Acapulco de Juárez',
+  'Chilpancingo de los Bravo',
+  'Iguala de la Independencia',
+  'Taxco de Alarcón',
+  'Zihuatanejo de Azueta',
+  'Tlapa de Comonfort',
+  'Ometepec',
+  'Arcelia',
+  'Teloloapan',
+  'Coyuca de Benítez',
+  'Petatlán',
+  'Técpan de Galeana',
+  'Atoyac de Álvarez',
+  'Ayutla de los Libres',
+  'Marquelia',
+  'San Luis Acatlán',
+  'Chilapa de Álvarez',
+  'Tixtla de Guerrero',
+  'Huitzuco de los Figueroa',
+  'Tepecoacuilco de Trujano',
+  'Buenavista de Cuéllar',
+  'Eduardo Neri',
+  'General Heliodoro Castillo',
+  'Leonardo Bravo',
+  'Mochitlán',
+  'Quechultenango',
+  'Zitlala',
+  'Atlamajalcingo del Monte',
+  'Atlixtac',
+  'Copanatoyac',
+  'Cualác',
+  'Huamuxtitlán',
+  'Malinaltepec',
+  'Metlatónoc',
+  'Olinalá',
+  'Tlacoapa',
+  'Xalpatláhuac',
+  'Xochihuehuetlán',
+  'Zapotitlán Tablas',
+  'Acatepec',
+  'Alcozauca de Guerrero',
+  'Alpoyeca',
+  'Cochoapa el Grande',
+  'Iliatenco',
+  'José Joaquín de Herrera',
+  'Tlalixtaquilla de Maldonado',
+  'Benito Juárez',
+  'Coahuayutla de José María Izazaga',
+  'Coyuca de Catalán',
+  'La Unión de Isidoro Montes de Oca',
+  'San Miguel Totolapan',
+  'Zirándaro',
+  'Ahuacuotzingo',
+  'Copalillo',
+  'Cutzamala de Pinzón',
+  'Mártir de Cuilapan',
+  'Morelos',
+  'Pungarabato',
+  'Tlalchapa',
+  'Tlapehuala',
+  'Apaxtla',
+  'Atenango del Río',
+  'Cocula',
+  'Cuetzala del Progreso',
+  'General Canuto A. Neri',
+  'Ixcateopan de Cuauhtémoc',
+  'Pedro Ascencio Alquisiras',
+  'Pilcaya',
+  'Tetipac',
+  'Ajuchitlán del Progreso',
+  'Cuautepec',
+  'Cuajinicuilapa',
+  'Florencio Villarreal',
+  'Igualapa',
+  'Juan R. Escudero',
+  'Juchitán',
+  'San Marcos',
+  'Tecoanapa',
+  'Tlacoachistlahuaca',
+  'Xochistlahuaca',
 ];
 
 export const REGIONES: Record<string, string[]> = {
-  'Centro': ['Chilpancingo de los Bravo','Eduardo Neri','Tixtla de Guerrero','Mochitlán','Leonardo Bravo','Zitlala','General Heliodoro Castillo','Quechultenango'],
-  'Costa Grande': ['Zihuatanejo de Azueta','Petatlán','Técpan de Galeana','Atoyac de Álvarez','Benito Juárez','La Unión de Isidoro Montes de Oca'],
-  'Costa Chica': ['Ayutla de los Libres','Marquelia','Ometepec','San Luis Acatlán','Tecoanapa','San Marcos','Cuajinicuilapa'],
-  'Tierra Caliente': ['Arcelia','Teloloapan','Coyuca de Catalán','Cutzamala de Pinzón','Pungarabato','Ciudad Altamirano','Iguala de la Independencia'],
-  'Norte': ['Iguala de la Independencia','Taxco de Alarcón','Huitzuco de los Figueroa','Tepecoacuilco','Buenavista de Cuéllar'],
-  'Montaña': ['Tlapa de Comonfort','Metlatónoc','Cochoapa el Grande','Acatepec','Malinaltepec'],
-  'Sierra': ['Chilapa de Álvarez','Ahuacuotzingo','Cualác','José Joaquín de Herrera'],
-  'Acapulco': ['Acapulco de Juárez','Coyuca de Benítez'],
+  Centro: [
+    'Chilpancingo de los Bravo',
+    'Eduardo Neri',
+    'Tixtla de Guerrero',
+    'Mochitlán',
+    'Leonardo Bravo',
+    'Zitlala',
+    'General Heliodoro Castillo',
+    'Quechultenango',
+  ],
+  'Costa Grande': [
+    'Zihuatanejo de Azueta',
+    'Petatlán',
+    'Técpan de Galeana',
+    'Atoyac de Álvarez',
+    'Benito Juárez',
+    'La Unión de Isidoro Montes de Oca',
+  ],
+  'Costa Chica': [
+    'Ayutla de los Libres',
+    'Marquelia',
+    'Ometepec',
+    'San Luis Acatlán',
+    'Tecoanapa',
+    'San Marcos',
+    'Cuajinicuilapa',
+  ],
+  'Tierra Caliente': [
+    'Arcelia',
+    'Teloloapan',
+    'Coyuca de Catalán',
+    'Cutzamala de Pinzón',
+    'Pungarabato',
+    'Iguala de la Independencia',
+  ],
+  Norte: [
+    'Iguala de la Independencia',
+    'Taxco de Alarcón',
+    'Huitzuco de los Figueroa',
+    'Tepecoacuilco de Trujano',
+    'Buenavista de Cuéllar',
+  ],
+  Montaña: [
+    'Tlapa de Comonfort',
+    'Metlatónoc',
+    'Cochoapa el Grande',
+    'Acatepec',
+    'Malinaltepec',
+  ],
+  Sierra: ['Chilapa de Álvarez', 'Ahuacuotzingo', 'Cualác', 'José Joaquín de Herrera'],
+  Acapulco: ['Acapulco de Juárez', 'Coyuca de Benítez'],
 };
 
 const KEYWORDS: Record<string, string[]> = {
-  'Imposición / Falta de Transparencia': ['imposición','impuesto','impuesta','encuesta','fraude','transparente','transparencia','tongo','dedazo'],
-  'Exigencia de Respeto a Bases': ['respeto','bases','militancia','estatutos','reglas','proceso interno'],
-  'Descontento con Liderazgo Actual': ['Citlalli','Ariadna','dirigencia','coordinación','coordinadoras','mal liderazgo'],
-  'Apoyo a Esthela Damián': ['Esthela','Damián','raíz','experiencia nacional','Chilpancingo','trabajo de base'],
+  'Imposición / Falta de Transparencia': [
+    'imposición',
+    'impuesto',
+    'impuesta',
+    'encuesta',
+    'fraude',
+    'transparente',
+    'transparencia',
+    'tongo',
+    'dedazo',
+  ],
+  'Exigencia de Respeto a Bases': ['respeto', 'bases', 'militancia', 'estatutos', 'reglas', 'proceso interno'],
+  'Descontento con Liderazgo Actual': [
+    'Citlalli',
+    'Ariadna',
+    'dirigencia',
+    'coordinación',
+    'coordinadoras',
+    'mal liderazgo',
+  ],
+  'Apoyo a Esthela Damián': ['Esthela', 'Damián', 'raíz', 'experiencia nacional', 'Chilpancingo', 'trabajo de base'],
 };
 
 export function clasificarInconformidad(texto: string, municipio: string) {
@@ -32,7 +165,10 @@ export function clasificarInconformidad(texto: string, municipio: string) {
   let maxHits = 0;
   for (const [cat, kws] of Object.entries(KEYWORDS)) {
     const hits = kws.filter((k) => t.includes(k)).length;
-    if (hits > maxHits) { maxHits = hits; categoria = cat; }
+    if (hits > maxHits) {
+      maxHits = hits;
+      categoria = cat;
+    }
   }
   let sentimiento = 'Indignación Constructiva';
   if (t.includes('esperanza') || t.includes('vamos') || t.includes('lograr')) sentimiento = 'Esperanza Combativa';
@@ -40,14 +176,19 @@ export function clasificarInconformidad(texto: string, municipio: string) {
   else if (t.includes('miedo') || t.includes('temor')) sentimiento = 'Preocupación Activa';
   let region = 'Centro';
   for (const [r, ms] of Object.entries(REGIONES)) {
-    if (ms.some((m) => municipio.includes(m) || m.includes(municipio))) { region = r; break; }
+    if (ms.some((m) => municipio.includes(m) || m.includes(municipio))) {
+      region = r;
+      break;
+    }
   }
   return { categoria, sentimiento, region };
 }
 
 export function generarFolio() {
   const año = new Date().getFullYear();
-  const n = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
+  const n = Math.floor(Math.random() * 99999)
+    .toString()
+    .padStart(5, '0');
   return `FIRMA-${año}-GRO-${n}`;
 }
 

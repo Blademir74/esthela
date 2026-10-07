@@ -1,15 +1,21 @@
-// app/api/firmas/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { clasificarInconformidad, generarFolio } from '@/lib/consulta-data';
 
 const SB = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const H = { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' };
+const H = {
+  apikey: KEY,
+  Authorization: `Bearer ${KEY}`,
+  'Content-Type': 'application/json',
+};
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const limit = Number(searchParams.get('limit') ?? 50);
-  const res = await fetch(`${SB}/rest/v1/consultas_firmas?select=*&order=created_at.desc&limit=${limit}`, { headers: H });
+  const res = await fetch(
+    `${SB}/rest/v1/consultas_firmas?select=*&order=created_at.desc&limit=${limit}`,
+    { headers: H }
+  );
   return NextResponse.json(res.ok ? await res.json() : []);
 }
 
@@ -32,14 +38,21 @@ export async function POST(req: NextRequest) {
       ? Buffer.from(req.headers.get('x-forwarded-for')!).toString('base64').slice(0, 32)
       : null,
   };
-  if (row.nombre.length < 3 || !row.municipio || !['SI_SEPARACION','NO_PERMANENCIA'].includes(row.pregunta_1))
+
+  if (
+    row.nombre.length < 3 ||
+    !row.municipio ||
+    !['SI_SEPARACION', 'NO_PERMANENCIA'].includes(row.pregunta_1)
+  ) {
     return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
+  }
 
   const res = await fetch(`${SB}/rest/v1/consultas_firmas?select=*`, {
     method: 'POST',
     headers: { ...H, Prefer: 'return=representation' },
     body: JSON.stringify(row),
   });
+
   if (!res.ok) return NextResponse.json({ error: 'DB' }, { status: 500 });
   const [guardado] = await res.json();
   return NextResponse.json(guardado, { status: 201 });
