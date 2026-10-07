@@ -3,17 +3,16 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Users, FileText, MessageCircle, PenTool, Download, Share2, Trophy, X, AlertCircle, RefreshCw } from "lucide-react";
 
-/* ========== DATA ========== */
 const MUNICIPIOS = ["Acapulco de Juarez","Acatepec","Ahuacuotzingo","Ajuchitlan del Progreso","Alcozauca de Guerrero","Alpoyeca","Apaxtla","Arcelia","Atenango del Rio","Atlamajalcingo del Monte","Atlixtac","Atoyac de Alvarez","Ayutla de los Libres","Azoyu","Benito Juarez","Buenavista de Cuellar","Coahuayutla de Jose Maria Izazaga","Cocula","Copala","Copalillo","Copanatoyac","Coyuca de Benitez","Coyuca de Catalan","Cuajinicuilapa","Cualac","Cuautepec","Cuetzala del Progreso","Cutzamala de Pinzon","Chilapa de Alvarez","Chilpancingo de los Bravo","Eduardo Neri","Florencio Villarreal","General Canuto A. Neri","General Heliodoro Castillo","Huamuxtitlan","Huitzuco de los Figueroa","Iguala de la Independencia","Igualapa","Iliatenco","Ixcateopan de Cuauhtemoc","Jose Joaquin de Herrera","Juan R. Escudero","Juchitan","La Union de Isidoro Montes de Oca","Las Vigas","Leonardo Bravo","Malinaltepec","Marquelia","Martir de Cuilapan","Metlatonoc","Mochitlan","Nuu Savi","Olinala","Ometepec","Pedro Ascencio Alquisiras","Petatlan","Pilcaya","Pungarabato","Quechultenango","San Luis Acatlan","San Marcos","San Miguel Totolapan","San Nicolas","Santa Cruz del Rincon","Taxco de Alarcon","Tecoanapa","Tecpan de Galeana","Teloloapan","Tepecoacuilco de Trujano","Tetipac","Tixtla de Guerrero","Tlacoachistlahuaca","Tlacoapa","Tlalchapa","Tlalixtaquilla de Maldonado","Tlapa de Comonfort","Tlapehuala","Xalpatlahuac","Xochihuehuetlan","Xochistlahuaca","Zapotitlan Tablas","Zirandaro","Zitlala","Zihuatanejo de Azueta"].sort();
 
-const P1_SI = "SI_SEPARACION";
-const P1_NO = "NO_PERMANENCIA";
-const CAND_ESTHELA = "Esthela Damián";
-const CAND_MOJICA = "Beatriz Mojica";
+const P1_SI = "SI_SEPARACION", P1_NO = "NO_PERMANENCIA";
+const CAND_ESTHELA = "Esthela Damián", CAND_MOJICA = "Beatriz Mojica";
 const inputClass = "w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/25 focus:outline-none focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843]/50 transition-all text-sm";
 const labelClass = "block text-xs font-semibold text-[#D4A843]/80 mb-1.5 tracking-wider uppercase";
 
-/* ========== SUPABASE + COLA OFFLINE ========== */
+/* ⬇️ CONTADOR REAL: ponlo en 14280 solo si quieres base histórica. En 0 = 100% real */
+const BASE_HISTORICO = 0;
+
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SB_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const LS_QUEUE = "firmas_pendientes_v1";
@@ -22,30 +21,24 @@ const getQueue = (): any[] => { try { return JSON.parse(localStorage.getItem(LS_
 const pushQueue = (row: any) => { try { const q = getQueue(); q.push(row); localStorage.setItem(LS_QUEUE, JSON.stringify(q)); } catch {} };
 const removeQueue = (folio: string) => { try { localStorage.setItem(LS_QUEUE, JSON.stringify(getQueue().filter(r => r.folio !== folio))); } catch {} };
 
-/* POST con timeout de 12s (nunca se queda colgado) */
 async function postRow(row: any): Promise<{ ok: boolean; saved: any }> {
   if (!SB_URL || !SB_KEY) return { ok: false, saved: null };
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 12000);
+  const t = setTimeout(() => ctrl.abort(), 12000);
   try {
     const req = await fetch(`${SB_URL}/rest/v1/consultas_firmas`, {
-      method: "POST",
-      signal: ctrl.signal,
+      method: "POST", signal: ctrl.signal,
       headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" },
       body: JSON.stringify(row)
     });
     if (!req.ok) { console.error("[FIRMAS] Supabase:", req.status, await req.text()); return { ok: false, saved: null }; }
-    const data = await req.json();
-    return { ok: true, saved: Array.isArray(data) ? data[0] : data };
-  } catch (e) {
-    console.error("[FIRMAS] Conexión:", e);
-    return { ok: false, saved: null };
-  } finally { clearTimeout(timer); }
+    const d = await req.json();
+    return { ok: true, saved: Array.isArray(d) ? d[0] : d };
+  } catch (e) { console.error("[FIRMAS] Conexión:", e); return { ok: false, saved: null }; }
+  finally { clearTimeout(t); }
 }
 
-/* ========== HELPERS ========== */
 const generarFolio = () => `FIRMA-${new Date().getFullYear()}-GRO-${Math.floor(Math.random() * 99999).toString().padStart(5, "0")}`;
-
 const clasificar = (texto: string) => {
   const t = texto.toLowerCase();
   const cats: Record<string, string[]> = {
@@ -62,7 +55,6 @@ const clasificar = (texto: string) => {
   return { categoria, sentimiento, region: "Centro" };
 };
 
-/* ========== FIRMA TÁCTIL ========== */
 function SignaturePad({ onChange }: { onChange: (f: string | null) => void }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
@@ -87,15 +79,35 @@ function SignaturePad({ onChange }: { onChange: (f: string | null) => void }) {
   const clear = () => { init(); setOk(false); onChange(null); };
   return (
     <div>
-      <label className={labelClass}>Firma Digital (traza con el dedo o mouse)</label>
-      <canvas ref={ref} className="w-full border border-[#D4A843]/30 rounded-xl cursor-crosshair" style={{ height: 200, touchAction: "none" }}
-        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} />
-      {ok && <button type="button" onClick={clear} className="mt-2 px-4 py-2 rounded-full text-xs font-bold border border-white/20 text-white/60 hover:border-[#D4A843]/40 hover:text-[#D4A843] transition-all">Borrar firma</button>}
+      <label className={labelClass}>Firma Digital *</label>
+      {/* Recuadro con borde dorado punteado que llama la atención */}
+      <div className={`relative rounded-xl overflow-hidden border-2 transition-all ${ok ? "border-green-500/60" : "border-dashed border-[#D4A843]"}`}>
+        <canvas ref={ref} className="w-full cursor-crosshair block" style={{ height: 200, touchAction: "none" }}
+          onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} />
+        {/* 👇 AVISO: solo aparece mientras NO han firmado */}
+        {!ok && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none animate-pulse">
+            <div className="flex items-center gap-2 text-[#6B1D3A]">
+              <PenTool className="w-6 h-6 animate-bounce" />
+              <span className="font-black text-2xl tracking-widest uppercase" style={{ fontFamily: "Georgia, serif" }}>Firma aquí</span>
+            </div>
+            <p className="text-[#6B1D3A]/70 text-xs md:text-sm font-semibold mt-2 text-center px-6">
+              👆 Toca el recuadro y traza tu firma con el dedo o el mouse
+            </p>
+          </div>
+        )}
+      </div>
+      {/* ✅ Confirmación cuando ya firmaron */}
+      {ok && (
+        <div className="mt-2 flex items-center gap-3">
+          <span className="text-xs text-green-400 font-bold">✅ Firma capturada</span>
+          <button type="button" onClick={clear} className="px-4 py-2 rounded-full text-xs font-bold border border-white/20 text-white/60 hover:border-[#D4A843]/40 hover:text-[#D4A843] transition-all">Borrar y firmar de nuevo</button>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ========== BADGE / ACTA ========== */
 function BadgeModal({ data, onClose, onRetry }: { data: any; onClose: () => void; onRetry: () => void }) {
   const badgeRef = useRef<HTMLDivElement>(null);
   const [png, setPng] = useState<string | null>(null);
@@ -112,27 +124,24 @@ function BadgeModal({ data, onClose, onRetry }: { data: any; onClose: () => void
     const k = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", k);
     return () => { window.removeEventListener("keydown", k); document.body.style.overflow = ""; };
-  }, [data.sincronizado, onClose]);
-
+  }, [onClose]);
   const shareText = encodeURIComponent(`✅ Mi firma ya cuenta en la Consulta por la Transparencia en Guerrero.\nFolio: ${data.registro_id}\n¡El pueblo es el único que manda!\n#PorlosCaminosdelSur\n\n🔗 Firma tú también: https://porloscaminosdelsur.org/firmas`);
   const handleDownload = () => { if (!png) return; const l = document.createElement("a"); l.download = `acta-${data.registro_id}.png`; l.href = png; l.click(); };
-
   return (
     <div className="fixed inset-0 z-[1000] bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
       <div className="max-w-md w-full bg-[#14050B] border-2 border-[#D4A843]/50 rounded-2xl p-6 shadow-2xl max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xl font-black text-[#D4A843] flex items-center gap-2"><Trophy className="w-5 h-5" /> Acta Registrada</h3>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
         </div>
         <p className="text-sm text-white/70 mb-2">Folio: <strong className="text-[#D4A843]">{data.registro_id}</strong></p>
         {data.sincronizado === false && (
           <div className="mb-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-            <p className="text-[11px] text-yellow-300/90 flex-1">Guardada en este dispositivo. Se sincronizará al abrir de nuevo la página.</p>
-            <button onClick={onRetry} className="p-2 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 transition-colors" aria-label="Reintentar"><RefreshCw className="w-3.5 h-3.5 text-yellow-300" /></button>
+            <p className="text-[11px] text-yellow-300/90 flex-1">Guardada en este dispositivo. Se re-enviará al reabrir la página.</p>
+            <button onClick={onRetry} className="p-2 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30" aria-label="Reintentar"><RefreshCw className="w-3.5 h-3.5 text-yellow-300" /></button>
           </div>
         )}
-        {/* Arte del badge */}
         <div ref={badgeRef} className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "4/5", background: "linear-gradient(145deg, #6B1D3A 0%, #3D0A1F 55%, #0D0308 100%)", border: "3px solid #D4A843" }}>
           <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 8px), repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 8px)" }} />
           <div className="h-2 w-full" style={{ background: "linear-gradient(90deg, #D4A843 0%, #fff9e6 50%, #D4A843 100%)" }} />
@@ -162,14 +171,13 @@ function BadgeModal({ data, onClose, onRetry }: { data: any; onClose: () => void
         <div className="mt-4 space-y-2">
           {png && <button onClick={handleDownload} className="w-full py-3 rounded-full font-black text-sm bg-[#D4A843] text-[#14050B] hover:bg-[#BC955C] transition-all flex items-center justify-center gap-2"><Download className="w-4 h-4" /> Descargar Acta</button>}
           <a href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 rounded-full font-bold text-sm shimmer-btn flex items-center justify-center gap-2"><Share2 className="w-4 h-4 text-[#D4A843]" /> Compartir en mi Estado de WhatsApp</a>
-          <button onClick={onClose} className="w-full py-2 text-xs text-white/40 hover:text-white/70 transition-colors">Cerrar</button>
+          <button onClick={onClose} className="w-full py-2 text-xs text-white/40 hover:text-white/70">Cerrar</button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ========== PÁGINA ========== */
 type Step = 1 | 2 | 3 | 4;
 
 export default function ConsultaPage() {
@@ -177,25 +185,34 @@ export default function ConsultaPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [badgeData, setBadgeData] = useState<any>(null);
-  const [stats, setStats] = useState({ total: 14280, municipios: 81 });
+  const [stats, setStats] = useState({ total: BASE_HISTORICO, municipios: 0 });
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [form, setForm] = useState({ nombre: "", municipio: "", whatsapp: "", p1: "", p2: "", inconformidad: "", firma: null as string | null });
 
-  /* Stats + re-sincronizar cola pendiente al abrir */
+  /* ✅ CONTADOR 100% REAL + RECUPERACIÓN automática de firmas pendientes */
   useEffect(() => {
-    (async () => {
-      if (SB_URL && SB_KEY) {
-        try {
-          const r = await fetch(`${SB_URL}/rest/v1/consultas_firmas?select=folio`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
-          const rows = await r.json();
-          if (Array.isArray(rows)) setStats(s => ({ ...s, total: 14280 + rows.length }));
-        } catch {}
-        const q = getQueue();
-        if (q.length) { let n = 0; for (const row of q) { const res = await postRow(row); if (res.ok) { removeQueue(row.folio); n++; } } if (n) setStats(s => ({ ...s, total: s.total + n })); }
+    const cargar = async () => {
+      if (!SB_URL || !SB_KEY) return;
+      try {
+        const r = await fetch(`${SB_URL}/rest/v1/consultas_firmas?select=folio,municipio`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
+        const rows = await r.json();
+        if (Array.isArray(rows)) {
+          setStats({ total: BASE_HISTORICO + rows.length, municipios: new Set(rows.map((x: any) => x.municipio)).size });
+          setLastUpdate(new Date());
+        }
+      } catch {}
+      const q = getQueue();
+      if (q.length) {
+        let n = 0;
+        for (const row of q) { const res = await postRow(row); if (res.ok) { removeQueue(row.folio); n++; } }
+        if (n) { const r2 = await fetch(`${SB_URL}/rest/v1/consultas_firmas?select=folio,municipio`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }); const rows2 = await r2.json(); if (Array.isArray(rows2)) setStats({ total: BASE_HISTORICO + rows2.length, municipios: new Set(rows2.map((x: any) => x.municipio)).size }); }
       }
-    })();
+    };
+    cargar();
+    const t = setInterval(cargar, 30000);
+    return () => clearInterval(t);
   }, []);
 
-  /* ✅ AHORA SÍ EXISTE (era el bug principal) */
   const canNext = (): boolean => {
     if (step === 1) return form.nombre.trim().length >= 3 && !!form.municipio && form.whatsapp.length === 10;
     if (step === 2) return !!form.p1 && !!form.p2;
@@ -206,9 +223,9 @@ export default function ConsultaPage() {
   const next = () => {
     setErr("");
     if (!canNext()) {
-      if (step === 1) setErr(form.whatsapp.length !== 10 ? "Ingresa nombre, municipio y WhatsApp de 10 dígitos." : "Completa nombre y municipio.");
+      if (step === 1) setErr("Completa nombre, municipio y WhatsApp de 10 dígitos.");
       if (step === 2) setErr("Responde ambas preguntas para continuar.");
-      if (step === 3) setErr("Escribe al menos 10 caracteres de tu inconformidad.");
+      if (step === 3) setErr("Escribe al menos 10 caracteres.");
       return;
     }
     setStep((step + 1) as Step);
@@ -231,18 +248,16 @@ export default function ConsultaPage() {
       firma_data_url: form.firma
     };
     const { ok, saved } = await postRow(row);
-    if (!ok) pushQueue(row); // nunca se pierde: cola offline
+    if (!ok) pushQueue(row);
     const final = saved || row;
     setBadgeData({
       registro_id: final.folio || folio,
       fecha_hora: new Date().toISOString(),
-      sincronizado: ok,
-      _row: row,
+      sincronizado: ok, _row: row,
       usuario: { nombre: final.nombre, municipio: final.municipio, whatsapp: final.whatsapp },
       respuestas_consulta: { pregunta_1_dimision_dirigentes: final.pregunta_1, pregunta_2_preferencia_coordinadora: final.pregunta_2 },
       analisis_inconformidad_nlp: { texto_original: final.inconformidad, categoria_queja: final.categoria_queja, sentimiento: final.sentimiento, region_impacto: final.region }
     });
-    if (ok) setStats(s => ({ ...s, total: s.total + 1 }));
     setLoading(false);
   };
 
@@ -250,7 +265,7 @@ export default function ConsultaPage() {
     if (!badgeData?._row || loading) return;
     setLoading(true);
     const { ok } = await postRow(badgeData._row);
-    if (ok) { removeQueue(badgeData._row.folio); setBadgeData((b: any) => ({ ...b, sincronizado: true })); setStats(s => ({ ...s, total: s.total + 1 })); }
+    if (ok) { removeQueue(badgeData._row.folio); setBadgeData((b: any) => ({ ...b, sincronizado: true })); }
     setLoading(false);
   };
 
@@ -260,12 +275,10 @@ export default function ConsultaPage() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#6B1D3A]/10 rounded-full blur-[160px]" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#D4A843]/5 rounded-full blur-[120px]" />
       </div>
-
       <header className="fixed inset-x-0 top-0 z-40 backdrop-blur-md bg-[#14050B]/80 border-b border-[#D4A843]/20 px-4 md:px-8 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-[#D4A843]" /><span className="text-[#D4A843] font-black text-xs md:text-sm tracking-widest uppercase">Esthela Damián</span></div>
         <span className="px-3 py-1 rounded-full bg-[#6B1D3A] border border-[#D4A843] text-[#D4A843] text-[10px] md:text-xs font-black tracking-widest">#PorlosCaminosdelSur</span>
       </header>
-
       <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 pt-24 pb-12">
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-center mb-8 relative">
           <div className="absolute inset-0 -z-10 flex items-center justify-center opacity-[0.08] pointer-events-none">
@@ -275,11 +288,11 @@ export default function ConsultaPage() {
           <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-4" style={{ fontFamily: "Georgia, serif" }}>Por la <span className="text-[#D4A843]">Transparencia</span><br />y la Soberanía Popular</h1>
           <p className="text-white/70 text-sm md:text-base max-w-xl mx-auto leading-relaxed">Tu firma es un <strong className="text-[#D4A843]">acto de soberanía</strong>. Cada registro queda foliado, clasificado y resguardado como instrumento jurídico-político del pueblo guerrerense.</p>
           <div className="mt-6 mx-auto max-w-md grid grid-cols-2 divide-x divide-[#D4A843]/20 bg-white/[0.03] border border-[#D4A843]/30 rounded-2xl p-4">
-            <div><p className="text-2xl md:text-3xl font-black text-[#D4A843] tabular-nums">{stats.total.toLocaleString("es-MX")}</p><p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Firmas Folio</p></div>
-            <div><p className="text-2xl md:text-3xl font-black text-[#D4A843]">{stats.municipios} / 81</p><p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Municipios</p></div>
+            <div><p className="text-2xl md:text-3xl font-black text-[#D4A843] tabular-nums">{stats.total.toLocaleString("es-MX")}</p><p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Firmas Reales</p></div>
+            <div><p className="text-2xl md:text-3xl font-black text-[#D4A843]">{stats.municipios} / 85</p><p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Municipios</p></div>
           </div>
+          <p className="text-[9px] text-white/30 mt-2 tracking-wider text-center">Actualizado: {lastUpdate.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</p>
         </motion.section>
-
         <div className="grid grid-cols-4 gap-2 mb-6">
           {([1, 2, 3, 4] as Step[]).map(n => {
             const labels = ["Datos", "Consulta", "Catarsis", "Firma"];
@@ -292,10 +305,8 @@ export default function ConsultaPage() {
             );
           })}
         </div>
-
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="rounded-3xl bg-white/[0.025] border border-white/10 p-5 md:p-8 backdrop-blur-sm">
-
             {step === 1 && (
               <div className="space-y-5">
                 <div className="flex items-center gap-3 mb-5">
@@ -313,7 +324,6 @@ export default function ConsultaPage() {
                   <input type="tel" inputMode="numeric" maxLength={10} value={form.whatsapp} onChange={e => setForm({ ...form, whatsapp: e.target.value.replace(/\D/g, "") })} className={inputClass} placeholder="7471234567" /></div>
               </div>
             )}
-
             {step === 2 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3 mb-5">
@@ -348,7 +358,6 @@ export default function ConsultaPage() {
                 </fieldset>
               </div>
             )}
-
             {step === 3 && (
               <div className="space-y-5">
                 <div className="flex items-center gap-3 mb-5">
@@ -360,7 +369,6 @@ export default function ConsultaPage() {
                 <div className="flex justify-between items-center text-xs"><span className="text-white/40">Mínimo 10 caracteres</span><span className={`font-bold ${form.inconformidad.trim().length < 10 ? "text-red-400" : "text-[#D4A843]"}`}>{form.inconformidad.length}/1500</span></div>
               </div>
             )}
-
             {step === 4 && (
               <div className="space-y-5">
                 <div className="flex items-center gap-3 mb-5">
@@ -373,29 +381,25 @@ export default function ConsultaPage() {
                 </div>
               </div>
             )}
-
             {err && <p className="mt-4 text-center text-red-400 text-sm font-semibold">{err}</p>}
-
             <div className="mt-8 flex justify-between gap-3">
               {step > 1 && <button onClick={() => { setErr(""); setStep((step - 1) as Step); }} className="px-6 py-3 rounded-full font-bold text-sm border border-white/20 text-white/60 hover:border-[#D4A843]/40 hover:text-[#D4A843] transition-all">← Anterior</button>}
               {step < 4 ? (
                 <button onClick={next} className="ml-auto px-8 py-3 rounded-full font-black text-sm bg-[#D4A843] text-[#14050B] hover:bg-[#BC955C] transition-all hover:scale-105 active:scale-95">Siguiente →</button>
               ) : (
-                <button onClick={submit} disabled={loading} className="ml-auto px-8 py-3 rounded-full font-black text-sm shimmer-btn flex items-center gap-2 disabled:opacity-60 transition-all hover:scale-105 active:scale-95">
-                  {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Registrando acta…</> : <><PenTool className="w-5 h-5 text-[#D4A843]" /> 📜 Firmar y Validar mi Voz</>}
+                <button onClick={submit} disabled={!canNext() || loading}
+                className="ml-auto px-6 md:px-8 py-3 rounded-full font-black text-sm shimmer-btn text-white flex items-center gap-2 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95 whitespace-nowrap">
+                  {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Registrando…</> : <><PenTool className="w-4 h-4 md:w-5 md:h-5 text-[#D4A843]" /> 📜 Firmar y Validar</>}
                 </button>
               )}
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
-
       <footer className="border-t border-white/5 py-6 text-center text-xs text-white/40">Consulta Ciudadana por la Transparencia · Guerrero es Primero 💚</footer>
-
-      <a href="https://wa.me/527474795833?text=Hola%2C%20quiero%20firmar%20la%20Consulta%20Ciudadana%20por%20la%20Transparencia%20en%20Guerrero.%20%C2%BFPodr%C3%ADan%20enviarme%20el%20link%3F" target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp" className="fixed z-[999] flex items-center justify-center rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.5)] transition-all hover:scale-110 active:scale-95" style={{ bottom: "20px", right: "20px", width: "58px", height: "58px", background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)" }}>
+      <a href="https://chat.whatsapp.com/HSUgjqCm69g8vKujvgkNFN" target="_blank" rel="noopener noreferrer" aria-label="Únete al grupo de WhatsApp" className="fixed z-[999] flex items-center justify-center rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.5)] transition-all hover:scale-110 active:scale-95" style={{ bottom: "20px", right: "20px", width: "58px", height: "58px", background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)" }}>
         <svg viewBox="0 0 32 32" width="30" height="30" fill="#fff"><path d="M16 3C9.4 3 4 8.2 4 14.7c0 2.6.9 5 2.3 7L4 29l7.5-2.2c1.4.7 2.9 1.1 4.5 1.1 6.6 0 12-5.2 12-11.7S22.6 3 16 3zm6 16.1c-.3.8-1.5 1.5-2.1 1.6-.6.1-1.2.3-4-.8-3.4-1.4-5.6-4.8-5.8-5-.2-.2-1.4-1.9-1.4-3.6s.9-2.5 1.2-2.9c.3-.3.7-.4.9-.4h.7c.2 0 .5-.1.8.6.3.8 1.1 2.7 1.2 2.9.1.2.2.4 0 .7-.2.3-.3.5-.5.8-.2.2-.4.5-.2.9.2.4 1.1 1.8 2.4 2.9 1.6 1.4 3 1.9 3.4 2.1.4.2.7.1 1-.1.3-.3 1.1-1.3 1.4-1.7.3-.4.6-.4 1-.2.4.1 2.5 1.2 2.9 1.4.4.2.7.3.8.5.1.2.1 1-.2 1.8z"/></svg>
       </a>
-
       {badgeData && <BadgeModal data={badgeData} onClose={() => setBadgeData(null)} onRetry={retrySync} />}
     </main>
   );
