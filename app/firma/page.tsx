@@ -2,8 +2,8 @@
 'use client';
 import { useState } from 'react';
 import { MUNICIPIOS_GUERRERO, buildConsultaPayload } from '@/lib/consulta-data';
-import SignaturePadConsulta from '@/components/firmas/SignaturePadConsulta';
-import BadgeConsulta from '@/components/firmas/BadgeConsulta';
+import SignaturePadConsulta from '@/components/SignaturePadConsulta';
+import BadgeConsulta from '@/components/BadgeConsulta';
 
 const P1_SI = 'SI_SEPARACION', P1_NO = 'NO_PERMANENCIA';
 const CAND_ESTHELA = 'Esthela Damián', CAND_MOJICA = 'Beatriz Mojica';
